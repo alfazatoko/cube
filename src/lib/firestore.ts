@@ -13,6 +13,16 @@ export interface UserRecord {
   isActive: boolean;
 }
 
+export interface LicenseRecord {
+  id: string;
+  type: "demo" | "4_months" | "lifetime";
+  createdAt: string;
+  expiresAt: string | null;
+  maxDevices: number;
+  activeDevices: string[];
+  status: "active" | "expired" | "revoked";
+}
+
 export interface CategoryLabels {
   BANK: { name: string; visible: boolean };
   FLIP: { name: string; visible: boolean };

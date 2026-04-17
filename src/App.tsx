@@ -15,6 +15,8 @@ import NonTunai from "@/pages/non-tunai";
 import Catatan from "@/pages/catatan";
 import Laporan from "@/pages/laporan";
 import Owner from "@/pages/owner";
+import AdminPanel from "@/pages/admin";
+import License from "@/pages/license";
 import { useEffect } from "react";
 
 const queryClient = new QueryClient({
@@ -48,6 +50,30 @@ function Router() {
   const { user } = useAuth();
   const maxW = getMaxWidth(mode);
   useAutoScheduler(!!user);
+  const [location, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (location === "/admin" || location === "/license") return;
+    
+    const checkLicense = () => {
+      const licString = localStorage.getItem("kasir_license");
+      if (!licString) {
+        setLocation("/license");
+        return;
+      }
+      try {
+        const lic = JSON.parse(licString);
+        if (lic.expiresAt && new Date(lic.expiresAt) < new Date()) {
+          localStorage.removeItem("kasir_license");
+          setLocation("/license");
+        }
+      } catch (e) {
+        localStorage.removeItem("kasir_license");
+        setLocation("/license");
+      }
+    };
+    checkLicense();
+  }, [location, setLocation]);
 
   return (
     <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-slate-50/50 shadow-[0_0_40px_rgba(0,0,0,0.05)]`}>
@@ -59,6 +85,8 @@ function Router() {
         <Route path="/catatan" component={() => <ProtectedRoute component={Catatan} />} />
         <Route path="/laporan" component={() => <ProtectedRoute component={Laporan} />} />
         <Route path="/owner" component={() => <ProtectedRoute component={Owner} allowedRoles={["owner"]} />} />
+        <Route path="/admin" component={AdminPanel} />
+        <Route path="/license" component={License} />
         <Route component={NotFound} />
       </Switch>
       <BottomNav />

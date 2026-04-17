@@ -7,7 +7,7 @@ export function BottomNav() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
 
-  if (location === "/") return null;
+  if (location === "/" || location === "/admin" || location === "/license") return null;
 
   const isOwnerMode = location.startsWith("/owner");
 

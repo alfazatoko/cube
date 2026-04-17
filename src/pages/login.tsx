@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import { getUsers, getSettings, loginUser, type UserRecord } from "@/lib/firestore";
 import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store } from "lucide-react";
 
-const logoUrl = `${import.meta.env.BASE_URL}alfaza-logo.png`;
+const logoUrl = "https://ui-avatars.com/api/?name=KASIR+CUBE&background=2563eb&color=fff&size=256";
 
 const SHIFT_OPTIONS = [
   { value: "PAGI", label: "Pagi", icon: SunMedium },
