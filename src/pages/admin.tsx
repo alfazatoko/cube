@@ -111,30 +111,30 @@ export default function AdminPanel() {
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Key className="w-5 h-5 text-blue-500" /> Buat Lisensi Baru
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <button 
               onClick={() => handleGenerate("demo")}
               disabled={generating}
-              className="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition"
+              className="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
             >
-              <Clock className="w-6 h-6" />
-              <span className="font-bold text-sm">Demo (7 Hari)</span>
+              <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
+              <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Demo<br className="sm:hidden"/>(7 Hari)</span>
             </button>
             <button 
               onClick={() => handleGenerate("4_months")}
               disabled={generating}
-              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition"
+              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
             >
-              <CheckCircle2 className="w-6 h-6" />
-              <span className="font-bold text-sm">Pro (4 Bulan)</span>
+              <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+              <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Pro<br className="sm:hidden"/>(4 Bln)</span>
             </button>
             <button 
               onClick={() => handleGenerate("lifetime")}
               disabled={generating}
-              className="bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition"
+              className="bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
             >
-              <Infinity className="w-6 h-6" />
-              <span className="font-bold text-sm">Lifetime</span>
+              <Infinity className="w-5 h-5 sm:w-6 sm:h-6" />
+              <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Lifetime</span>
             </button>
           </div>
         </div>
