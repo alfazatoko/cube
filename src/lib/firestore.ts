@@ -46,6 +46,7 @@ export interface SettingsRecord {
   runningText: string;
   pinEnabled: boolean;
   categoryLabels: CategoryLabels;
+  requireLicense?: boolean;
 }
 
 export interface TransactionRecord {

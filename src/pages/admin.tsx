@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity } from "lucide-react";
-import { generateLicense, getLicenses, deleteLicense, type LicenseRecord } from "@/lib/firestore";
+import { generateLicense, getLicenses, deleteLicense, getSettings, updateSettings, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
@@ -11,6 +11,8 @@ export default function AdminPanel() {
   const [licenses, setLicenses] = useState<LicenseRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [selectedType, setSelectedType] = useState<"demo" | "4_months" | "lifetime">("demo");
+  const [requireLicense, setRequireLicense] = useState(true);
 
   useEffect(() => {
     if (authenticated) {
@@ -21,8 +23,12 @@ export default function AdminPanel() {
   const loadLicenses = async () => {
     setLoading(true);
     try {
-      const data = await getLicenses();
+      const [data, settings] = await Promise.all([
+        getLicenses(),
+        getSettings()
+      ]);
       setLicenses(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      setRequireLicense(settings.requireLicense ?? true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -40,15 +46,28 @@ export default function AdminPanel() {
     }
   };
 
-  const handleGenerate = async (type: "demo" | "4_months" | "lifetime") => {
+  const handleGenerate = async () => {
+    if (!selectedType) return;
     setGenerating(true);
     try {
-      await generateLicense(type);
+      await generateLicense(selectedType);
       await loadLicenses();
+      alert("Lisensi berhasil dibuat!");
     } catch (err) {
       console.error("Gagal membuat lisensi", err);
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const toggleRequireLicense = async () => {
+    const newValue = !requireLicense;
+    setRequireLicense(newValue);
+    try {
+      await updateSettings({ requireLicense: newValue });
+    } catch (err) {
+      console.error("Gagal update setting", err);
+      setRequireLicense(!newValue);
     }
   };
 
@@ -108,35 +127,57 @@ export default function AdminPanel() {
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-blue-500" /> Sistem Lisensi
+            </h3>
+            <button 
+              onClick={toggleRequireLicense}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${requireLicense ? 'bg-blue-600' : 'bg-gray-300'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${requireLicense ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">
+            {requireLicense ? "Aktif: Pengguna wajib memasukkan kode lisensi." : "Nonaktif: Aplikasi bisa digunakan tanpa lisensi."}
+          </p>
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Key className="w-5 h-5 text-blue-500" /> Buat Lisensi Baru
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <button 
-              onClick={() => handleGenerate("demo")}
-              disabled={generating}
-              className="bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
+              onClick={() => setSelectedType("demo")}
+              className={`p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition border-2 ${selectedType === "demo" ? "bg-amber-50 border-amber-500 text-amber-700" : "bg-white border-gray-100 text-gray-500 hover:bg-gray-50"}`}
             >
               <Clock className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Demo<br className="sm:hidden"/>(7 Hari)</span>
             </button>
             <button 
-              onClick={() => handleGenerate("4_months")}
-              disabled={generating}
-              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
+              onClick={() => setSelectedType("4_months")}
+              className={`p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition border-2 ${selectedType === "4_months" ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-white border-gray-100 text-gray-500 hover:bg-gray-50"}`}
             >
               <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Pro<br className="sm:hidden"/>(4 Bln)</span>
             </button>
             <button 
-              onClick={() => handleGenerate("lifetime")}
-              disabled={generating}
-              className="bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition"
+              onClick={() => setSelectedType("lifetime")}
+              className={`p-2 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition border-2 ${selectedType === "lifetime" ? "bg-purple-50 border-purple-500 text-purple-700" : "bg-white border-gray-100 text-gray-500 hover:bg-gray-50"}`}
             >
               <Infinity className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Lifetime</span>
             </button>
           </div>
+          <button 
+            onClick={handleGenerate}
+            disabled={generating}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-2xl transition disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {generating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Key className="w-5 h-5" />}
+            BUAT KODE SEKARANG
+          </button>
         </div>
 
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">

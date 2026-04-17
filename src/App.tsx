@@ -18,6 +18,7 @@ import Owner from "@/pages/owner";
 import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
 import { useEffect } from "react";
+import { getSettings } from "@/lib/firestore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,7 +56,14 @@ function Router() {
   useEffect(() => {
     if (location === "/admin" || location === "/license") return;
     
-    const checkLicense = () => {
+    const checkLicense = async () => {
+      try {
+        const settings = await getSettings();
+        if (settings.requireLicense === false) return; // By-pass license check
+      } catch (e) {
+        console.error("Failed to fetch settings for license check", e);
+      }
+
       const licString = localStorage.getItem("kasir_license");
       if (!licString) {
         setLocation("/license");
