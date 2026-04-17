@@ -634,3 +634,78 @@ export async function loginUser(name: string, pin?: string, shift?: string, devi
     absenTime,
   };
 }
+
+// =======================
+// LICENSE FUNCTIONS
+// =======================
+
+export async function getLicenses(): Promise<LicenseRecord[]> {
+  const colRef = collection(db, "licenses");
+  const snap = await getDocs(colRef);
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LicenseRecord));
+}
+
+export async function generateLicense(type: "demo" | "4_months" | "lifetime"): Promise<string> {
+  const code = Array.from({ length: 3 }, () => Math.random().toString(36).substring(2, 6).toUpperCase()).join('-');
+  const colRef = collection(db, "licenses");
+  const now = new Date();
+  
+  let expiresAt = null;
+  if (type === "demo") {
+    now.setDate(now.getDate() + 7);
+    expiresAt = now.toISOString();
+  } else if (type === "4_months") {
+    now.setMonth(now.getMonth() + 4);
+    expiresAt = now.toISOString();
+  }
+
+  await setDoc(doc(colRef, code), {
+    type,
+    createdAt: new Date().toISOString(),
+    expiresAt,
+    maxDevices: 3,
+    activeDevices: [],
+    status: "active"
+  });
+
+  return code;
+}
+
+export async function deleteLicense(code: string): Promise<void> {
+  const docRef = doc(db, "licenses", code);
+  await deleteDoc(docRef);
+}
+
+export async function validateLicense(code: string, deviceId: string): Promise<{ valid: boolean; message: string; license?: LicenseRecord }> {
+  const docRef = doc(db, "licenses", code);
+  const snap = await getDoc(docRef);
+  
+  if (!snap.exists()) {
+    return { valid: false, message: "Kode lisensi tidak valid." };
+  }
+  
+  const license = { id: snap.id, ...snap.data() } as LicenseRecord;
+  
+  if (license.status !== "active") {
+    return { valid: false, message: "Lisensi ini sudah tidak aktif." };
+  }
+  
+  if (license.expiresAt && new Date(license.expiresAt) < new Date()) {
+    return { valid: false, message: "Lisensi ini sudah kedaluwarsa." };
+  }
+  
+  const isDeviceRegistered = license.activeDevices.includes(deviceId);
+  
+  if (!isDeviceRegistered) {
+    if (license.activeDevices.length >= license.maxDevices) {
+      return { valid: false, message: `Lisensi ini sudah mencapai batas maksimal perangkat (${license.maxDevices}).` };
+    }
+    // Register device
+    const newDevices = [...license.activeDevices, deviceId];
+    await updateDoc(docRef, { activeDevices: newDevices });
+    license.activeDevices = newDevices;
+  }
+  
+  return { valid: true, message: "Lisensi valid.", license };
+}
+
