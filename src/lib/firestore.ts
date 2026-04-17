@@ -20,6 +20,7 @@ export interface LicenseRecord {
   expiresAt: string | null;
   maxDevices: number;
   activeDevices: string[];
+  registeredEmail?: string;
   status: "active" | "expired" | "revoked";
 }
 
@@ -636,6 +637,37 @@ export async function loginUser(name: string, pin?: string, shift?: string, devi
   };
 }
 
+export async function ownerAddSaldo(kasirName: string, date: string, data: { bank: number; cash: number; realApp: number; sisaSaldo: number }): Promise<void> {
+  // Update balances collection (adds to existing)
+  const balRef = doc(db, "balances", kasirName);
+  const balSnap = await getDoc(balRef);
+  const bal: BalanceRecord = balSnap.exists()
+    ? (balSnap.data() as BalanceRecord)
+    : { bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
+  
+  bal.bank += data.bank;
+  bal.cash += data.cash;
+  
+  if (balSnap.exists()) {
+    await updateDoc(balRef, bal as any);
+  } else {
+    await setDoc(balRef, bal);
+  }
+
+  // Update daily_notes collection (adds to existing)
+  const noteRef = doc(db, "daily_notes", `${date}_${kasirName}`);
+  const noteSnap = await getDoc(noteRef);
+  const currentSisa = noteSnap.exists() ? (noteSnap.data().sisaSaldoBank || 0) : 0;
+  const currentRealApp = noteSnap.exists() ? (noteSnap.data().saldoRealApp || 0) : 0;
+
+  await setDoc(noteRef, { 
+    date,
+    kasirName,
+    sisaSaldoBank: currentSisa + data.sisaSaldo,
+    saldoRealApp: currentRealApp + data.realApp
+  }, { merge: true });
+}
+
 // =======================
 // LICENSE FUNCTIONS
 // =======================
@@ -646,7 +678,7 @@ export async function getLicenses(): Promise<LicenseRecord[]> {
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LicenseRecord));
 }
 
-export async function generateLicense(type: "demo" | "4_months" | "lifetime"): Promise<string> {
+export async function generateLicense(type: "demo" | "4_months" | "lifetime", email: string): Promise<string> {
   const code = Array.from({ length: 3 }, () => Math.random().toString(36).substring(2, 6).toUpperCase()).join('-');
   const colRef = collection(db, "licenses");
   const now = new Date();
@@ -666,6 +698,7 @@ export async function generateLicense(type: "demo" | "4_months" | "lifetime"): P
     expiresAt,
     maxDevices: 3,
     activeDevices: [],
+    registeredEmail: email.toLowerCase(),
     status: "active"
   });
 
@@ -677,7 +710,7 @@ export async function deleteLicense(code: string): Promise<void> {
   await deleteDoc(docRef);
 }
 
-export async function validateLicense(code: string, deviceId: string): Promise<{ valid: boolean; message: string; license?: LicenseRecord }> {
+export async function validateLicense(code: string, email: string, deviceId: string): Promise<{ valid: boolean; message: string; license?: LicenseRecord }> {
   const docRef = doc(db, "licenses", code);
   const snap = await getDoc(docRef);
   
@@ -699,14 +732,27 @@ export async function validateLicense(code: string, deviceId: string): Promise<{
   
   if (!isDeviceRegistered) {
     if (license.activeDevices.length >= license.maxDevices) {
-      return { valid: false, message: `Lisensi ini sudah mencapai batas maksimal perangkat (${license.maxDevices}).` };
+      return { valid: false, message: `Batas maksimal ${license.maxDevices} HP sudah tercapai.` };
     }
-    // Register device
-    const newDevices = [...license.activeDevices, deviceId];
-    await updateDoc(docRef, { activeDevices: newDevices });
-    license.activeDevices = newDevices;
+    
+    // Check email matching if already registered
+    if (license.registeredEmail && license.registeredEmail !== email) {
+      return { valid: false, message: "Lisensi ini sudah terdaftar untuk email lain." };
+    }
+
+    const updatedDevices = [...license.activeDevices, deviceId];
+    await updateDoc(docRef, { 
+      activeDevices: updatedDevices,
+      registeredEmail: license.registeredEmail || email
+    });
+    license.activeDevices = updatedDevices;
+    license.registeredEmail = license.registeredEmail || email;
+  } else {
+    // Already registered device, but check email for safety
+    if (license.registeredEmail && license.registeredEmail !== email) {
+      return { valid: false, message: "Email tidak cocok dengan pendaftaran lisensi ini." };
+    }
   }
   
   return { valid: true, message: "Lisensi valid.", license };
 }
-

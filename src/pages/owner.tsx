@@ -6,9 +6,11 @@ import {
   getSettings, updateSettings,
   getTransactions, getSaldoHistory, getBalance, resetBalance,
   getAttendance, getIzinList, createIzin, updateIzin,
-  resetAllData, getDailyNotes,
+  resetAllData, getDailyNotes, ownerAddSaldo,
   type UserRecord, type SettingsRecord, type TransactionRecord, type AttendanceRecord, type IzinRecord, type SaldoHistoryRecord, type CategoryLabels,
 } from "@/lib/firestore";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore/lite";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -41,34 +43,7 @@ export default function Owner() {
     { id: "setting" as const, icon: Settings, label: "Setting", desc: "Pengaturan app", color: "from-gray-600 to-gray-500" },
   ];
 
-  const [zipping, setZipping] = useState(false);
 
-  const handleDownloadZip = async () => {
-    setZipping(true);
-    try {
-      const [{ getSourceFiles }, { default: JSZip }] = await Promise.all([
-        import("@/lib/source-bundle"),
-        import("jszip"),
-      ]);
-      const files = getSourceFiles();
-      const zip = new JSZip();
-      for (const [path, content] of Object.entries(files)) {
-        zip.file(path, content);
-      }
-      const blob = await zip.generateAsync({ type: "blob" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `kasir-cube-source-${new Date().toISOString().slice(0, 10)}.zip`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast({ title: "Source code berhasil diunduh" });
-    } catch {
-      toast({ title: "Gagal membuat ZIP", variant: "destructive" });
-    } finally {
-      setZipping(false);
-    }
-  };
 
   if (page === "main") {
     return (
@@ -97,13 +72,7 @@ export default function Owner() {
             );
           })}
         </div>
-        <div className="mt-4">
-          <button onClick={handleDownloadZip} disabled={zipping} className="w-full bg-gradient-to-r from-gray-800 to-gray-700 text-white py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 transition disabled:opacity-60">
-            {zipping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            {zipping ? "Membuat ZIP..." : "Download Source Code (ZIP)"}
-          </button>
-          <p className="text-[10px] text-gray-400 text-center mt-1.5">Unduh semua file kode terbaru untuk diedit di aplikasi lain</p>
-        </div>
+
       </div>
     );
   }
@@ -154,6 +123,11 @@ function KasirPage({ goBack }: { goBack: () => void }) {
   const [role, setRole] = useState("kasir");
   const [saving, setSaving] = useState(false);
   const [showPins, setShowPins] = useState<Record<string, boolean>>({});
+  
+  const [showTopup, setShowTopup] = useState(false);
+  const [topupUser, setTopupUser] = useState<UserRecord | null>(null);
+  const [topupData, setTopupData] = useState({ bank: "", cash: "", realApp: "", sisaSaldo: "" });
+  const [toppingUp, setToppingUp] = useState(false);
 
   const loadUsers = useCallback(async () => {
     const u = await getUsers();
@@ -207,6 +181,34 @@ function KasirPage({ goBack }: { goBack: () => void }) {
     } catch {}
   };
 
+  const handleTopupSubmit = async () => {
+    if (!topupUser) return;
+    const data = {
+      bank: parseThousands(topupData.bank),
+      cash: parseThousands(topupData.cash),
+      realApp: parseThousands(topupData.realApp),
+      sisaSaldo: parseThousands(topupData.sisaSaldo),
+    };
+
+    if (Object.values(data).every(v => v === 0)) {
+      toast({ title: "Masukkan nominal saldo", variant: "destructive" });
+      return;
+    }
+
+    setToppingUp(true);
+    try {
+      await ownerAddSaldo(topupUser.name, getWibDate(), data);
+      toast({ title: `Saldo ${topupUser.name} berhasil ditambah!` });
+      setShowTopup(false);
+      setTopupData({ bank: "", cash: "", realApp: "", sisaSaldo: "" });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Gagal menambah saldo", variant: "destructive" });
+    } finally {
+      setToppingUp(false);
+    }
+  };
+
   return (
     <PageWrapper title="Manajemen Kasir" icon={Users} goBack={goBack}>
       <button onClick={() => setShowForm(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm mb-4 flex items-center justify-center gap-2 shadow active:scale-95 transition">
@@ -240,6 +242,9 @@ function KasirPage({ goBack }: { goBack: () => void }) {
                 <button onClick={() => toggleActive(u)} className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold ${u.isActive ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                   {u.isActive ? "Nonaktifkan" : "Aktifkan"}
                 </button>
+                <button onClick={() => { setTopupUser(u); setShowTopup(true); }} className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-black flex items-center gap-1 shadow-sm active:scale-95 transition">
+                  <Plus className="w-3 h-3" /> SALDO
+                </button>
                 <button onClick={() => { setEditUser(u); setName(u.name); setPin(u.pin); setRole(u.role); setShowForm(true); }} className="bg-blue-100 text-blue-600 px-2 py-1.5 rounded-lg">
                   <Edit className="w-3.5 h-3.5" />
                 </button>
@@ -254,18 +259,86 @@ function KasirPage({ goBack }: { goBack: () => void }) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={resetForm}>
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between mb-3">
-              <h3 className="font-bold text-base">{editUser ? "Edit" : "Tambah"} Kasir</h3>
-              <button onClick={resetForm} className="text-xl text-gray-400">&times;</button>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between mb-4">
+              <h3 className="font-bold text-lg">{editUser ? "Edit" : "Tambah"} Kasir</h3>
+              <button onClick={resetForm} className="text-2xl text-gray-400">&times;</button>
             </div>
-            <div className="space-y-3 mb-4">
-              <input value={name} onChange={e => setName(e.target.value)} placeholder="Nama Kasir" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
-              <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} inputMode="numeric" placeholder="PIN (4 digit)" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+            <div className="space-y-4 mb-5">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nama Kasir</label>
+                <input value={name} onChange={e => setName(e.target.value)} placeholder="Contoh: Budi" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PIN Keamanan (4 Digit)</label>
+                <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} inputMode="numeric" placeholder="0000" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
+              </div>
             </div>
-            <button onClick={handleSave} disabled={saving} className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-3 rounded-full text-sm disabled:opacity-60">
-              {saving ? "Menyimpan..." : "Simpan"}
+            <button onClick={handleSave} disabled={saving} className="w-full bg-blue-600 text-white font-black py-3.5 rounded-2xl text-sm disabled:opacity-60 shadow-lg shadow-blue-500/30">
+              {saving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "SIMPAN DATA KASIR"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showTopup && topupUser && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowTopup(false)}>
+          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between mb-4">
+              <div>
+                <h3 className="font-black text-lg text-emerald-600">+ SALDO KASIR</h3>
+                <p className="text-[10px] text-gray-400 uppercase font-bold">Penerima: {topupUser.name}</p>
+              </div>
+              <button onClick={() => setShowTopup(false)} className="text-2xl text-gray-400">&times;</button>
+            </div>
+            
+            <div className="space-y-3.5 mb-6">
+              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Saldo Bank</label>
+                <input 
+                  value={topupData.bank} 
+                  onChange={e => setTopupData(prev => ({ ...prev, bank: formatThousands(e.target.value) }))} 
+                  placeholder="Rp 0" 
+                  className="w-full bg-transparent font-black text-blue-600 text-lg outline-none" 
+                />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Uang Cash</label>
+                <input 
+                  value={topupData.cash} 
+                  onChange={e => setTopupData(prev => ({ ...prev, cash: formatThousands(e.target.value) }))} 
+                  placeholder="Rp 0" 
+                  className="w-full bg-transparent font-black text-orange-600 text-lg outline-none" 
+                />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Saldo Real App</label>
+                <input 
+                  value={topupData.realApp} 
+                  onChange={e => setTopupData(prev => ({ ...prev, realApp: formatThousands(e.target.value) }))} 
+                  placeholder="Rp 0" 
+                  className="w-full bg-transparent font-black text-emerald-600 text-lg outline-none" 
+                />
+              </div>
+              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Sisa Saldo</label>
+                <input 
+                  value={topupData.sisaSaldo} 
+                  onChange={e => setTopupData(prev => ({ ...prev, sisaSaldo: formatThousands(e.target.value) }))} 
+                  placeholder="Rp 0" 
+                  className="w-full bg-transparent font-black text-purple-600 text-lg outline-none" 
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={handleTopupSubmit} 
+              disabled={toppingUp} 
+              className="w-full bg-emerald-600 text-white font-black py-4 rounded-2xl text-sm disabled:opacity-60 shadow-lg shadow-emerald-500/30 active:scale-95 transition"
+            >
+              {toppingUp ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "PROSES TAMBAH SALDO"}
+            </button>
+            <p className="text-[9px] text-gray-400 text-center mt-3">* Nominal akan ditambahkan ke saldo kasir saat ini</p>
           </div>
         </div>
       )}
@@ -1114,6 +1187,35 @@ function BackupPage({ goBack }: { goBack: () => void }) {
     }
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleDownloadExcel = async () => {
+    setExporting(true);
+    try {
+      const { utils, writeFile } = await import("xlsx");
+      
+      const collections = ["transactions", "saldo_history", "hutang", "kontak", "attendance", "izin", "daily_notes", "users"];
+      const wb = utils.book_new();
+
+      for (const colName of collections) {
+        const snap = await getDocs(collection(db, colName));
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (data.length > 0) {
+          const ws = utils.json_to_sheet(data);
+          utils.book_append_sheet(wb, ws, colName.toUpperCase());
+        }
+      }
+
+      writeFile(wb, `BACKUP-KASIRCUBE-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast({ title: "Backup Excel berhasil diunduh" });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Gagal membuat Excel", variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleDownloadBackup = async () => {
     try {
       const [settings, allUsers] = await Promise.all([getSettings(), getUsers()]);
@@ -1131,7 +1233,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
       a.download = `backup-kasircube-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: "Backup berhasil diunduh" });
+      toast({ title: "Backup JSON berhasil diunduh" });
     } catch {
       toast({ title: "Gagal download backup", variant: "destructive" });
     }
@@ -1147,11 +1249,22 @@ function BackupPage({ goBack }: { goBack: () => void }) {
         <p className="text-[11px] text-amber-600">Data tersimpan di Firebase Cloud. Reset hanya menghapus data transaksi, bukan data kasir.</p>
       </div>
 
-      <div className="mb-5">
-        <button onClick={handleDownloadBackup} className="w-full bg-blue-600 text-white py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition">
-          <Download className="w-4 h-4" /> Download Backup Data (JSON)
+      <div className="grid grid-cols-1 gap-3 mb-6">
+        <button 
+          onClick={handleDownloadExcel} 
+          disabled={exporting}
+          className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 active:scale-95 transition disabled:opacity-50"
+        >
+          {exporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
+          DOWNLOAD BACKUP (EXCEL)
         </button>
-        <p className="text-[10px] text-gray-500 text-center mt-1.5">Unduh data pengaturan & kasir sebagai file backup</p>
+
+        <button 
+          onClick={handleDownloadBackup} 
+          className="w-full bg-blue-600 text-white py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition"
+        >
+          <Download className="w-4 h-4" /> Download Backup (JSON)
+        </button>
       </div>
 
       <h3 className="font-bold text-sm text-gray-700 mb-3">Reset Saldo Per Kasir</h3>
@@ -1164,10 +1277,14 @@ function BackupPage({ goBack }: { goBack: () => void }) {
         </div>
       ))}
 
-      <div className="mt-6">
-        <button onClick={handleResetAll} disabled={resetting} className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 active:scale-95 transition disabled:opacity-50">
+      <div className="mt-6 bg-red-50 rounded-2xl p-4 border border-red-200">
+        <h3 className="font-bold text-sm text-red-700 mb-2 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4" /> Zona Bahaya
+        </h3>
+        <p className="text-[11px] text-red-500 mb-3">Reset semua data transaksi, saldo, kasbon, kontak, absen, dan izin. Tindakan ini tidak bisa dibatalkan.</p>
+        <button onClick={handleResetAll} disabled={resetting} className="w-full bg-red-600 text-white py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-red-500/30 active:scale-95 transition disabled:opacity-50">
           {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-          RESET SEMUA DATA
+          RESET SELURUH DATA
         </button>
       </div>
     </PageWrapper>
@@ -1384,16 +1501,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
           {saving ? "Menyimpan..." : "Simpan Pengaturan"}
         </button>
 
-        <div className="bg-red-50 rounded-2xl p-4 border border-red-200">
-          <h3 className="font-bold text-sm text-red-700 mb-2 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Zona Bahaya
-          </h3>
-          <p className="text-[11px] text-red-500 mb-3">Reset semua data transaksi, saldo, kasbon, kontak, absen, dan izin. Tindakan ini tidak bisa dibatalkan.</p>
-          <button onClick={handleResetAll} disabled={resetting} className="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 transition disabled:opacity-50">
-            {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            RESET SELURUH DATA
-          </button>
-        </div>
+
       </div>
     </div>
   );

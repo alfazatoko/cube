@@ -6,12 +6,17 @@ import { Loader2, KeyRound, Clock, CheckCircle2, Infinity, ShieldCheck } from "l
 export default function License() {
   const [, setLocation] = useLocation();
   const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleActivate = async () => {
     if (!code) {
       setError("Masukkan kode lisensi.");
+      return;
+    }
+    if (!email || !email.includes("@")) {
+      setError("Masukkan email pendaftaran yang valid.");
       return;
     }
 
@@ -26,7 +31,7 @@ export default function License() {
         localStorage.setItem("kasir_device_id", deviceId);
       }
 
-      const res = await validateLicense(code.toUpperCase(), deviceId);
+      const res = await validateLicense(code.toUpperCase(), email.toLowerCase(), deviceId);
       if (res.valid && res.license) {
         // Save the valid license to local storage
         localStorage.setItem("kasir_license", JSON.stringify({
@@ -89,14 +94,13 @@ export default function License() {
           </div>
         )}
 
-        <div className="w-full flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500 mb-4 transition-all">
+        <div className="w-full flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500 mb-3 transition-all">
           <KeyRound className="w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="XXXX-XXXX-XXXX"
+            placeholder="KODE LISENSI"
             value={code}
             onChange={e => {
-              // Add hyphens automatically
               let val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
               let formatted = '';
               for(let i=0; i<val.length; i++) {
@@ -110,10 +114,22 @@ export default function License() {
           />
         </div>
 
+        <div className="w-full flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500 mb-4 transition-all">
+          <KeyRound className="w-5 h-5 text-gray-400 opacity-0" /> {/* Spacer or Mail icon if available */}
+          <input
+            type="email"
+            placeholder="EMAIL PENDAFTARAN"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleActivate()}
+            className="flex-1 bg-transparent outline-none text-sm font-bold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+          />
+        </div>
+
         <button
           type="button"
           onClick={handleActivate}
-          disabled={loading || code.length < 14}
+          disabled={loading || code.length < 14 || !email}
           className="w-full h-14 rounded-2xl font-bold text-base bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50 mb-6"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}

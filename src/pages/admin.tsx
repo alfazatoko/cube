@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity } from "lucide-react";
+import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download } from "lucide-react";
 import { generateLicense, getLicenses, deleteLicense, getSettings, updateSettings, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -13,6 +13,8 @@ export default function AdminPanel() {
   const [generating, setGenerating] = useState(false);
   const [selectedType, setSelectedType] = useState<"demo" | "4_months" | "lifetime">("demo");
   const [requireLicense, setRequireLicense] = useState(true);
+  const [zipping, setZipping] = useState(false);
+  const [genEmail, setGenEmail] = useState("");
 
   useEffect(() => {
     if (authenticated) {
@@ -27,7 +29,12 @@ export default function AdminPanel() {
         getLicenses(),
         getSettings()
       ]);
-      setLicenses(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      const sorted = data.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      });
+      setLicenses(sorted);
       setRequireLicense(settings.requireLicense ?? true);
     } catch (err) {
       console.error(err);
@@ -48,10 +55,15 @@ export default function AdminPanel() {
 
   const handleGenerate = async () => {
     if (!selectedType) return;
+    if (!genEmail || !genEmail.includes("@")) {
+      alert("Masukkan email pendaftaran yang valid!");
+      return;
+    }
     setGenerating(true);
     try {
-      await generateLicense(selectedType);
+      await generateLicense(selectedType, genEmail);
       await loadLicenses();
+      setGenEmail("");
       alert("Lisensi berhasil dibuat!");
     } catch (err) {
       console.error("Gagal membuat lisensi", err);
@@ -68,6 +80,45 @@ export default function AdminPanel() {
     } catch (err) {
       console.error("Gagal update setting", err);
       setRequireLicense(!newValue);
+    }
+  };
+
+  const safeFormat = (dateStr: string | null | undefined, formatStr: string) => {
+    if (!dateStr) return "-";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "Format Salah";
+      return format(d, formatStr, { locale: idLocale });
+    } catch (e) {
+      return "Error";
+    }
+  };
+
+  const handleDownloadZip = async () => {
+    setZipping(true);
+    try {
+      const [{ getSourceFiles }, { default: JSZip }] = await Promise.all([
+        import("@/lib/source-bundle"),
+        import("jszip"),
+      ]);
+      const files = getSourceFiles();
+      const zip = new JSZip();
+      for (const [path, content] of Object.entries(files)) {
+        zip.file(path, content);
+      }
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `kasir-cube-source-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert("Source code berhasil diunduh!");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal membuat ZIP");
+    } finally {
+      setZipping(false);
     }
   };
 
@@ -170,6 +221,16 @@ export default function AdminPanel() {
               <span className="font-bold text-[10px] sm:text-sm text-center leading-tight">Lifetime</span>
             </button>
           </div>
+          <div className="mb-4">
+            <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 mb-1 block">Email Pendaftaran</label>
+            <input 
+              type="email" 
+              value={genEmail} 
+              onChange={e => setGenEmail(e.target.value)} 
+              placeholder="contoh: user@gmail.com" 
+              className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition"
+            />
+          </div>
           <button 
             onClick={handleGenerate}
             disabled={generating}
@@ -201,28 +262,33 @@ export default function AdminPanel() {
                       <code className="text-lg font-black text-gray-800 bg-gray-100 px-2 py-1 rounded-lg tracking-wider">
                         {lic.id}
                       </code>
-                      <button onClick={() => copyToClipboard(lic.id)} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200">
+                      <button onClick={() => copyToClipboard(lic.id)} className="text-blue-600 hover:text-blue-700">
                         <Copy className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-                      <span className={`px-2 py-0.5 rounded-full ${
-                        lic.type === "demo" ? "bg-amber-100 text-amber-700" :
-                        lic.type === "4_months" ? "bg-blue-100 text-blue-700" :
-                        "bg-purple-100 text-purple-700"
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className={`font-bold px-2 py-0.5 rounded-full ${
+                        lic.type === "demo" ? "bg-amber-100 text-amber-600" :
+                        lic.type === "4_months" ? "bg-blue-100 text-blue-600" :
+                        "bg-purple-100 text-purple-600"
                       }`}>
-                        {lic.type.toUpperCase()}
+                        {lic.type.replace("_", " ").toUpperCase()}
                       </span>
-                      <span className={lic.status === "active" ? "text-green-600" : "text-red-500"}>
-                        {lic.status.toUpperCase()}
+                      <span className="text-gray-400">
+                        {lic.activeDevices.length} / {lic.maxDevices} HP
                       </span>
-                      <span className="text-gray-500">
-                        {lic.activeDevices.length}/{lic.maxDevices} Devices
+                      {lic.registeredEmail && (
+                        <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full">
+                          {lic.registeredEmail}
+                        </span>
+                      )}
+                      <span className="text-gray-400">
+                        Exp: {lic.expiresAt ? safeFormat(lic.expiresAt, "dd MMM yyyy") : "Lifetime"}
                       </span>
                     </div>
                     <p className="text-[10px] text-gray-400 mt-2">
-                      Dibuat: {format(new Date(lic.createdAt), "dd MMM yyyy HH:mm", { locale: idLocale })}
-                      {lic.expiresAt && ` • Kedaluwarsa: ${format(new Date(lic.expiresAt), "dd MMM yyyy", { locale: idLocale })}`}
+                      Dibuat: {safeFormat(lic.createdAt, "dd MMM yyyy HH:mm")}
+                      {lic.expiresAt && ` • Kedaluwarsa: ${safeFormat(lic.expiresAt, "dd MMM yyyy")}`}
                     </p>
                   </div>
                   <button onClick={() => handleDelete(lic.id)} className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition shrink-0 self-end sm:self-auto">
@@ -232,6 +298,18 @@ export default function AdminPanel() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="mt-8 mb-10 border-t border-gray-200 pt-8">
+          <button 
+            onClick={handleDownloadZip} 
+            disabled={zipping}
+            className="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-4 rounded-2xl transition disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+          >
+            {zipping ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+            {zipping ? "MEMPROSES ZIP..." : "DOWNLOAD SOURCE CODE (ZIP)"}
+          </button>
+          <p className="text-[11px] text-gray-400 text-center mt-2">Unduh semua file kode terbaru untuk keperluan backup atau pengembangan</p>
         </div>
       </div>
     </div>
