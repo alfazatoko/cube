@@ -148,7 +148,7 @@ export async function getSettings(): Promise<SettingsRecord> {
   const snap = await getDoc(ref);
   if (!snap.exists()) {
     const defaults: SettingsRecord = {
-      shopName: "ALFAZA LINK",
+      shopName: "KASIR CUBE",
       logoUrl: "",
       profilePhotoUrl: "",
       autoLockHour: 1,

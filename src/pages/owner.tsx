@@ -59,7 +59,7 @@ export default function Owner() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `alfaza-link-source-${new Date().toISOString().slice(0, 10)}.zip`;
+      a.download = `kasir-cube-source-${new Date().toISOString().slice(0, 10)}.zip`;
       a.click();
       URL.revokeObjectURL(url);
       toast({ title: "Source code berhasil diunduh" });
@@ -1119,7 +1119,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
       const [settings, allUsers] = await Promise.all([getSettings(), getUsers()]);
       const payload = {
         exportedAt: new Date().toISOString(),
-        appName: "Alfaza Link",
+        appName: "KASIR CUBE",
         settings,
         users: allUsers,
       };
@@ -1128,7 +1128,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `backup-alfazalink-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `backup-kasircube-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast({ title: "Backup berhasil diunduh" });
@@ -1199,7 +1199,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
   useEffect(() => {
     getSettings().then(s => {
       setSettings(s);
-      setShopName(s.shopName || "ALFAZA LINK");
+      setShopName(s.shopName || "KASIR CUBE");
       setProfilePhotoUrl(s.profilePhotoUrl || "");
       setPinEnabled(s.pinEnabled || false);
       setQuotes(s.mutiaraQuotes || "");

@@ -58,13 +58,13 @@ export function Header() {
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white/40">
-              <img src={settings?.profilePhotoUrl || `${import.meta.env.BASE_URL}alfaza-logo.png`} alt="Alfaza" className="w-full h-full object-cover" />
+              <img src={settings?.profilePhotoUrl || `${import.meta.env.BASE_URL}alfaza-logo.png`} alt="KASIR CUBE" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-lg font-extrabold tracking-wide leading-tight">
-                {settings?.shopName || "ALFAZA LINK"}
+                {settings?.shopName || "KASIR CUBE"}
               </h1>
-              <p className="text-[10px] font-medium text-blue-200 -mt-0.5">Sistem Kasir Pro</p>
+              <p className="text-[10px] font-medium text-blue-200 -mt-0.5">Sistem Kasir Digital</p>
             </div>
           </div>
           <div className="text-right">

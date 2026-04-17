@@ -1,7 +1,7 @@
 {
-  "name": "Alfaza Link",
-  "short_name": "Alfaza Link",
-  "description": "Sistem Kasir Pro - Alfaza Cell",
+  "name": "KASIR CUBE",
+  "short_name": "KASIR CUBE",
+  "description": "Sistem Kasir Digital - KASIR CUBE",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0f4ff",

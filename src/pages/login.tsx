@@ -78,11 +78,11 @@ function FirebaseAuthScreen() {
       <div className="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
-            <img src={authSettings?.profilePhotoUrl || logoUrl} alt="Alfaza" className="w-full h-full object-cover" />
+            <img src={authSettings?.profilePhotoUrl || logoUrl} alt="KASIR CUBE" className="w-full h-full object-cover" />
           </div>
         </div>
 
-        <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{authSettings?.shopName || "ALFAZA CELL"}</h2>
+        <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{authSettings?.shopName || "KASIR CUBE"}</h2>
         <p className="text-center text-gray-500 text-sm mb-1">Sistem Kasir Pro</p>
         <p className="text-center text-blue-500 text-xs font-semibold mb-6">
           {isRegister ? "Daftar Akun Baru" : "Login Firebase"}
@@ -279,11 +279,11 @@ function KasirSelectionScreen() {
       <div className="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
-            <img src={profilePhoto || logoUrl} alt="Alfaza" className="w-full h-full object-cover" />
+            <img src={profilePhoto || logoUrl} alt="KASIR CUBE" className="w-full h-full object-cover" />
           </div>
         </div>
 
-        <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{shopNameSetting || "ALFAZA CELL"}</h2>
+        <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{shopNameSetting || "KASIR CUBE"}</h2>
         <p className="text-center text-gray-500 text-sm mb-1">Sistem Kasir Pro</p>
         {firebaseUser && (
           <p className="text-center text-[10px] text-green-600 mb-4 font-semibold">
@@ -434,9 +434,9 @@ export default function Login() {
       <div className="min-h-screen bg-gradient-to-b from-blue-700 via-blue-600 to-sky-500 flex items-center justify-center p-4">
         <div className="bg-white p-8 rounded-[2rem] w-full max-w-sm shadow-2xl flex flex-col items-center gap-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
-            <img src={logoUrl} alt="Alfaza" className="w-full h-full object-cover" />
+            <img src={logoUrl} alt="KASIR CUBE" className="w-full h-full object-cover" />
           </div>
-          <h2 className="text-xl font-extrabold text-blue-700">ALFAZA CELL</h2>
+          <h2 className="text-xl font-extrabold text-blue-700">KASIR CUBE</h2>
           <p className="text-gray-500 text-sm">Sistem Kasir Pro</p>
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
           <p className="text-sm text-gray-400">Memuat data...</p>

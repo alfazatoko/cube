@@ -147,7 +147,7 @@ export default function Laporan() {
     try {
       const XLSX = await import("xlsx");
       const wsData: any[][] = [
-        ["ALFAZA CELL - Laporan Harian"],
+        ["KASIR CUBE - Laporan Harian"],
         [`Kasir: ${user?.name}`, `Shift: ${shift}`, `Tanggal: ${date}`],
         [],
         ["#", "Jam", "Kategori", "Nominal", "Admin", "Keterangan", "Pembayaran"],
@@ -234,7 +234,7 @@ export default function Laporan() {
     pdf.roundedRect(ml, y, cw, 16, 3, 3, "F");
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(15); pdf.setFont("helvetica", "bold");
-    pdf.text("ALFAZA CELL", pw / 2, y + 7, { align: "center" });
+    pdf.text("KASIR CUBE", pw / 2, y + 7, { align: "center" });
     pdf.setFontSize(9); pdf.setFont("helvetica", "normal");
     pdf.text("Laporan Harian", pw / 2, y + 12.5, { align: "center" });
     y += 19;
@@ -316,7 +316,7 @@ export default function Laporan() {
     pdf.setTextColor(160, 160, 170);
     pdf.setFontSize(7); pdf.setFont("helvetica", "normal");
     const nowStr = new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" });
-    pdf.text(`Dicetak: ${nowStr} | Alfaza Link POS`, pw / 2, y, { align: "center" });
+    pdf.text(`Dicetak: ${nowStr} | KASIR CUBE`, pw / 2, y, { align: "center" });
 
     return pdf;
   };
@@ -334,7 +334,7 @@ export default function Laporan() {
       const blob = pdf.output("blob");
       const file = new File([blob], `laporan-${user?.name}-${date}.pdf`, { type: "application/pdf" });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "Laporan Harian Alfaza Cell" });
+        await navigator.share({ files: [file], title: "Laporan Harian KASIR CUBE" });
       } else {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
