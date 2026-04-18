@@ -275,7 +275,7 @@ export default function AdminPanel() {
                         {lic.type.replace("_", " ").toUpperCase()}
                       </span>
                       <span className="text-gray-400">
-                        {lic.activeDevices.length} / {lic.maxDevices} HP
+                        {lic.activeDevices.length} / {Math.max(lic.maxDevices || 0, 7)} HP
                       </span>
                       {lic.registeredEmail && (
                         <span className="text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-full">

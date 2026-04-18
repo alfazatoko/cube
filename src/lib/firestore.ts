@@ -731,8 +731,9 @@ export async function validateLicense(code: string, email: string, deviceId: str
   const isDeviceRegistered = license.activeDevices.includes(deviceId);
   
   if (!isDeviceRegistered) {
-    if (license.activeDevices.length >= license.maxDevices) {
-      return { valid: false, message: `Batas maksimal ${license.maxDevices} HP sudah tercapai.` };
+    const currentMax = Math.max(license.maxDevices || 0, 7);
+    if (license.activeDevices.length >= currentMax) {
+      return { valid: false, message: `Batas maksimal ${currentMax} HP sudah tercapai.` };
     }
     
     // Check email matching if already registered
