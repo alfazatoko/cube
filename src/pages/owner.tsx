@@ -189,7 +189,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
     } catch {}
   };
 
-  };
+
 
   return (
     <PageWrapper title="Manajemen Kasir" icon={Users} goBack={goBack}>
