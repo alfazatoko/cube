@@ -75,7 +75,7 @@ function FirebaseAuthScreen() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-700 via-blue-600 to-sky-500 flex items-center justify-center p-4">
-      <div className="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
+      <div className="bg-card p-6 sm:p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
             <img src={authSettings?.profilePhotoUrl || logoUrl} alt="KASIR CUBE" className="w-full h-full object-cover" />
@@ -83,7 +83,7 @@ function FirebaseAuthScreen() {
         </div>
 
         <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{authSettings?.shopName || "KASIR CUBE"}</h2>
-        <p className="text-center text-gray-500 text-sm mb-1">Sistem Kasir Pro</p>
+        <p className="text-center text-muted-foreground text-sm mb-1">Sistem Kasir Pro</p>
         <p className="text-center text-blue-500 text-xs font-semibold mb-6">
           {isRegister ? "Daftar Akun Baru" : "Login Firebase"}
         </p>
@@ -96,19 +96,19 @@ function FirebaseAuthScreen() {
 
         <div className="space-y-3 mb-5">
           {isRegister && (
-            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500">
+            <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
               <Store className="w-5 h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Kode Toko"
                 value={shopCode}
                 onChange={e => setShopCode(e.target.value.toUpperCase())}
-                className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 tracking-widest placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal"
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground tracking-widest placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal"
               />
             </div>
           )}
 
-          <div className="flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500">
+          <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
             <Mail className="w-5 h-5 text-gray-400" />
             <input
               type="email"
@@ -116,11 +116,11 @@ function FirebaseAuthScreen() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
-              className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+              className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
             />
           </div>
 
-          <div className="flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500">
+          <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
             <KeyRound className="w-5 h-5 text-gray-400" />
             <input
               type={showPass ? "text" : "password"}
@@ -128,7 +128,7 @@ function FirebaseAuthScreen() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
-              className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+              className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
             />
             <button type="button" onClick={() => setShowPass(!showPass)} className="text-gray-400">
               {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -136,7 +136,7 @@ function FirebaseAuthScreen() {
           </div>
 
           {isRegister && (
-            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-2xl px-4 h-14 bg-gray-50 focus-within:border-blue-500">
+            <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
               <KeyRound className="w-5 h-5 text-gray-400" />
               <input
                 type={showPass ? "text" : "password"}
@@ -144,7 +144,7 @@ function FirebaseAuthScreen() {
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
               />
             </div>
           )}
@@ -329,7 +329,7 @@ function KasirSelectionScreen() {
                       setDropdownOpen(false);
                       setSelectedShift("PAGI");
                     }}
-                    className="w-full px-5 py-4 text-left text-base font-semibold text-gray-900 border-b last:border-b-0 border-gray-100"
+                    className="w-full px-5 py-4 text-left text-base font-semibold text-gray-900 border-b last:border-b-0 border-border"
                   >
                     {u.name}
                   </button>

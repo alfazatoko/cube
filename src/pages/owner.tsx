@@ -68,7 +68,7 @@ export default function Owner() {
               <button key={item.id} onClick={() => {
                 if (item.id === "tambah_saldo") setIsSaldoModalOpen(true);
                 else setPage(item.id as any);
-              }} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition">
+              }} className="bg-card rounded-2xl p-3 shadow-sm border border-border flex flex-col items-center gap-2 active:scale-95 transition">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-sm`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
@@ -206,7 +206,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
         </div>
       ) : (
         kasirList.map(u => (
-          <div key={u.id} className={`bg-white rounded-2xl p-4 mb-2.5 shadow-sm border ${u.isActive ? 'border-gray-100' : 'border-red-200 bg-red-50/50'}`}>
+          <div key={u.id} className={`bg-card rounded-2xl p-4 mb-2.5 shadow-sm border ${u.isActive ? 'border-border' : 'border-red-200 bg-red-50/50'}`}>
             <div className="flex justify-between items-center">
               <div>
                 <span className="font-bold text-sm">{u.name}</span>
@@ -240,7 +240,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={resetForm}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-card rounded-3xl p-6 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between mb-4">
               <h3 className="font-bold text-lg">{editUser ? "Edit" : "Tambah"} Kasir</h3>
               <button onClick={resetForm} className="text-2xl text-gray-400">&times;</button>
@@ -248,11 +248,11 @@ function KasirPage({ goBack }: { goBack: () => void }) {
             <div className="space-y-4 mb-5">
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nama Kasir</label>
-                <input value={name} onChange={e => setName(e.target.value)} placeholder="Contoh: Budi" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
+                <input value={name} onChange={e => setName(e.target.value)} placeholder="Contoh: Budi" className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PIN Keamanan (4 Digit)</label>
-                <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} inputMode="numeric" placeholder="0000" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
+                <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} inputMode="numeric" placeholder="0000" className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
               </div>
             </div>
             <button onClick={handleSave} disabled={saving} className="w-full bg-blue-600 text-white font-black py-3.5 rounded-2xl text-sm disabled:opacity-60 shadow-lg shadow-blue-500/30">
@@ -336,13 +336,13 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
       <div className="grid grid-cols-2 gap-2 mb-3">
         <button
           onClick={() => setViewMode("range")}
-          className={`py-2 rounded-full text-xs font-bold transition ${viewMode === "range" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+          className={`py-2 rounded-full text-xs font-bold transition ${viewMode === "range" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
         >
           Per Tanggal
         </button>
         <button
           onClick={() => setViewMode("bulan")}
-          className={`py-2 rounded-full text-xs font-bold transition ${viewMode === "bulan" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+          className={`py-2 rounded-full text-xs font-bold transition ${viewMode === "bulan" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
         >
           Per Bulan
         </button>
@@ -350,19 +350,19 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
 
       {viewMode === "range" ? (
         <div className="flex gap-1.5 items-center mb-3">
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="flex-1 rounded-xl border border-gray-200 px-2.5 py-2 text-xs bg-white outline-none" />
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="flex-1 rounded-xl border border-gray-200 px-2.5 py-2 text-xs bg-white outline-none" />
+          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="flex-1 rounded-xl border border-border px-2.5 py-2 text-xs bg-card outline-none" />
+          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="flex-1 rounded-xl border border-border px-2.5 py-2 text-xs bg-card outline-none" />
         </div>
       ) : (
         <div className="mb-3">
-          <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white outline-none" />
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="w-full rounded-xl border border-border px-3 py-2 text-xs bg-card outline-none" />
         </div>
       )}
 
       <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
         <button
           onClick={() => setFilterKasir("Semua")}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === "Semua" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === "Semua" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
         >
           Semua
         </button>
@@ -370,7 +370,7 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
           <button
             key={k.name}
             onClick={() => setFilterKasir(k.name)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === k.name ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === k.name ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
           >
             {k.name}
           </button>
@@ -389,18 +389,18 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
       {dailyData.length === 0 ? (
         <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data</div>
       ) : (
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 overflow-x-auto">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border overflow-x-auto">
           <div className="min-w-[300px]">
             {dailyData.map((d, i) => (
               <div key={i} className="mb-3">
-                <div className="text-[10px] font-semibold text-gray-500 mb-1">{d.date}</div>
+                <div className="text-[10px] font-semibold text-muted-foreground mb-1">{d.date}</div>
                 {categories.map(c => {
                   const val = d[c.key];
                   const width = Math.max(2, (val / maxVal) * 100);
                   return (
                     <div key={c.key} className="flex items-center gap-1 mb-0.5">
                       <div className={`${c.color} h-3 rounded-full transition-all`} style={{ width: `${width}%` }} />
-                      <span className="text-[9px] text-gray-500 whitespace-nowrap">{formatRupiah(val)}</span>
+                      <span className="text-[9px] text-muted-foreground whitespace-nowrap">{formatRupiah(val)}</span>
                     </div>
                   );
                 })}
@@ -457,7 +457,7 @@ function PerformaPage({ goBack }: { goBack: () => void }) {
   const cardColors = ["from-pink-500 to-rose-400", "from-blue-500 to-blue-400", "from-purple-500 to-purple-400", "from-teal-500 to-teal-400", "from-amber-500 to-amber-400"];
 
   return (
-    <div className="px-3 pt-3 pb-20 min-h-screen bg-gray-50">
+    <div className="px-3 pt-3 pb-20 min-h-screen bg-muted">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={goBack} className="text-gray-600"><ArrowLeft className="w-5 h-5" /></button>
         <TrendingUp className="w-5 h-5 text-red-500" />
@@ -470,7 +470,7 @@ function PerformaPage({ goBack }: { goBack: () => void }) {
       </div>
 
       <div className="flex gap-2 mb-4">
-        <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white outline-none" />
+        <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="flex-1 rounded-xl border border-border px-3 py-2 text-xs bg-card outline-none" />
       </div>
 
       {loading ? (
@@ -479,7 +479,7 @@ function PerformaPage({ goBack }: { goBack: () => void }) {
         <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data</div>
       ) : (
         performaData.map((k, i) => (
-          <div key={k.name} className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100">
+          <div key={k.name} className="bg-card rounded-2xl p-4 mb-3 shadow-sm border border-border">
             <div className="flex items-center gap-3 mb-3">
               <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${cardColors[i % cardColors.length]} flex items-center justify-center text-white font-bold text-lg shadow`}>
                 {k.name.charAt(0).toUpperCase()}
@@ -549,7 +549,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
   const cardColors = ["from-blue-500 to-blue-400", "from-pink-500 to-rose-400", "from-purple-500 to-purple-400", "from-teal-500 to-teal-400", "from-amber-500 to-amber-400"];
 
   return (
-    <div className="px-3 pt-3 pb-20 min-h-screen bg-gray-50">
+    <div className="px-3 pt-3 pb-20 min-h-screen bg-muted">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={goBack} className="text-gray-600"><ArrowLeft className="w-5 h-5" /></button>
         <Users className="w-5 h-5 text-blue-500" />
@@ -566,7 +566,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 bg-white rounded-xl p-2 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-4 bg-card rounded-xl p-2 shadow-sm border border-border">
         <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -577,10 +577,10 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <button onClick={() => setViewMode("ringkasan")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "ringkasan" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}>
+        <button onClick={() => setViewMode("ringkasan")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "ringkasan" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}>
           Ringkasan
         </button>
-        <button onClick={() => setViewMode("lengkap")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "lengkap" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}>
+        <button onClick={() => setViewMode("lengkap")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "lengkap" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}>
           Lengkap
         </button>
       </div>
@@ -592,7 +592,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
           <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data absensi</div>
         ) : (
           summaryData.map((k, i) => (
-            <div key={k.name} className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100">
+            <div key={k.name} className="bg-card rounded-2xl p-4 mb-3 shadow-sm border border-border">
               <div className="flex items-center gap-3 mb-2">
                 <div className={`w-11 h-11 rounded-full bg-gradient-to-br ${cardColors[i % cardColors.length]} flex items-center justify-center text-white font-bold text-lg shadow`}>
                   {k.name.charAt(0).toUpperCase()}
@@ -611,12 +611,12 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
         attendance.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data absensi</div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="grid grid-cols-4 px-3 py-2 bg-gray-50 border-b border-gray-200 text-[10px] font-bold text-gray-500">
+          <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
+            <div className="grid grid-cols-4 px-3 py-2 bg-muted border-b border-border text-[10px] font-bold text-muted-foreground">
               <span>Tanggal</span><span>Kasir</span><span>Shift</span><span>Masuk</span>
             </div>
             {attendance.map(a => (
-              <div key={a.id} className="grid grid-cols-4 px-3 py-2 border-b border-gray-100 text-[11px]">
+              <div key={a.id} className="grid grid-cols-4 px-3 py-2 border-b border-border text-[11px]">
                 <span>{a.tanggal.slice(5)}</span>
                 <span className="font-semibold">{a.kasirName}</span>
                 <span className={a.shift === "PAGI" ? "text-amber-600" : "text-indigo-600"}>{a.shift}</span>
@@ -682,7 +682,7 @@ function IzinPage({ goBack }: { goBack: () => void }) {
   return (
     <PageWrapper title="Manajemen Izin" icon={CalendarDays} goBack={goBack}>
       <div className="flex gap-2 mb-3">
-        <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs bg-white outline-none" />
+        <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="flex-1 rounded-xl border border-border px-3 py-2 text-xs bg-card outline-none" />
         <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white rounded-xl px-4 py-2 text-xs font-bold flex items-center gap-1 shadow">
           <Plus className="w-3.5 h-3.5" /> Ajukan
         </button>
@@ -691,7 +691,7 @@ function IzinPage({ goBack }: { goBack: () => void }) {
       <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
         <button
           onClick={() => setFilterKasir("Semua")}
-          className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === "Semua" ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+          className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === "Semua" ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
         >
           Semua
         </button>
@@ -699,7 +699,7 @@ function IzinPage({ goBack }: { goBack: () => void }) {
           <button
             key={k.name}
             onClick={() => setFilterKasir(k.name)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === k.name ? "bg-blue-600 text-white shadow" : "bg-white text-gray-500 border border-gray-200"}`}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold transition ${filterKasir === k.name ? "bg-blue-600 text-white shadow" : "bg-card text-muted-foreground border border-border"}`}
           >
             {k.name}
           </button>
@@ -710,11 +710,11 @@ function IzinPage({ goBack }: { goBack: () => void }) {
         <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data izin</div>
       ) : (
         filteredIzin.map(iz => (
-          <div key={iz.id} className="bg-white rounded-2xl p-4 mb-2.5 shadow-sm border border-gray-100">
+          <div key={iz.id} className="bg-card rounded-2xl p-4 mb-2.5 shadow-sm border border-border">
             <div className="flex justify-between items-start mb-2">
               <div>
                 <span className="font-bold text-sm">{iz.nama}</span>
-                <p className="text-[11px] text-gray-500 mt-0.5">{iz.alasan}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{iz.alasan}</p>
                 <p className="text-[10px] text-gray-400 mt-0.5">{iz.tanggal}</p>
               </div>
               <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${iz.status === "approved" ? "bg-green-100 text-green-600" : iz.status === "rejected" ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"}`}>
@@ -737,18 +737,18 @@ function IzinPage({ goBack }: { goBack: () => void }) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
-          <div className="bg-white rounded-2xl p-5 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl p-5 w-full max-w-sm shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between mb-3">
               <h3 className="font-bold text-base">Ajukan Izin</h3>
               <button onClick={() => setShowForm(false)} className="text-xl text-gray-400">&times;</button>
             </div>
             <div className="space-y-3 mb-4">
-              <select value={nama} onChange={e => setNama(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none bg-white">
+              <select value={nama} onChange={e => setNama(e.target.value)} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none bg-card">
                 <option value="">Pilih Kasir</option>
                 {kasirList.map(k => <option key={k.name} value={k.name}>{k.name}</option>)}
               </select>
-              <input type="date" value={tanggal} onChange={e => setTanggal(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
-              <textarea value={alasan} onChange={e => setAlasan(e.target.value)} placeholder="Alasan izin" rows={3} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
+              <input type="date" value={tanggal} onChange={e => setTanggal(e.target.value)} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none" />
+              <textarea value={alasan} onChange={e => setAlasan(e.target.value)} placeholder="Alasan izin" rows={3} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none resize-none" />
             </div>
             <button onClick={handleSubmit} disabled={saving} className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-3 rounded-full text-sm disabled:opacity-60">
               {saving ? "Menyimpan..." : "Ajukan Izin"}
@@ -877,40 +877,40 @@ function GajihPage({ goBack }: { goBack: () => void }) {
         </span>
       </div>
 
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
+      <div className="bg-card rounded-2xl p-5 shadow-sm border border-border mb-4">
         <div className="mb-4">
-          <label className="text-xs font-semibold text-gray-500 block mb-1">Pilih Karyawan:</label>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Pilih Karyawan:</label>
           <select
             value={selectedKasir}
             onChange={e => setSelectedKasir(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm font-bold outline-none bg-white"
+            className="w-full border border-border rounded-xl px-3 py-3 text-sm font-bold outline-none bg-card"
           >
             {kasirList.map(k => <option key={k.name} value={k.name}>{k.name.toUpperCase()}</option>)}
           </select>
         </div>
 
         <div className="mb-4">
-          <label className="text-xs font-semibold text-gray-500 block mb-1">Periode Bulan:</label>
+          <label className="text-xs font-semibold text-muted-foreground block mb-1">Periode Bulan:</label>
           <input
             type="month"
             value={month}
             onChange={e => setMonth(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-3 text-sm font-bold outline-none bg-white"
+            className="w-full border border-border rounded-xl px-3 py-3 text-sm font-bold outline-none bg-card"
           />
         </div>
 
         <div className="mb-4">
-          <label className="text-xs font-semibold text-gray-500 block mb-2">Mode Penghitungan:</label>
+          <label className="text-xs font-semibold text-muted-foreground block mb-2">Mode Penghitungan:</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setMode("harian")}
-              className={`py-2.5 rounded-full text-xs font-bold transition border-2 ${mode === "harian" ? "bg-blue-600 text-white border-blue-600 shadow" : "bg-white text-gray-500 border-gray-200"}`}
+              className={`py-2.5 rounded-full text-xs font-bold transition border-2 ${mode === "harian" ? "bg-blue-600 text-white border-blue-600 shadow" : "bg-card text-muted-foreground border-border"}`}
             >
               {mode === "harian" && <Check className="w-3.5 h-3.5 inline mr-1" />}Gajih / Hari
             </button>
             <button
               onClick={() => setMode("bulanan")}
-              className={`py-2.5 rounded-full text-xs font-bold transition border-2 ${mode === "bulanan" ? "bg-blue-600 text-white border-blue-600 shadow" : "bg-white text-gray-500 border-gray-200"}`}
+              className={`py-2.5 rounded-full text-xs font-bold transition border-2 ${mode === "bulanan" ? "bg-blue-600 text-white border-blue-600 shadow" : "bg-card text-muted-foreground border-border"}`}
             >
               {mode === "bulanan" && <Check className="w-3.5 h-3.5 inline mr-1" />}Gajih Full 1 Bulan
             </button>
@@ -920,46 +920,46 @@ function GajihPage({ goBack }: { goBack: () => void }) {
         {mode === "harian" ? (
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1">Gaji / Hari:</label>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Gaji / Hari:</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={gajiPerHariDisplay}
                 onChange={e => setGajiPerHariDisplay(formatThousands(e.target.value))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1">Bonus:</label>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Bonus:</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={bonusDisplay}
                 onChange={e => setBonusDisplay(formatThousands(e.target.value))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
               />
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1">Gaji Full Bulan:</label>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Gaji Full Bulan:</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={gajiBulananDisplay}
                 onChange={e => setGajiBulananDisplay(formatThousands(e.target.value))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1">Bonus:</label>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">Bonus:</label>
               <input
                 type="text"
                 inputMode="numeric"
                 value={bonusDisplay}
                 onChange={e => setBonusDisplay(formatThousands(e.target.value))}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
+                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none"
               />
             </div>
           </div>
@@ -967,7 +967,7 @@ function GajihPage({ goBack }: { goBack: () => void }) {
 
         <div className="grid grid-cols-2 gap-3 mb-2">
           <div>
-            <label className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 mb-1">
+            <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-1">
               Hari Kerja:
               <input
                 type="checkbox"
@@ -991,8 +991,8 @@ function GajihPage({ goBack }: { goBack: () => void }) {
             )}
           </div>
           <div>
-            <label className="text-xs font-semibold text-gray-500 block mb-1">Izin (Hari):</label>
-            <div className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-bold text-gray-700">
+            <label className="text-xs font-semibold text-muted-foreground block mb-1">Izin (Hari):</label>
+            <div className="w-full bg-muted border border-border rounded-xl px-3 py-2.5 text-sm font-bold text-gray-700">
               {izinCount}
             </div>
           </div>
@@ -1003,7 +1003,7 @@ function GajihPage({ goBack }: { goBack: () => void }) {
         </p>
 
         <div className="mb-0">
-          <label className="text-xs font-semibold text-gray-500 flex items-center gap-1 mb-1">
+          <label className="text-xs font-semibold text-muted-foreground flex items-center gap-1 mb-1">
             ✏️ CATATAN:
           </label>
           <textarea
@@ -1011,7 +1011,7 @@ function GajihPage({ goBack }: { goBack: () => void }) {
             onChange={e => setCatatan(e.target.value)}
             placeholder="Tambahkan catatan untuk karyawan..."
             rows={3}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none"
+            className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none resize-none"
           />
         </div>
       </div>
@@ -1189,7 +1189,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
 
       <h3 className="font-bold text-sm text-gray-700 mb-3">Reset Saldo Per Kasir</h3>
       {kasirList.map(k => (
-        <div key={k.name} className="bg-white rounded-2xl p-4 mb-2 shadow-sm border border-gray-100 flex justify-between items-center">
+        <div key={k.name} className="bg-card rounded-2xl p-4 mb-2 shadow-sm border border-border flex justify-between items-center">
           <span className="font-bold text-sm">{k.name}</span>
           <button onClick={() => handleResetKasir(k.name)} className="bg-amber-100 text-amber-600 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1">
             <RefreshCw className="w-3.5 h-3.5" /> Reset Saldo
@@ -1309,7 +1309,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
   const catKeys: (keyof CategoryLabels)[] = ["BANK", "FLIP", "APP", "DANA", "AKS", "TARIK"];
 
   return (
-    <div className="px-3 pt-3 pb-20 min-h-screen bg-gray-50">
+    <div className="px-3 pt-3 pb-20 min-h-screen bg-muted">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={goBack} className="text-gray-600"><ArrowLeft className="w-5 h-5" /></button>
         <Settings className="w-5 h-5 text-gray-600" />
@@ -1317,7 +1317,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-500" /> Profil Toko
           </h3>
@@ -1336,27 +1336,27 @@ function SettingPage({ goBack }: { goBack: () => void }) {
               </label>
             </div>
             <div className="flex-1">
-              <label className="text-[11px] font-semibold text-gray-500 block mb-1">Nama Toko</label>
-              <input value={shopName} onChange={e => setShopName(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none font-bold" />
+              <label className="text-[11px] font-semibold text-muted-foreground block mb-1">Nama Toko</label>
+              <input value={shopName} onChange={e => setShopName(e.target.value)} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none font-bold" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
             <RefreshCw className="w-4 h-4 text-green-500" /> Jam Reset Otomatis Saldo
           </h3>
           <div className="flex items-center gap-2">
             <div className="flex-1">
-              <label className="text-[10px] text-gray-500 block mb-1">Jam</label>
-              <select value={autoResetHour} onChange={e => setAutoResetHour(parseInt(e.target.value))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none text-center font-bold bg-white appearance-none">
+              <label className="text-[10px] text-muted-foreground block mb-1">Jam</label>
+              <select value={autoResetHour} onChange={e => setAutoResetHour(parseInt(e.target.value))} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none text-center font-bold bg-card appearance-none">
                 {Array.from({ length: 24 }, (_, i) => <option key={i} value={i}>{i}</option>)}
               </select>
             </div>
             <span className="font-bold text-lg mt-4">:</span>
             <div className="flex-1">
-              <label className="text-[10px] text-gray-500 block mb-1">Menit</label>
-              <select value={autoResetMinute} onChange={e => setAutoResetMinute(parseInt(e.target.value))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none text-center font-bold bg-white appearance-none">
+              <label className="text-[10px] text-muted-foreground block mb-1">Menit</label>
+              <select value={autoResetMinute} onChange={e => setAutoResetMinute(parseInt(e.target.value))} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none text-center font-bold bg-card appearance-none">
                 {Array.from({ length: 60 }, (_, i) => <option key={i} value={i}>{i}</option>)}
               </select>
             </div>
@@ -1364,7 +1364,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
           <p className="text-[10px] text-gray-400 mt-2">Saldo semua kasir akan direset otomatis pada jam ini (WIB)</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-sm text-gray-700 flex items-center gap-2">
@@ -1373,28 +1373,28 @@ function SettingPage({ goBack }: { goBack: () => void }) {
               <p className="text-[10px] text-gray-400 mt-0.5">Aktifkan PIN untuk kasir saat login</p>
             </div>
             <button onClick={() => setPinEnabled(!pinEnabled)} className={`w-12 h-6 rounded-full flex items-center transition-all ${pinEnabled ? 'bg-blue-600 justify-end' : 'bg-gray-300 justify-start'}`}>
-              <div className="w-5 h-5 bg-white rounded-full mx-0.5 shadow" />
+              <div className="w-5 h-5 bg-card rounded-full mx-0.5 shadow" />
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-500" /> Kata-kata Mutiara
           </h3>
-          <textarea value={quotes} onChange={e => setQuotes(e.target.value)} rows={4} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none resize-none" placeholder="Masukkan quotes motivasi (satu per baris)..." />
+          <textarea value={quotes} onChange={e => setQuotes(e.target.value)} rows={4} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none resize-none" placeholder="Masukkan quotes motivasi (satu per baris)..." />
           <p className="text-[10px] text-gray-400 mt-1">Tampil secara acak di header kasir</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
             <Activity className="w-4 h-4 text-red-500" /> Teks Berjalan (Merah)
           </h3>
-          <input value={runningText} onChange={e => setRunningText(e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" placeholder="Contoh: Semoga Hari ini penuh Berkah..." />
+          <input value={runningText} onChange={e => setRunningText(e.target.value)} className="w-full border border-border rounded-xl px-3 py-2.5 text-sm outline-none" placeholder="Contoh: Semoga Hari ini penuh Berkah..." />
           <p className="text-[10px] text-gray-400 mt-1">Teks berjalan merah di beranda kasir (kosongkan untuk sembunyikan)</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
             <Edit className="w-4 h-4 text-purple-500" /> Edit Nama / Sembunyikan Kategori
           </h3>
@@ -1407,7 +1407,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
                     {cat.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                   <div className="flex-1">
-                    <input value={cat.name} onChange={e => updateCatLabel(key, "name", e.target.value)} className={`w-full border border-gray-200 rounded-lg px-3 py-2 text-xs outline-none font-semibold ${!cat.visible ? 'opacity-40 line-through' : ''}`} />
+                    <input value={cat.name} onChange={e => updateCatLabel(key, "name", e.target.value)} className={`w-full border border-border rounded-lg px-3 py-2 text-xs outline-none font-semibold ${!cat.visible ? 'opacity-40 line-through' : ''}`} />
                   </div>
                   <span className="text-[9px] text-gray-400 w-10">{key}</span>
                 </div>
@@ -1527,19 +1527,19 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-3">
-        <button onClick={() => setViewMode("day")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "day" ? "bg-white text-blue-600 shadow" : "bg-white/20 text-white border border-white/30"}`}>
+        <button onClick={() => setViewMode("day")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "day" ? "bg-card text-blue-600 shadow" : "bg-card/20 text-white border border-white/30"}`}>
           Per Hari
         </button>
-        <button onClick={() => setViewMode("month")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "month" ? "bg-white text-blue-600 shadow" : "bg-white/20 text-white border border-white/30"}`}>
+        <button onClick={() => setViewMode("month")} className={`py-2.5 rounded-full text-xs font-bold transition ${viewMode === "month" ? "bg-card text-blue-600 shadow" : "bg-card/20 text-white border border-white/30"}`}>
           Per Bulan
         </button>
       </div>
 
       <div className="mb-3">
         {viewMode === "day" ? (
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full rounded-xl border border-white/30 bg-white/10 text-white px-3 py-2.5 text-sm outline-none" />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full rounded-xl border border-white/30 bg-card/10 text-white px-3 py-2.5 text-sm outline-none" />
         ) : (
-          <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="w-full rounded-xl border border-white/30 bg-white/10 text-white px-3 py-2.5 text-sm outline-none" />
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)} className="w-full rounded-xl border border-white/30 bg-card/10 text-white px-3 py-2.5 text-sm outline-none" />
         )}
       </div>
 
@@ -1548,7 +1548,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
           <button
             key={name}
             onClick={() => setSelectedKasir(name)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition flex-shrink-0 ${selectedKasir === name ? "bg-white text-blue-600 shadow" : "bg-white/20 text-white border border-white/30"}`}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold transition flex-shrink-0 ${selectedKasir === name ? "bg-card text-blue-600 shadow" : "bg-card/20 text-white border border-white/30"}`}
           >
             {name}
           </button>
@@ -1563,7 +1563,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
         filteredKasirs.map((k, idx) => {
           const data = getKasirData(k.name, k.isAdmin);
           return (
-            <div key={k.name} className="bg-white rounded-2xl mb-4 shadow-lg overflow-hidden">
+            <div key={k.name} className="bg-card rounded-2xl mb-4 shadow-lg overflow-hidden">
               <div className={`px-4 py-3 flex items-center justify-between ${k.isAdmin ? 'bg-gradient-to-r from-blue-700 to-blue-500' : 'bg-gradient-to-r from-green-600 to-green-400'}`}>
                 <span className="text-white font-bold text-sm">{String(idx + 1).padStart(2, "0")} - {k.name.toUpperCase()}</span>
                 <span className="flex items-center gap-1 text-white text-[10px] font-semibold">
@@ -1584,7 +1584,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
                   <span className="font-bold text-blue-700">{formatRupiah(data.saldoRealApp)}</span>
                 </div>
 
-                <div className="flex justify-between items-center text-xs bg-gray-50 rounded-lg px-3 py-2">
+                <div className="flex justify-between items-center text-xs bg-muted rounded-lg px-3 py-2">
                   <span className="text-gray-700 font-semibold flex items-center gap-1.5">✅ Selisih</span>
                   <span className={`font-bold ${data.sesuai ? 'text-green-600' : 'text-red-600'}`}>
                     {data.sesuai ? '✓ Sesuai' : formatRupiah(data.selisih)}

@@ -15,12 +15,12 @@ const DEFAULT_QUOTES = [
 ];
 
 const CATEGORIES = [
-  { id: "BANK", label: "Bank", icon: Landmark, activeColor: "bg-blue-600 text-white shadow-blue-600/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
-  { id: "FLIP", label: "Flip", icon: RefreshCw, activeColor: "bg-orange-500 text-white shadow-orange-500/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
-  { id: "APP PULSA", label: "App", icon: Send, activeColor: "bg-purple-600 text-white shadow-purple-600/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
-  { id: "DANA", label: "Dana", icon: Wallet, activeColor: "bg-sky-500 text-white shadow-sky-500/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
-  { id: "TARIK TUNAI", label: "Tarik", icon: ArrowDownToLine, activeColor: "bg-emerald-600 text-white shadow-emerald-600/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
-  { id: "AKSESORIS", label: "Aks", icon: Gem, activeColor: "bg-rose-500 text-white shadow-rose-500/40", inactiveColor: "bg-white text-gray-400 border border-gray-100" },
+  { id: "BANK", label: "Bank", icon: Landmark, activeColor: "bg-blue-600 text-white shadow-blue-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
+  { id: "FLIP", label: "Flip", icon: RefreshCw, activeColor: "bg-orange-500 text-white shadow-orange-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
+  { id: "APP PULSA", label: "App", icon: Send, activeColor: "bg-purple-600 text-white shadow-purple-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
+  { id: "DANA", label: "Dana", icon: Wallet, activeColor: "bg-sky-500 text-white shadow-sky-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
+  { id: "TARIK TUNAI", label: "Tarik", icon: ArrowDownToLine, activeColor: "bg-emerald-600 text-white shadow-emerald-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
+  { id: "AKSESORIS", label: "Aks", icon: Gem, activeColor: "bg-rose-500 text-white shadow-rose-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
 ];
 
 export default function Beranda() {
@@ -146,14 +146,14 @@ export default function Beranda() {
 
       <div className="grid grid-cols-2 gap-2.5 mb-3">
         <div className="bg-gradient-to-br from-blue-900 to-blue-600 rounded-2xl p-3 text-white shadow-md relative overflow-hidden">
-          <div className="absolute -right-3 -top-3 w-12 h-12 bg-white/10 rounded-full" />
+          <div className="absolute -right-3 -top-3 w-12 h-12 bg-card/10 rounded-full" />
           <p className="text-[10px] font-semibold opacity-90 mb-0.5 flex items-center gap-1">
             <Landmark className="w-3 h-3" /> SALDO BANK
           </p>
           <h3 className="text-xl font-extrabold">{formatRupiah(balance?.bank || 0)}</h3>
         </div>
         <div className="bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl p-3 text-white shadow-md relative overflow-hidden">
-          <div className="absolute -right-3 -bottom-3 w-12 h-12 bg-white/10 rounded-full" />
+          <div className="absolute -right-3 -bottom-3 w-12 h-12 bg-card/10 rounded-full" />
           <p className="text-[10px] font-semibold opacity-90 mb-0.5 flex items-center gap-1">
             <Wallet className="w-3 h-3" /> SALDO CASH
           </p>
@@ -162,23 +162,23 @@ export default function Beranda() {
       </div>
 
       <div className="flex gap-2 mb-3">
-        <div className="flex-1 bg-white border border-gray-200 rounded-xl py-2 px-2 text-center shadow-sm">
-          <span className="text-[8px] font-bold text-gray-500 block uppercase flex items-center justify-center gap-0.5">
+        <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
+          <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
             <ArrowDownToLine className="w-2.5 h-2.5" /> Tarik Tunai
           </span>
-          <span className="text-xs font-extrabold text-gray-800 block">{formatRupiah(balance?.tarik || 0)}</span>
+          <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.tarik || 0)}</span>
         </div>
-        <div className="flex-1 bg-white border border-gray-200 rounded-xl py-2 px-2 text-center shadow-sm">
-          <span className="text-[8px] font-bold text-gray-500 block uppercase flex items-center justify-center gap-0.5">
+        <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
+          <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
             <Gem className="w-2.5 h-2.5" /> Aksesoris
           </span>
-          <span className="text-xs font-extrabold text-gray-800 block">{formatRupiah(balance?.aks || 0)}</span>
+          <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.aks || 0)}</span>
         </div>
-        <div className="flex-1 bg-white border border-gray-200 rounded-xl py-2 px-2 text-center shadow-sm">
-          <span className="text-[8px] font-bold text-gray-500 block uppercase flex items-center justify-center gap-0.5">
+        <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
+          <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
             <Lock className="w-2.5 h-2.5" /> Admin
           </span>
-          <span className="text-xs font-extrabold text-gray-800 block">{formatRupiah(balance?.adminTotal || 0)}</span>
+          <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.adminTotal || 0)}</span>
         </div>
       </div>
 
@@ -212,7 +212,7 @@ export default function Beranda() {
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-all ${isActive ? cat.activeColor + ' shadow-lg scale-110' : cat.inactiveColor}`}>
                   <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 1.5} />
                 </div>
-                <span className={`text-[10px] font-bold ${isActive ? 'text-blue-700' : 'text-gray-800'}`}>{cat.label}</span>
+                <span className={`text-[10px] font-bold ${isActive ? 'text-blue-700' : 'text-foreground'}`}>{cat.label}</span>
               </button>
             );
           })}
@@ -220,7 +220,7 @@ export default function Beranda() {
       )}
 
       {user?.role === "owner" && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border text-center">
           <button
             onClick={() => setLocation("/owner")}
             className="w-full h-12 rounded-2xl font-bold text-sm bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition"
@@ -232,9 +232,9 @@ export default function Beranda() {
       )}
 
       {user?.role !== "owner" && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
           <div className="space-y-3 mb-4">
-            <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 h-12 bg-gray-50/50">
+            <div className="flex items-center gap-2 border border-border rounded-xl px-3 h-12 bg-muted/50">
               <span className="text-blue-600 font-bold text-sm">Rp</span>
               <input
                 ref={nominalRef}
@@ -244,10 +244,10 @@ export default function Beranda() {
                 value={nominalDisplay}
                 onChange={(e) => setNominalDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); adminRef.current?.focus(); } }}
-                className="flex-1 bg-transparent outline-none text-base font-bold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+                className="flex-1 bg-transparent outline-none text-base font-bold text-foreground placeholder:text-gray-400 placeholder:font-normal"
               />
             </div>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 h-11 bg-gray-50/50">
+            <div className="flex items-center gap-2 border border-border rounded-xl px-3 h-11 bg-muted/50">
               <span className="text-amber-500 font-bold text-sm">%</span>
               <input
                 ref={adminRef}
@@ -257,10 +257,10 @@ export default function Beranda() {
                 value={adminDisplay}
                 onChange={(e) => setAdminDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); ketRef.current?.focus(); } }}
-                className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400"
+                className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-gray-400"
               />
             </div>
-            <div className="flex items-center gap-2 border border-gray-200 rounded-xl px-3 h-11 bg-gray-50/50">
+            <div className="flex items-center gap-2 border border-border rounded-xl px-3 h-11 bg-muted/50">
               <span className="text-blue-400 text-sm">📝</span>
               <input
                 ref={ketRef}
@@ -268,7 +268,7 @@ export default function Beranda() {
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleProses(); } }}
-                className="flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder:text-gray-400"
+                className="flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-gray-400"
               />
             </div>
           </div>

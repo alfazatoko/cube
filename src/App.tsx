@@ -105,9 +105,9 @@ function Router() {
   }, [location, setLocation]);
 
   return (
-    <div className="bg-slate-100 min-h-screen">
+    <div className="bg-background min-h-screen">
       {/* Responsive Toolbar - Only visible on PC screens */}
-      <div className="hidden lg:flex fixed top-0 left-0 right-0 h-14 bg-white/80 backdrop-blur-md border-b border-gray-200 z-[100] items-center justify-between px-6 shadow-sm">
+      <div className="hidden lg:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div 
             onClick={handleInstall}
@@ -116,25 +116,25 @@ function Router() {
           >
             CUBE
           </div>
-          <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Simulator</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Simulator</span>
         </div>
 
-        <div className="flex items-center bg-gray-100 p-1 rounded-2xl gap-1">
+        <div className="flex items-center bg-muted p-1 rounded-2xl gap-1">
           <button 
             onClick={() => setMode("hp")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "hp" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "hp" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             <Smartphone className="w-4 h-4" /> Smartphone
           </button>
           <button 
             onClick={() => setMode("tablet")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "tablet" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "tablet" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             <Tablet className="w-4 h-4" /> Tablet
           </button>
           <button 
             onClick={() => setMode("pc")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "pc" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "pc" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
           >
             <Monitor className="w-4 h-4" /> Desktop PC
           </button>
@@ -143,7 +143,7 @@ function Router() {
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsDark(!isDark)}
-            className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-gray-800 text-yellow-400" : "bg-gray-100 text-gray-500 hover:text-blue-600"}`}
+            className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-gray-800 text-yellow-400" : "bg-muted text-muted-foreground hover:text-blue-600"}`}
             title={isDark ? "Layar Terang" : "Layar Gelap"}
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -151,7 +151,7 @@ function Router() {
           
           <button 
             onClick={() => setIsLandscape(!isLandscape)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLandscape ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-500"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLandscape ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground"}`}
           >
             <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''} transition-transform`} /> 
             {isLandscape ? "Landscape" : "Portrait"}
@@ -160,7 +160,7 @@ function Router() {
       </div>
 
       <div className={`pt-0 lg:pt-14`}>
-        <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-white lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
+        <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
 
       <Switch>
         <Route path="/" component={Login} />
