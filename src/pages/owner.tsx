@@ -18,11 +18,12 @@ import {
   Database, Settings, ArrowLeft, Plus, Trash2, Edit, Eye, EyeOff,
   Shield, Check, X, CalendarDays, Download, RefreshCw,
   BookOpen, AlertTriangle, Star, Activity, Loader2, Lock,
-  Share2, ImageIcon
+  Share2, ImageIcon, PlusCircle
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import html2canvas from "html2canvas";
+import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 
 type OwnerPage = "main" | "kasir" | "grafik" | "performa" | "izin" | "gajih" | "absen" | "backup" | "setting" | "ringkasan";
 
@@ -30,9 +31,11 @@ export default function Owner() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [page, setPage] = useState<OwnerPage>("main");
+  const [isSaldoModalOpen, setIsSaldoModalOpen] = useState(false);
 
   const menuItems = [
     { id: "kasir" as const, icon: Users, label: "Kasir", desc: "Kelola data kasir", color: "from-blue-600 to-blue-500" },
+    { id: "tambah_saldo" as const, icon: PlusCircle, label: "Tambah Saldo", desc: "Topup saldo kasir", color: "from-emerald-600 to-emerald-500" },
     { id: "ringkasan" as const, icon: FileText, label: "Ringkasan", desc: "Ringkasan harian", color: "from-indigo-600 to-indigo-500" },
     { id: "grafik" as const, icon: BarChart3, label: "Grafik", desc: "Grafik transaksi", color: "from-emerald-600 to-emerald-500" },
     { id: "performa" as const, icon: TrendingUp, label: "Performa", desc: "Performa kasir", color: "from-purple-600 to-purple-500" },
@@ -62,7 +65,10 @@ export default function Owner() {
           {menuItems.map(item => {
             const Icon = item.icon;
             return (
-              <button key={item.id} onClick={() => setPage(item.id)} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition">
+              <button key={item.id} onClick={() => {
+                if (item.id === "tambah_saldo") setIsSaldoModalOpen(true);
+                else setPage(item.id as any);
+              }} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-sm`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
@@ -72,6 +78,13 @@ export default function Owner() {
             );
           })}
         </div>
+
+        <AddSaldoModal 
+          open={isSaldoModalOpen} 
+          onOpenChange={setIsSaldoModalOpen} 
+          kasirName="" 
+          isOwnerMode={true} 
+        />
 
       </div>
     );
@@ -124,11 +137,6 @@ function KasirPage({ goBack }: { goBack: () => void }) {
   const [saving, setSaving] = useState(false);
   const [showPins, setShowPins] = useState<Record<string, boolean>>({});
   
-  const [showTopup, setShowTopup] = useState(false);
-  const [topupUser, setTopupUser] = useState<UserRecord | null>(null);
-  const [topupData, setTopupData] = useState({ bank: "", cash: "", realApp: "", sisaSaldo: "" });
-  const [toppingUp, setToppingUp] = useState(false);
-
   const loadUsers = useCallback(async () => {
     const u = await getUsers();
     setUsers(u);
@@ -181,39 +189,15 @@ function KasirPage({ goBack }: { goBack: () => void }) {
     } catch {}
   };
 
-  const handleTopupSubmit = async () => {
-    if (!topupUser) return;
-    const data = {
-      bank: parseThousands(topupData.bank),
-      cash: parseThousands(topupData.cash),
-      realApp: parseThousands(topupData.realApp),
-      sisaSaldo: parseThousands(topupData.sisaSaldo),
-    };
-
-    if (Object.values(data).every(v => v === 0)) {
-      toast({ title: "Masukkan nominal saldo", variant: "destructive" });
-      return;
-    }
-
-    setToppingUp(true);
-    try {
-      await ownerAddSaldo(topupUser.name, getWibDate(), data);
-      toast({ title: `Saldo ${topupUser.name} berhasil ditambah!` });
-      setShowTopup(false);
-      setTopupData({ bank: "", cash: "", realApp: "", sisaSaldo: "" });
-    } catch (err) {
-      console.error(err);
-      toast({ title: "Gagal menambah saldo", variant: "destructive" });
-    } finally {
-      setToppingUp(false);
-    }
   };
 
   return (
     <PageWrapper title="Manajemen Kasir" icon={Users} goBack={goBack}>
-      <button onClick={() => setShowForm(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-sm mb-4 flex items-center justify-center gap-2 shadow active:scale-95 transition">
-        <Plus className="w-4 h-4" /> Tambah Kasir
-      </button>
+      <div className="mb-4">
+        <button onClick={() => setShowForm(true)} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow active:scale-95 transition">
+          <Plus className="w-4 h-4" /> Tambah Kasir
+        </button>
+      </div>
 
       {kasirList.length === 0 ? (
         <div className="text-center py-10 text-gray-400">
@@ -241,9 +225,6 @@ function KasirPage({ goBack }: { goBack: () => void }) {
               <div className="flex gap-1.5">
                 <button onClick={() => toggleActive(u)} className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold ${u.isActive ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
                   {u.isActive ? "Nonaktifkan" : "Aktifkan"}
-                </button>
-                <button onClick={() => { setTopupUser(u); setShowTopup(true); }} className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-black flex items-center gap-1 shadow-sm active:scale-95 transition">
-                  <Plus className="w-3 h-3" /> SALDO
                 </button>
                 <button onClick={() => { setEditUser(u); setName(u.name); setPin(u.pin); setRole(u.role); setShowForm(true); }} className="bg-blue-100 text-blue-600 px-2 py-1.5 rounded-lg">
                   <Edit className="w-3.5 h-3.5" />
@@ -281,67 +262,6 @@ function KasirPage({ goBack }: { goBack: () => void }) {
         </div>
       )}
 
-      {showTopup && topupUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setShowTopup(false)}>
-          <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between mb-4">
-              <div>
-                <h3 className="font-black text-lg text-emerald-600">+ SALDO KASIR</h3>
-                <p className="text-[10px] text-gray-400 uppercase font-bold">Penerima: {topupUser.name}</p>
-              </div>
-              <button onClick={() => setShowTopup(false)} className="text-2xl text-gray-400">&times;</button>
-            </div>
-            
-            <div className="space-y-3.5 mb-6">
-              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Saldo Bank</label>
-                <input 
-                  value={topupData.bank} 
-                  onChange={e => setTopupData(prev => ({ ...prev, bank: formatThousands(e.target.value) }))} 
-                  placeholder="Rp 0" 
-                  className="w-full bg-transparent font-black text-blue-600 text-lg outline-none" 
-                />
-              </div>
-              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Uang Cash</label>
-                <input 
-                  value={topupData.cash} 
-                  onChange={e => setTopupData(prev => ({ ...prev, cash: formatThousands(e.target.value) }))} 
-                  placeholder="Rp 0" 
-                  className="w-full bg-transparent font-black text-orange-600 text-lg outline-none" 
-                />
-              </div>
-              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Saldo Real App</label>
-                <input 
-                  value={topupData.realApp} 
-                  onChange={e => setTopupData(prev => ({ ...prev, realApp: formatThousands(e.target.value) }))} 
-                  placeholder="Rp 0" 
-                  className="w-full bg-transparent font-black text-emerald-600 text-lg outline-none" 
-                />
-              </div>
-              <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100">
-                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1 mb-1 block">Tambah Sisa Saldo</label>
-                <input 
-                  value={topupData.sisaSaldo} 
-                  onChange={e => setTopupData(prev => ({ ...prev, sisaSaldo: formatThousands(e.target.value) }))} 
-                  placeholder="Rp 0" 
-                  className="w-full bg-transparent font-black text-purple-600 text-lg outline-none" 
-                />
-              </div>
-            </div>
-
-            <button 
-              onClick={handleTopupSubmit} 
-              disabled={toppingUp} 
-              className="w-full bg-emerald-600 text-white font-black py-4 rounded-2xl text-sm disabled:opacity-60 shadow-lg shadow-emerald-500/30 active:scale-95 transition"
-            >
-              {toppingUp ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "PROSES TAMBAH SALDO"}
-            </button>
-            <p className="text-[9px] text-gray-400 text-center mt-3">* Nominal akan ditambahkan ke saldo kasir saat ini</p>
-          </div>
-        </div>
-      )}
     </PageWrapper>
   );
 }

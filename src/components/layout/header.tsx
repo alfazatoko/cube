@@ -9,7 +9,7 @@ import { useDisplayMode } from "@/hooks/use-display-mode";
 export function Header() {
   const { user, shift, loginTime, absenTime } = useAuth();
   const [clock, setClock] = useState("");
-  const { mode, setMode } = useDisplayMode();
+  const { mode, setMode, isDark, setIsDark } = useDisplayMode();
   const [settings, setSettings] = useState<SettingsRecord | null>(null);
 
   useEffect(() => {
@@ -99,20 +99,39 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-0.5 bg-white/10 rounded-full p-0.5">
-            {displayModes.map(dm => {
-              const Icon = dm.icon;
-              return (
-                <button
-                  key={dm.id}
-                  onClick={() => setMode(dm.id)}
-                  className={`p-1.5 rounded-full transition-all ${mode === dm.id ? 'bg-white/25' : 'opacity-50 hover:opacity-80'}`}
-                  title={dm.id.toUpperCase()}
-                >
-                  <Icon className="w-3 h-3" />
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 bg-white/10 rounded-full p-0.5 border border-white/5">
+              {displayModes.map(dm => {
+                const Icon = dm.icon;
+                return (
+                  <button
+                    key={dm.id}
+                    onClick={() => setMode(dm.id)}
+                    className={`p-1.5 rounded-full transition-all ${mode === dm.id ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
+                    title={dm.id.toUpperCase()}
+                  >
+                    <Icon className="w-3 h-3" />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-0.5 bg-white/10 rounded-full p-0.5 border border-white/5">
+              <button
+                onClick={() => setIsDark(false)}
+                className={`p-1.5 rounded-full transition-all ${!isDark ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
+                title="Mode Terang"
+              >
+                <Sun className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => setIsDark(true)}
+                className={`p-1.5 rounded-full transition-all ${isDark ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
+                title="Mode Gelap"
+              >
+                <Moon className="w-3 h-3" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

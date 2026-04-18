@@ -1,10 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { addSaldo, addSaldoHistoryOnly, updateDailyNote } from "@/lib/firestore";
+import { addSaldo, addSaldoHistoryOnly, updateDailyNote, getUsers, type UserRecord } from "@/lib/firestore";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatThousands, parseThousands, formatRupiah, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, Wallet, Smartphone, Landmark } from "lucide-react";
+import { Building2, Wallet, Smartphone, Landmark, Users, ChevronDown } from "lucide-react";
 
 const JENIS_TABS = [
   { id: "Bank", label: "Bank", icon: Building2, color: "bg-blue-600" },
@@ -17,13 +17,17 @@ interface AddSaldoModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   kasirName: string;
+  isOwnerMode?: boolean;
 }
 
-export function AddSaldoModal({ open, onOpenChange, kasirName }: AddSaldoModalProps) {
+export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: AddSaldoModalProps) {
   const [jenis, setJenis] = useState("Bank");
+  const [selectedKasir, setSelectedKasir] = useState(kasirName || "Semua Kasir");
   const [nominalDisplay, setNominalDisplay] = useState("");
   const [keterangan, setKeterangan] = useState("");
   const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState<UserRecord[]>([]);
+  
   const nominalRef = useRef<HTMLInputElement>(null);
   const ketRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -31,7 +35,44 @@ export function AddSaldoModal({ open, onOpenChange, kasirName }: AddSaldoModalPr
 
   const today = getWibDate();
 
+  useEffect(() => {
+    if (open && isOwnerMode) {
+      getUsers().then(u => {
+        const active = u.filter(user => user.role !== "owner" && user.isActive);
+        setUsers(active);
+        if (!selectedKasir || selectedKasir === "") {
+          setSelectedKasir("Semua Kasir");
+        }
+      });
+    }
+  }, [open, isOwnerMode]);
+
+  useEffect(() => {
+    if (kasirName && !isOwnerMode) {
+      setSelectedKasir(kasirName);
+    }
+  }, [kasirName, isOwnerMode]);
+
   const isNoteOnly = jenis === "Real App" || jenis === "Sisa Saldo";
+
+  const processTopup = async (targetName: string, amount: number) => {
+    if (jenis === "Sisa Saldo" || jenis === "Real App") {
+      const field = jenis === "Sisa Saldo" ? "sisaSaldoBank" : "saldoRealApp";
+      const label = jenis === "Sisa Saldo" ? "Sisa Saldo Bank" : "Saldo Real App";
+      await updateDailyNote(targetName, today, field as any, amount);
+      await addSaldoHistoryOnly(targetName, {
+        jenis: jenis === "Sisa Saldo" ? "Sisa Saldo" : "Real App",
+        nominal: amount,
+        keterangan: keterangan || label,
+      });
+    } else {
+      await addSaldo(targetName, {
+        jenis,
+        nominal: amount,
+        keterangan: keterangan || `Tambah Saldo ${jenis}`,
+      });
+    }
+  };
 
   const handleSubmit = async () => {
     const n = parseInt(parseThousands(nominalDisplay));
@@ -42,31 +83,27 @@ export function AddSaldoModal({ open, onOpenChange, kasirName }: AddSaldoModalPr
 
     setSaving(true);
     try {
-      if (jenis === "Sisa Saldo" || jenis === "Real App") {
-        const field = jenis === "Sisa Saldo" ? "sisaSaldoBank" : "saldoRealApp";
-        const label = jenis === "Sisa Saldo" ? "Sisa Saldo Bank" : "Saldo Real App";
-        const result = await updateDailyNote(kasirName, today, field as any, n);
-        const newVal = field === "sisaSaldoBank" ? result.sisaSaldoBank : result.saldoRealApp;
-        await addSaldoHistoryOnly(kasirName, {
-          jenis: jenis === "Sisa Saldo" ? "Sisa Saldo" : "Real App",
-          nominal: n,
-          keterangan: keterangan || label,
-        });
-        toast({ title: `${label}: ${formatRupiah(newVal)}` });
-        queryClient.invalidateQueries();
+      if (isOwnerMode && selectedKasir === "Semua Kasir") {
+        const activeKasirs = users.filter(u => u.role !== "owner" && u.isActive);
+        if (activeKasirs.length === 0) {
+          toast({ title: "Tidak ada kasir aktif", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        await Promise.all(activeKasirs.map(u => processTopup(u.name, n)));
+        toast({ title: `Berhasil menambah saldo ke ${activeKasirs.length} kasir` });
       } else {
-        await addSaldo(kasirName, {
-          jenis,
-          nominal: n,
-          keterangan: keterangan || `Tambah Saldo ${jenis}`,
-        });
-        toast({ title: "Saldo berhasil ditambahkan" });
-        queryClient.invalidateQueries();
+        const target = isOwnerMode ? selectedKasir : kasirName;
+        await processTopup(target, n);
+        toast({ title: `Saldo ${target} berhasil ditambahkan` });
       }
+      
+      queryClient.invalidateQueries();
       setNominalDisplay("");
       setKeterangan("");
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error(err);
       toast({ title: "Gagal menyimpan", variant: "destructive" });
     } finally {
       setSaving(false);
@@ -97,10 +134,32 @@ export function AddSaldoModal({ open, onOpenChange, kasirName }: AddSaldoModalPr
       <DialogContent className="rounded-3xl max-w-sm mx-auto p-0 overflow-hidden">
         <DialogHeader className="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-4 pb-3">
           <DialogTitle className="text-lg font-extrabold">+ Tambah Saldo</DialogTitle>
-          <p className="text-blue-200 text-[11px]">Kasir: {kasirName}</p>
+          <p className="text-blue-200 text-[11px]">
+            {isOwnerMode ? (selectedKasir === "Semua Kasir" ? "Semua Kasir" : `Kasir: ${selectedKasir}`) : `Kasir: ${kasirName}`}
+          </p>
         </DialogHeader>
 
         <div className="p-4 space-y-4">
+          {isOwnerMode && (
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-gray-400 uppercase ml-1 flex items-center gap-1">
+                <Users className="w-3 h-3" /> Pilih Kasir Tujuan
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedKasir}
+                  onChange={(e) => setSelectedKasir(e.target.value)}
+                  className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold text-gray-700 outline-none appearance-none focus:border-blue-500 transition-all"
+                >
+                  <option value="Semua Kasir">Semua Kasir</option>
+                  {users.map(u => (
+                    <option key={u.id} value={u.name}>{u.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-4 gap-2">
             {JENIS_TABS.map(tab => {
               const Icon = tab.icon;

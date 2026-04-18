@@ -696,7 +696,7 @@ export async function generateLicense(type: "demo" | "4_months" | "lifetime", em
     type,
     createdAt: new Date().toISOString(),
     expiresAt,
-    maxDevices: 3,
+    maxDevices: 7,
     activeDevices: [],
     registeredEmail: email.toLowerCase(),
     status: "active"
