@@ -137,7 +137,7 @@ export default function License() {
         </button>
 
         <p className="text-center text-gray-500 text-xs">
-          Maks. 3 perangkat per lisensi.<br/>
+          Maks. 7 perangkat per lisensi.<br/>
           Hubungi admin untuk mendapatkan kode.
         </p>
       </div>
