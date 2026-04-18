@@ -1,0 +1,25 @@
+Berikut adalah panduan langkah demi langkah untuk melakukan aktivasi lisensi dan pendaftaran akun pada aplikasi Kasir Cube:
+Panduan Aktivasi Lisensi dan Pendaftaran Akun
+Setelah Anda mendapatkan Kode Lisensi, ikuti langkah-langkah berikut untuk mulai menggunakan aplikasi:
+
+Langkah 1: Masuk ke Halaman Aplikasi
+Buka aplikasi Kasir Cube di perangkat Anda. Pada halaman awal, Anda akan diminta untuk memasukkan Kode Lisensi yang telah diberikan beserta Email yang Anda daftarkan.
+
+Langkah 2: Pendaftaran Awal (Sign Up / Daftar)
+Jika ini adalah pertama kalinya Anda masuk dan menggunakan aplikasi, Anda diwajibkan untuk melakukan pendaftaran akun (Sign Up) terlebih dahulu.
+Silakan isi formulir pendaftaran dengan data berikut:
+
+Kode Toko: ALFAZA2024
+Email: Masukkan email Anda yang terdaftar dan aktif.
+Password: Buat kata sandi yang aman untuk akun Anda.
+
+Setelah semua data terisi dengan benar, tekan tombol Daftar/Sign Up untuk menyelesaikan proses pembuatan akun.
+
+📌 Ketentuan Penggunaan Lisensi & Sinkronisasi
+Perlu diketahui bahwa sistem lisensi Kasir Cube dirancang sangat fleksibel untuk mendukung mobilitas bisnis Anda, dengan ketentuan sebagai berikut:
+
+Maksimal 7 Perangkat: 1 (satu) Kode Lisensi dapat digunakan secara bersamaan hingga maksimal di 7 perangkat (device) yang berbeda.
+Satu Akun Email: Lisensi tersebut hanya berlaku dan terikat pada 1 email terdaftar.
+
+Multi-Platform: Anda bebas login dan menggunakan aplikasi ini melalui perangkat apapun, baik itu Smartphone (HP), Tablet, maupun PC/Komputer.
+Sinkronisasi Online: Semua data transaksi, laporan, dan pengaturan akan tersinkronisasi secara otomatis secara online. Jadi, perubahan data di satu perangkat akan langsung update (berubah) di perangkat Anda yang lainnya.

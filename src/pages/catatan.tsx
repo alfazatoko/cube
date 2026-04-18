@@ -31,7 +31,7 @@ export default function Catatan() {
 
   const loadData = useCallback(async () => {
     try {
-      const [h, k] = await Promise.all([getHutangList(), getKontakList()]);
+      const [h, k] = await Promise.all([getHutangList(user?.name), getKontakList(user?.name)]);
       setHutangList(h);
       setKontakList(k);
       setLoading(false);
@@ -58,9 +58,9 @@ export default function Catatan() {
     setSaving(true);
     try {
       if (editItem && "nominal" in editItem) {
-        await updateHutang(editItem.id, { nama, nominal: n, keterangan });
+        await updateHutang(editItem.id, { nama, nominal: n, keterangan }, user?.name);
       } else {
-        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name });
+        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name }, user?.name);
       }
       toast({ title: editItem ? "Kasbon diperbarui" : "Kasbon ditambahkan" });
       resetForm();
@@ -75,9 +75,9 @@ export default function Catatan() {
     setSaving(true);
     try {
       if (editItem && "nomor" in editItem) {
-        await updateKontak(editItem.id, { nama, nomor, keterangan });
+        await updateKontak(editItem.id, { nama, nomor, keterangan }, user?.name);
       } else {
-        await createKontak({ nama, nomor, keterangan, createdBy: user?.name });
+        await createKontak({ nama, nomor, keterangan, createdBy: user?.name }, user?.name);
       }
       toast({ title: editItem ? "Kontak diperbarui" : "Kontak ditambahkan" });
       resetForm();
@@ -90,7 +90,7 @@ export default function Catatan() {
   const handleDeleteKasbon = async (id: string) => {
     if (!confirm("Hapus kasbon ini?")) return;
     try {
-      await deleteHutang(id);
+      await deleteHutang(id, user?.name);
       toast({ title: "Kasbon dihapus" });
       await loadData();
     } catch { toast({ title: "Gagal menghapus", variant: "destructive" }); }
@@ -99,7 +99,7 @@ export default function Catatan() {
   const handleDeleteKontak = async (id: string) => {
     if (!confirm("Hapus kontak ini?")) return;
     try {
-      await deleteKontak(id);
+      await deleteKontak(id, user?.name);
       toast({ title: "Kontak dihapus" });
       await loadData();
     } catch { toast({ title: "Gagal menghapus", variant: "destructive" }); }
@@ -107,7 +107,7 @@ export default function Catatan() {
 
   const handleLunas = async (h: HutangRecord) => {
     try {
-      await updateHutang(h.id, { lunas: !h.lunas, tglLunas: !h.lunas ? getWibDate() : undefined });
+      await updateHutang(h.id, { lunas: !h.lunas, tglLunas: !h.lunas ? getWibDate() : undefined }, user?.name);
       toast({ title: h.lunas ? "Dibatalkan lunas" : "Ditandai lunas" });
       await loadData();
     } catch { toast({ title: "Gagal", variant: "destructive" }); }

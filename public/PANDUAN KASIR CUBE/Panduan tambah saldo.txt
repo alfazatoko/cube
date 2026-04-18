@@ -1,0 +1,18 @@
+Panduan Penggunaan Fitur "Tambah Saldo"
+Fitur Tambah Saldo berfungsi untuk menyesuaikan atau menambahkan nominal uang ke dalam sistem pencatatan Anda, baik untuk tampilan di Beranda maupun untuk kebutuhan penyesuaian di Laporan.
+Cara Menggunakan:
+Buka pop-up menu + Tambah Saldo.
+Pilih Kategori Saldo: Ketuk salah satu ikon kategori yang ingin ditambahkan (Bank, Cash, Real App, atau Sisa Saldo). Tombol akan berwarna biru jika sedang dipilih.
+Masukkan Nominal: Ketik jumlah uang yang ingin ditambahkan pada kolom Rp Nominal Saldo.
+Isi Keterangan (Opsional): Tambahkan catatan singkat pada kolom Keterangan untuk memudahkan pelacakan (contoh: "Modal awal" atau "Transfer masuk").
+Simpan: Tekan tombol biru TAMBAH SALDO di bagian bawah untuk memproses penambahan.
+Fungsi Masing-Masing Kategori Saldo
+Pilihan kategori ini akan menentukan di mana saldo tersebut akan ditambahkan dan dihitung oleh sistem:
+1. Fungsi Penambahan di Beranda
+🏦 Bank: Berfungsi untuk menambah jumlah Saldo Bank yang ditampilkan pada halaman utama (Beranda).
+💵 Cash: Berfungsi untuk menambah jumlah Saldo Cash (uang tunai fisik) yang ditampilkan pada halaman utama (Beranda).
+2. Fungsi Perhitungan Laporan (Pencocokan Saldo & Selisih)
+Fitur ini sangat berguna pada menu Laporan untuk mencocokkan catatan aplikasi dengan saldo uang Anda yang sebenarnya.
+📱 Real App: Berfungsi untuk menambah nominal pada baris Saldo Real App di menu Laporan. Ini biasanya digunakan untuk menginput jumlah saldo aktual yang ada di aplikasi m-banking atau e-wallet Anda saat ini.
+🏛️ Sisa Saldo: Berfungsi untuk menambah nominal pada baris Sisa Saldo Bank (Catatan) di menu Laporan.
+💡 Catatan pada Laporan: Input dari Real App dan Sisa Saldo nantinya akan dihitung secara otomatis oleh sistem untuk memunculkan angka Selisih, sehingga Anda bisa dengan mudah mengetahui apakah pencatatan kasir sudah seimbang (balance) dengan uang aslinya atau belum.

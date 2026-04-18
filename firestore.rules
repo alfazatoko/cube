@@ -7,6 +7,30 @@ service cloud.firestore {
     match /settings/{document=**} {
       allow read, write: if true;
     }
+    match /freeTrials/{document=**} {
+      allow read, write: if true;
+    }
+    match /balances/{document=**} {
+      allow read, write: if true;
+    }
+    match /transactions/{document=**} {
+      allow read, write: if true;
+    }
+    match /hutang_gratis/{document=**} {
+      allow read, write: if true;
+    }
+    match /kontak_gratis/{document=**} {
+      allow read, write: if true;
+    }
+    match /daily_notes/{document=**} {
+      allow read, write: if true;
+    }
+    match /daily_snapshots/{document=**} {
+      allow read, write: if true;
+    }
+    match /saldo_history/{document=**} {
+      allow read, write: if true;
+    }
     match /{document=**} {
       allow read, write: if request.auth != null;
     }

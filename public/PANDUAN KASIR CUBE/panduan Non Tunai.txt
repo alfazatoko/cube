@@ -1,0 +1,9 @@
+Panduan Penggunaan Fitur "NON TUNAI"
+Fitur Non Tunai digunakan khusus untuk mencatat transaksi pelanggan yang pembayarannya tidak menggunakan uang tunai fisik dan dananya langsung masuk ke rekening utama/pemilik (owner), misalnya pembayaran menggunakan QRIS atau transfer bank langsung.
+Cara Kerja & Logika Perhitungan
+Berbeda dengan transaksi reguler di Beranda, menu Non Tunai memiliki aturan sistem tersendiri agar hitungan kasir tetap seimbang:
+Pencatatan Bersifat Manual (Tidak Mengubah Saldo): Apabila ada pelanggan yang membeli barang (misalnya Aksesoris) dan membayar menggunakan QRIS, Anda harus mencatatnya melalui menu Non Tunai. Transaksi ini tidak akan menambah atau mengurangi Saldo Cash, Saldo Bank, maupun saldo lainnya yang ada dipegang oleh kasir.
+Tampil di Laporan dan Riwayat: Meskipun tidak mengubah hitungan saldo kasir, jumlah transaksi Non Tunai ini akan tetap terekam oleh sistem. Anda dapat melihat jejak transaksinya di menu Riwayat dan total nominalnya akan tetap muncul di menu Laporan untuk kebutuhan rekapitulasi.
+Mengapa Sistemnya Dibuat Seperti Ini?
+Logika ini diterapkan karena pada transaksi Non Tunai (seperti QRIS), uang pembayaran tidak masuk ke laci kasir, melainkan langsung masuk ke rekening bos/owner.
+Sistem ini berfungsi murni sebagai pencatatan riwayat transaksi saja. Dengan cara ini, barang yang keluar tetap terlacak penjualannya, namun hitungan uang fisik (cash) yang harus disetorkan oleh kasir pada saat tutup shift tidak akan menjadi kacau atau selisih.

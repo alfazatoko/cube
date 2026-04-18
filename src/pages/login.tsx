@@ -428,6 +428,19 @@ function KasirSelectionScreen() {
 
 export default function Login() {
   const { firebaseUser, firebaseLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    const trialData = localStorage.getItem("kasir_free_trial");
+    if (trialData) {
+      try {
+        const parsed = JSON.parse(trialData);
+        if (parsed.email) {
+          setLocation("/gratis");
+        }
+      } catch (e) {}
+    }
+  }, [setLocation]);
 
   if (firebaseLoading) {
     return (

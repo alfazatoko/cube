@@ -1,0 +1,18 @@
+Panduan Instalasi Aplikasi via Google Chrome
+Aplikasi Kasir Cube dapat diinstal langsung ke perangkat Anda melalui browser Google Chrome (tanpa perlu lewat Play Store). Dengan menginstal aplikasi ini, Anda tidak perlu repot membuka Chrome dan mengetik alamat website setiap kali ingin mencatat transaksi. Cukup buka aplikasinya langsung dari layar utama (Home Screen) Anda!
+
+Berikut adalah langkah-langkah untuk menginstalnya:
+
+Cara 1: Instalasi Cepat (Melalui Pop-up/Notifikasi)
+Buka website Kasir Cube menggunakan aplikasi Google Chrome di perangkat Anda.
+Saat halaman sudah terbuka, biasanya akan langsung muncul icon atau pop-up notifikasi di bagian atas atau bawah layar yang menawarkan opsi untuk "Install Aplikasi" (atau Add Kasir Cube to Home Screen).
+Ketuk icon atau tombol tersebut, lalu konfirmasi instalasi.
+
+Cara 2: Instalasi Manual (Jika Notifikasi Tidak Muncul)
+Jika icon instalasi otomatis tidak muncul di layar Anda, silakan ikuti langkah manual berikut:
+Buka website Kasir Cube di Google Chrome.
+Ketuk tombol menu berupa ikon Titik Tiga ( ⋮ ) yang biasanya berada di pojok kanan atas layar Chrome.
+Gulir menu ke bawah, lalu cari dan ketuk teks "Tambahkan ke Layar Utama" (Add to Home Screen).
+Selanjutnya, pilih opsi "Instal" atau "Tambahkan" pada kotak konfirmasi yang muncul.
+
+Setelah proses instalasi selesai, ikon aplikasi Kasir Cube akan otomatis muncul di menu aplikasi dan layar utama smartphone atau perangkat Anda. Kini pembukuan transaksi toko bisa dilakukan dengan jauh lebih cepat dan praktis!

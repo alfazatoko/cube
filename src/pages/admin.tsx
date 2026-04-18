@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download } from "lucide-react";
+import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone } from "lucide-react";
 import { generateLicense, getLicenses, deleteLicense, getSettings, updateSettings, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -15,6 +15,8 @@ export default function AdminPanel() {
   const [requireLicense, setRequireLicense] = useState(true);
   const [zipping, setZipping] = useState(false);
   const [genEmail, setGenEmail] = useState("");
+  const [waNumber, setWaNumber] = useState("6287824889706");
+  const [waSaving, setWaSaving] = useState(false);
 
   useEffect(() => {
     if (authenticated) {
@@ -36,6 +38,7 @@ export default function AdminPanel() {
       });
       setLicenses(sorted);
       setRequireLicense(settings.requireLicense ?? true);
+      setWaNumber(settings.waNumber || "6287824889706");
     } catch (err) {
       console.error(err);
     } finally {
@@ -298,6 +301,43 @@ export default function AdminPanel() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mt-6">
+          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Phone className="w-5 h-5 text-emerald-500" /> Nomor WhatsApp (Hubungi Kami)
+          </h3>
+          <p className="text-xs text-gray-500 mb-3">
+            Nomor ini ditampilkan di halaman Gratis untuk tombol "Hubungi Kami - Beli Lisensi". Format: 628xxx (tanpa + atau spasi).
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={waNumber}
+              onChange={(e) => setWaNumber(e.target.value.replace(/[^0-9]/g, ''))}
+              placeholder="6287824889706"
+              className="flex-1 border border-gray-200 rounded-2xl px-4 py-3 text-sm font-bold outline-none focus:border-emerald-500 transition"
+            />
+            <button
+              onClick={async () => {
+                setWaSaving(true);
+                try {
+                  await updateSettings({ waNumber });
+                  alert("Nomor WhatsApp berhasil disimpan!");
+                } catch (err) {
+                  console.error(err);
+                  alert("Gagal menyimpan");
+                } finally {
+                  setWaSaving(false);
+                }
+              }}
+              disabled={waSaving}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-2xl transition disabled:opacity-50 flex items-center gap-2"
+            >
+              {waSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Phone className="w-4 h-4" />}
+              Simpan
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 mb-10 border-t border-gray-200 pt-8">

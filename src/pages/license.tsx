@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { validateLicense } from "@/lib/firestore";
-import { Loader2, KeyRound, Clock, CheckCircle2, Infinity, ShieldCheck } from "lucide-react";
+import { Loader2, KeyRound, Clock, CheckCircle2, Infinity, ShieldCheck, Download, RotateCw, Gift } from "lucide-react";
 
 export default function License() {
   const [, setLocation] = useLocation();
@@ -9,6 +9,15 @@ export default function License() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const handleDownloadGuide = () => {
+    const link = document.createElement('a');
+    link.href = '/panduan-kasir-cube.zip';
+    link.download = 'panduan-kasir-cube.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleActivate = async () => {
     if (!code) {
@@ -39,6 +48,9 @@ export default function License() {
           expiresAt: res.license.expiresAt,
           deviceId
         }));
+
+        // Set tenant ID to connect existing bookkeeping from free trial
+        localStorage.setItem("kasir_tenant_id", email.toLowerCase().replace(/[^a-z0-9]/g, "_"));
         
         // Go to login page
         window.location.href = import.meta.env.BASE_URL || "/";
@@ -54,16 +66,42 @@ export default function License() {
   };
 
   return (
-    <div className="min-h-screen bg-card flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm flex flex-col items-center">
+    <div className="min-h-screen bg-muted/30 flex flex-col items-center">
+      
+      {/* Header Baru untuk menyamai screenshot user */}
+      <div className="w-full bg-blue-600 p-4 flex items-center justify-between text-white shadow-md">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5" />
+          <span className="font-extrabold tracking-wider uppercase text-sm">KASIR CUBE</span>
+        </div>
+        <button onClick={() => window.location.reload()} className="p-1 active:rotate-180 transition-transform duration-500">
+          <RotateCw className="w-5 h-5" />
+        </button>
+      </div>
+
+      <div className="w-full max-w-sm flex flex-col items-center p-4 pt-10">
         
         <h1 className="text-4xl font-black text-blue-700 mb-2">CUBE</h1>
         <p className="text-center text-muted-foreground font-medium mb-8 max-w-[250px] leading-snug">
           Masukkan kode lisensi untuk mengaktifkan aplikasi
         </p>
 
+        {/* Download Guide Button - Pindah ke atas agar lebih terlihat */}
+        <button
+          onClick={handleDownloadGuide}
+          className="w-full mb-8 py-4 px-4 rounded-3xl bg-emerald-500 text-white flex items-center justify-center gap-4 group active:scale-95 transition-all duration-200 shadow-lg shadow-emerald-500/20"
+        >
+          <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm group-hover:scale-110 transition-transform">
+            <Download className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col items-start">
+            <span className="text-xs font-black uppercase tracking-widest">Download Panduan</span>
+            <span className="text-[10px] text-white/80 font-medium">Klik untuk download semua panduan</span>
+          </div>
+        </button>
+
         <div className="grid grid-cols-3 gap-3 w-full mb-8">
-          <div className="bg-muted border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1">
+          <div className="bg-card border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 mb-1">
               <Clock className="w-5 h-5" />
             </div>
@@ -71,7 +109,7 @@ export default function License() {
             <span className="text-[10px] text-muted-foreground">7 hari</span>
           </div>
 
-          <div className="bg-muted border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1">
+          <div className="bg-card border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 mb-1">
               <CheckCircle2 className="w-5 h-5" />
             </div>
@@ -79,7 +117,7 @@ export default function License() {
             <span className="text-[10px] text-muted-foreground">120 hari</span>
           </div>
 
-          <div className="bg-muted border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1">
+          <div className="bg-card border border-border rounded-3xl p-4 flex flex-col items-center justify-center gap-1 shadow-sm">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-500 mb-1">
               <Infinity className="w-5 h-5" />
             </div>
@@ -130,16 +168,26 @@ export default function License() {
           type="button"
           onClick={handleActivate}
           disabled={loading || code.length < 14 || !email}
-          className="w-full h-14 rounded-2xl font-bold text-base bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50 mb-6"
+          className="w-full h-14 rounded-2xl font-bold text-base bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50 mb-4"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
           Aktifkan Lisensi
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setLocation("/gratis")}
+          className="w-full h-14 rounded-2xl font-bold text-base bg-amber-500 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition mb-6"
+        >
+          <Gift className="w-5 h-5" />
+          Coba Versi Gratis (1 Bulan)
         </button>
 
         <p className="text-center text-muted-foreground text-xs">
           Maks. 7 perangkat per lisensi.<br/>
           Hubungi admin untuk mendapatkan kode.
         </p>
+
       </div>
     </div>
   );

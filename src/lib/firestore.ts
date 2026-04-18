@@ -1,9 +1,45 @@
 import {
-  collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
-  setDoc
+  collection as fbCollection, doc as fbDoc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
+  setDoc, query, where
 } from "firebase/firestore/lite";
 import { db } from "./firebase";
 import { getWibDate } from "./utils";
+
+const getTenantColName = (name: string) => {
+  if (name === "licenses" || name === "freeTrials" || name === "users" || name === "settings") return name;
+  
+  // New preferred way: use a specific tenant ID set during login/activation
+  const tenantId = localStorage.getItem("kasir_tenant_id");
+  if (tenantId) {
+    return `gratis_${tenantId}_${name}`;
+  }
+
+  // Backward compatibility for existing free users
+  const isFree = localStorage.getItem("kasir_free_trial");
+  if (isFree) {
+    try {
+      const data = JSON.parse(isFree);
+      if (data.email) {
+        const prefix = data.email.replace(/[^a-zA-Z0-9]/g, "_");
+        return `gratis_${prefix}_${name}`;
+      }
+    } catch(e) {}
+  }
+  return name;
+};
+
+const collection = (database: any, path: string) => {
+  return fbCollection(database, getTenantColName(path));
+};
+
+const doc = (dbOrCol: any, path: string, ...segments: string[]) => {
+  if (dbOrCol?.type === "database") {
+     return fbDoc(dbOrCol, getTenantColName(path), ...segments);
+  } else {
+     // It's a CollectionReference
+     return fbDoc(dbOrCol, path, ...segments);
+  }
+};
 
 export interface UserRecord {
   id: string;
@@ -48,6 +84,7 @@ export interface SettingsRecord {
   pinEnabled: boolean;
   categoryLabels: CategoryLabels;
   requireLicense?: boolean;
+  waNumber?: string;
 }
 
 export interface TransactionRecord {
@@ -411,42 +448,68 @@ export async function addSaldoHistoryOnly(kasirName: string, data: {
   return ref.id;
 }
 
-export async function getHutangList(): Promise<HutangRecord[]> {
-  const snap = await getDocs(collection(db, "hutang"));
+export async function getHutangList(userName?: string): Promise<HutangRecord[]> {
+  const isGratis = userName?.startsWith("GRATIS_");
+  const collName = "hutang";
+  
+  let snap;
+  if (isGratis) {
+    const q = query(collection(db, collName), where("createdBy", "==", userName));
+    snap = await getDocs(q);
+  } else {
+    snap = await getDocs(collection(db, collName));
+  }
+  
   const results = snap.docs.map(d => ({ id: d.id, ...d.data() } as HutangRecord));
   results.sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
   return results;
 }
 
-export async function createHutang(data: Omit<HutangRecord, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, "hutang"), data);
+export async function createHutang(data: Omit<HutangRecord, "id">, userName?: string): Promise<string> {
+  const collName = "hutang";
+  const ref = await addDoc(collection(db, collName), data);
   return ref.id;
 }
 
-export async function updateHutang(id: string, data: Partial<HutangRecord>): Promise<void> {
-  await updateDoc(doc(db, "hutang", id), data as any);
+export async function updateHutang(id: string, data: Partial<HutangRecord>, userName?: string): Promise<void> {
+  const collName = "hutang";
+  await updateDoc(doc(db, collName, id), data as any);
 }
 
-export async function deleteHutang(id: string): Promise<void> {
-  await deleteDoc(doc(db, "hutang", id));
+export async function deleteHutang(id: string, userName?: string): Promise<void> {
+  const collName = "hutang";
+  await deleteDoc(doc(db, collName, id));
 }
 
-export async function getKontakList(): Promise<KontakRecord[]> {
-  const snap = await getDocs(collection(db, "kontak"));
+export async function getKontakList(userName?: string): Promise<KontakRecord[]> {
+  const isGratis = userName?.startsWith("GRATIS_");
+  const collName = "kontak";
+  
+  let snap;
+  if (isGratis) {
+    const q = query(collection(db, collName), where("createdBy", "==", userName));
+    snap = await getDocs(q);
+  } else {
+    snap = await getDocs(collection(db, collName));
+  }
+  
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as KontakRecord));
 }
 
-export async function createKontak(data: Omit<KontakRecord, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, "kontak"), data);
+export async function createKontak(data: Omit<KontakRecord, "id">, userName?: string): Promise<string> {
+  const collName = "kontak";
+  const ref = await addDoc(collection(db, collName), data);
   return ref.id;
 }
 
-export async function updateKontak(id: string, data: Partial<KontakRecord>): Promise<void> {
-  await updateDoc(doc(db, "kontak", id), data as any);
+export async function updateKontak(id: string, data: Partial<KontakRecord>, userName?: string): Promise<void> {
+  const collName = "kontak";
+  await updateDoc(doc(db, collName, id), data as any);
 }
 
-export async function deleteKontak(id: string): Promise<void> {
-  await deleteDoc(doc(db, "kontak", id));
+export async function deleteKontak(id: string, userName?: string): Promise<void> {
+  const collName = "kontak";
+  await deleteDoc(doc(db, collName, id));
 }
 
 export async function getAttendance(params: {
@@ -692,7 +755,7 @@ export async function generateLicense(type: "demo" | "4_months" | "lifetime", em
     expiresAt = now.toISOString();
   }
 
-  await setDoc(doc(colRef, code), {
+  await setDoc(fbDoc(colRef, code), {
     type,
     createdAt: new Date().toISOString(),
     expiresAt,

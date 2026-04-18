@@ -1,0 +1,26 @@
+Panel Owner:
+Panduan Lengkap Fitur Panel Owner
+Panel Owner adalah pusat kendali utama bagi pemilik toko (owner) untuk mengelola operasional toko, memantau kinerja karyawan, serta mengatur sistem aplikasi Kasir Cube secara menyeluruh.
+Berikut adalah fungsi dari masing-masing menu yang tersedia di Panel Owner:
+1. 👤 Kasir (Kelola Data Kasir)
+Menu ini berfungsi untuk mengatur hak akses karyawan. Di sini, owner dapat menambahkan akun kasir baru, membuat atau mengubah PIN akses, serta mengedit dan menghapus data kasir yang sudah ada.
+2. ➕ Tambah Saldo (Topup Saldo Kasir)
+Fitur ini memberikan kendali bagi owner untuk menyuntikkan atau menambahkan saldo secara langsung ke akun kasir manapun.
+3. 📄 Ringkasan (Ringkasan Harian)
+Gunakan menu ini untuk memantau ringkasan penjualan harian secara live (waktu nyata). Anda bisa melihat total transaksi dan pergerakan dana dari semua kasir yang sedang bertugas.
+4. 📊 Grafik & 📈 Performa
+Grafik: Menyajikan visualisasi data transaksi toko Anda agar tren penjualan lebih mudah dibaca dan dianalisis.
+Performa: Berfungsi untuk melihat dan memantau kinerja masing-masing karyawan/kasir berdasarkan transaksi yang mereka tangani.
+5. 👆 Absen (Kehadiran Kasir)
+Merupakan sistem pencatatan hitungan absensi karyawan. Fitur ini akan merekam detail kehadiran, mulai dari status (hadir/libur) hingga mencatat jam berapa kebiasaan karyawan tersebut masuk (login) setiap harinya.
+6. 📅 Izin (Kelola Izin)
+Menu khusus untuk mempermudah owner dalam mencatat dan merekap karyawan mana saja yang sedang izin, cuti, atau libur.
+7. 💲 Gajih (Data Gaji Kasir)
+Fitur yang dirancang untuk membantu owner dalam memproses dan menghitung gaji karyawan secara lebih praktis dan terorganisir.
+8. 🗄️ Backup (Backup & Reset)
+Fitur keamanan untuk menyimpan data-data penting toko. Anda dapat melakukan backup (pencadangan) data riwayat dan transaksi ke dalam bentuk file Excel agar data tidak hilang.
+9. ⚙️ Setting (Pengaturan App)
+Pusat konfigurasi aplikasi untuk menyesuaikan identitas toko Anda. Melalui menu ini, owner dapat:
+Mengatur atau mengubah Nama Toko dan Foto Profil Toko.
+Mengedit nama Kategori Transaksi (misalnya mengubah nama tombol Bank, Flip, App, dll. di halaman Beranda).
+Mengedit Kata Mutiara dan Teks Berjalan (running text) yang tampil pada antarmuka aplikasi.

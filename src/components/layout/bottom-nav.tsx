@@ -35,7 +35,11 @@ export function BottomNav() {
 
   const handleLogout = () => {
     logout();
-    window.location.href = import.meta.env.BASE_URL || "/";
+    if (localStorage.getItem("kasir_free_trial")) {
+      window.location.href = import.meta.env.BASE_URL ? import.meta.env.BASE_URL + "gratis" : "/gratis";
+    } else {
+      window.location.href = import.meta.env.BASE_URL || "/";
+    }
   };
 
   return (

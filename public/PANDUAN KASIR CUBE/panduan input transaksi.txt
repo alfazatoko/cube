@@ -1,0 +1,18 @@
+Panduan Input Transaksi
+Untuk mencatat transaksi pelanggan, Anda dapat melakukannya langsung dari menu Beranda dengan langkah-langkah berikut:
+Pilih Kategori Transaksi: Ketuk salah satu ikon menu transaksi yang sesuai (contoh: Bank, Flip, App, Dana, Tarik, atau Aks). Tombol akan berubah warna menjadi biru saat aktif.
+Masukkan Detail Transaksi:
+Nominal: Masukkan jumlah uang transaksi pada kolom Rp Nominal.
+Admin (Opsional): Masukkan biaya admin pada kolom % Admin jika ada.
+Keterangan (Opsional): Tambahkan catatan transaksi jika diperlukan.
+Simpan Transaksi: Tekan tombol biru SIMPAN TRANSAKSI di bagian bawah.
+Logika Perhitungan Kategori Transaksi
+Setiap kategori memiliki fungsi dan pengaruh yang berbeda terhadap saldo Anda. Berikut adalah rinciannya:
+1. Kategori Transaksi Digital (Bank, FLIP, APP PULSA, DANA)
+Pengaruh Saldo: Transaksi pada kategori ini akan Menambah Saldo Cash dan Mengurangi Saldo Bank.
+Catatan: Nama-nama kategori ini (Bank, Flip, App, Dana) bersifat fleksibel. Anda dapat mengedit dan menyesuaikan nama kategori tersebut melalui menu Pengaturan Owner.
+2. Tarik Tunai (Tarik)
+Pengaruh Saldo: Melakukan input pada kategori ini akan Mengurangi Saldo Cash dan Menambah akumulasi Tarik Tunai (terlihat pada kotak ringkasan di bagian atas).
+3. Penjualan Aksesoris (Aks) & Biaya Admin
+Pengaruh Saldo: Menginput nominal aksesoris akan Menambah saldo Aksesoris, dan menginput biaya admin akan Menambah saldo Admin (terlihat pada kotak ringkasan di bagian atas).
+Catatan Penting: Transaksi Aksesoris dan Admin tidak akan menambah atau mengurangi Saldo Cash secara langsung di Beranda. Namun jangan khawatir, nominal ini sudah disetel oleh sistem untuk dijumlahkan secara otomatis pada perhitungan total akhir di menu Laporan.
