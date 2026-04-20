@@ -42,8 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("alfaza_absen_time");
         localStorage.removeItem("kasir_tenant_id");
       } else {
-        if (fbUser.email) {
-          localStorage.setItem("kasir_tenant_id", fbUser.email.replace(/[^a-zA-Z0-9]/g, "_"));
+        if (fbUser) {
+          // Gunakan UID sebagai tenant ID (unik, tidak bisa berubah, tidak ada karakter khusus)
+          localStorage.setItem("kasir_tenant_id", fbUser.uid);
         }
       }
 

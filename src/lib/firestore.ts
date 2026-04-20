@@ -25,19 +25,31 @@ function requireUid(): string {
   return uid;
 }
 
-const getTenantColName = (name: string) => {
+/**
+ * Menghasilkan nama koleksi yang diisolasi per user.
+ * PRIORITAS: auth.currentUser.uid > localStorage (fallback) > guest
+ * Ini mencegah race condition saat ganti akun.
+ */
+const getTenantColName = (name: string): string => {
   if (name === "licenses" || name === "freeTrials") return name;
-  
-  const tenantId = localStorage.getItem("kasir_tenant_id");
-  
-  if (!tenantId) {
-    // Only allow root access to settings when not logged in (for login screen)
-    if (name === "settings") return name;
-    return `tenant_guest_${name}`;
+
+  // Selalu prioritaskan UID dari Firebase Auth (real-time, tidak bisa stale)
+  const currentUser = auth.currentUser;
+  if (currentUser?.uid) {
+    // Gunakan UID sebagai namespace tenant yang unik dan aman
+    return `tenant_${currentUser.uid}_${name}`;
   }
 
-  // Isolate data for ALL accounts strictly per email
-  return `tenant_${tenantId}_${name}`;
+  // Fallback ke localStorage jika auth belum siap (misal saat booting awal)
+  const tenantId = localStorage.getItem("kasir_tenant_id");
+  if (tenantId) {
+    if (name === "settings") return name;
+    return `tenant_${tenantId}_${name}`;
+  }
+
+  // Tidak ada user aktif sama sekali
+  if (name === "settings") return name;
+  return `tenant_guest_${name}`;
 };
 
 export const getTenantCollection = (database: any, path: string) => {

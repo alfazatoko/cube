@@ -15,7 +15,7 @@ const DEFAULT_QUOTES = [
 ];
 
 export default function Beranda() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [, setLocation] = useLocation();
   const [category, setCategory] = useState("");
   const [nominalDisplay, setNominalDisplay] = useState("");
@@ -38,6 +38,11 @@ export default function Beranda() {
       setBalance(bal);
     } catch {}
   }, [user?.name]);
+
+  // Reset saldo saat UID berubah (akun berbeda login)
+  useEffect(() => {
+    setBalance(null);
+  }, [firebaseUser?.uid]);
 
   useEffect(() => {
     loadBalance();
