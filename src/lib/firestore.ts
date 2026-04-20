@@ -10,12 +10,13 @@ const getTenantColName = (name: string) => {
   
   const tenantId = localStorage.getItem("kasir_tenant_id");
   
-  // If no tenant or if it's the original owner, use root collections
-  if (!tenantId || tenantId === "eltarmiji_gmail_com") {
-    return name;
+  if (!tenantId) {
+    // Only allow root access to settings when not logged in (for login screen)
+    if (name === "settings") return name;
+    return `tenant_guest_${name}`;
   }
 
-  // Isolate data for all other accounts
+  // Isolate data for ALL accounts strictly per email
   return `tenant_${tenantId}_${name}`;
 };
 

@@ -35,26 +35,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
-      setFirebaseUser(fbUser);
-      setFirebaseLoading(false);
       if (!fbUser) {
-        setUser(null);
-        setShift(null);
-        setLoginTime(null);
-        setAbsenTime(null);
         localStorage.removeItem("alfaza_user");
         localStorage.removeItem("alfaza_shift");
         localStorage.removeItem("alfaza_login_time");
         localStorage.removeItem("alfaza_absen_time");
         localStorage.removeItem("kasir_tenant_id");
       } else {
+        if (fbUser.email) {
+          localStorage.setItem("kasir_tenant_id", fbUser.email.replace(/[^a-zA-Z0-9]/g, "_"));
+        }
+      }
+
+      setFirebaseUser(fbUser);
+      setFirebaseLoading(false);
+
+      if (!fbUser) {
+        setUser(null);
+        setShift(null);
+        setLoginTime(null);
+        setAbsenTime(null);
+      } else {
         const storedUser = localStorage.getItem("alfaza_user");
         const storedShift = localStorage.getItem("alfaza_shift");
         const storedLoginTime = localStorage.getItem("alfaza_login_time");
         const storedAbsenTime = localStorage.getItem("alfaza_absen_time");
-        if (fbUser.email) {
-          localStorage.setItem("kasir_tenant_id", fbUser.email.replace(/[^a-zA-Z0-9]/g, "_"));
-        }
         if (storedUser) setUser(JSON.parse(storedUser));
         if (storedShift) setShift(storedShift);
         if (storedLoginTime) setLoginTime(storedLoginTime);
