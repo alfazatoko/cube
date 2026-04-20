@@ -67,9 +67,15 @@ function Router() {
 
   const handleInstall = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") setDeferredPrompt(null);
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`PWA install outcome: ${outcome}`);
+      } catch (err) {
+        console.error("Error during PWA install prompt", err);
+      } finally {
+        setDeferredPrompt(null);
+      }
     } else {
       alert("Aplikasi sudah terinstal atau browser tidak mendukung.");
     }

@@ -216,8 +216,8 @@ export async function getSettings(): Promise<SettingsRecord> {
   if (!snap.exists()) {
     const defaults: SettingsRecord = {
       shopName: "KASIR CUBE",
-      logoUrl: "",
-      profilePhotoUrl: "",
+      logoUrl: "/logo.png",
+      profilePhotoUrl: "/logo.png",
       autoLockHour: 1,
       autoLockMinute: 0,
       autoResetHour: 2,
