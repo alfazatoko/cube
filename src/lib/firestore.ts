@@ -2,8 +2,28 @@ import {
   collection as fbCollection, doc as fbDoc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
   setDoc, query, where
 } from "firebase/firestore/lite";
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
 import { getWibDate } from "./utils";
+
+/**
+ * Mendapatkan UID user yang sedang login.
+ * Mengembalikan null jika user belum login.
+ */
+export function getCurrentUid(): string | null {
+  return auth.currentUser?.uid ?? null;
+}
+
+/**
+ * Mendapatkan UID atau melempar error jika user belum login.
+ * Gunakan ini sebelum operasi write ke Firestore.
+ */
+function requireUid(): string {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    throw new Error("Autentikasi diperlukan. Silakan login terlebih dahulu.");
+  }
+  return uid;
+}
 
 const getTenantColName = (name: string) => {
   if (name === "licenses" || name === "freeTrials") return name;
@@ -89,6 +109,7 @@ export interface SettingsRecord {
 
 export interface TransactionRecord {
   id: string;
+  uid: string;
   kasirName: string;
   category: string;
   categoryId?: string;
@@ -108,6 +129,7 @@ export interface TransactionRecord {
 
 export interface SaldoHistoryRecord {
   id: string;
+  uid: string;
   kasirName: string;
   jenis: string;
   nominal: number;
@@ -257,7 +279,10 @@ export async function getTransactions(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<TransactionRecord[]> {
-  const snap = await getDocs(getTenantCollection(db, "transactions"));
+  const uid = requireUid();
+  const col = getTenantCollection(db, "transactions");
+  const q = query(col, where("uid", "==", uid));
+  const snap = await getDocs(q);
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as TransactionRecord));
 
   if (params.kasirName) {
@@ -273,9 +298,11 @@ export async function getTransactions(params: {
   return results;
 }
 
-export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt">): Promise<string> {
+export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt" | "uid">): Promise<string> {
+  const uid = requireUid();
   const ref = await addDoc(getTenantCollection(db, "transactions"), {
     ...data,
+    uid,
     createdAt: new Date().toISOString(),
   });
 
@@ -395,7 +422,10 @@ export async function getSaldoHistory(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<SaldoHistoryRecord[]> {
-  const snap = await getDocs(getTenantCollection(db, "saldo_history"));
+  const uid = requireUid();
+  const col = getTenantCollection(db, "saldo_history");
+  const q = query(col, where("uid", "==", uid));
+  const snap = await getDocs(q);
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as SaldoHistoryRecord));
 
   if (params.kasirName) {
@@ -416,11 +446,13 @@ export async function addSaldo(kasirName: string, data: {
   nominal: number;
   keterangan?: string;
 }): Promise<string> {
+  const uid = requireUid();
   const now = new Date();
   const saldoDate = getWibDate();
   const saldoTime = now.toTimeString().substring(0, 5);
 
   const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
+    uid,
     kasirName,
     jenis: data.jenis,
     nominal: data.nominal,
@@ -456,11 +488,13 @@ export async function addSaldoHistoryOnly(kasirName: string, data: {
   nominal: number;
   keterangan?: string;
 }): Promise<string> {
+  const uid = requireUid();
   const now = new Date();
   const saldoDate = getWibDate();
   const saldoTime = now.toTimeString().substring(0, 5);
 
   const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
+    uid,
     kasirName,
     jenis: data.jenis,
     nominal: data.nominal,
@@ -473,65 +507,57 @@ export async function addSaldoHistoryOnly(kasirName: string, data: {
 }
 
 export async function getHutangList(userName?: string): Promise<HutangRecord[]> {
-  const isGratis = userName?.startsWith("GRATIS_");
+  const uid = requireUid();
   const collName = "hutang";
-  
-  let snap;
-  if (isGratis) {
-    const q = query(getTenantCollection(db, collName), where("createdBy", "==", userName));
-    snap = await getDocs(q);
-  } else {
-    snap = await getDocs(getTenantCollection(db, collName));
-  }
-  
+  const q = query(getTenantCollection(db, collName), where("uid", "==", uid));
+  const snap = await getDocs(q);
   const results = snap.docs.map(d => ({ id: d.id, ...d.data() } as HutangRecord));
   results.sort((a, b) => (b.tanggal || "").localeCompare(a.tanggal || ""));
   return results;
 }
 
 export async function createHutang(data: Omit<HutangRecord, "id">, userName?: string): Promise<string> {
+  const uid = requireUid();
   const collName = "hutang";
-  const ref = await addDoc(getTenantCollection(db, collName), data);
+  const ref = await addDoc(getTenantCollection(db, collName), { ...data, uid });
   return ref.id;
 }
 
 export async function updateHutang(id: string, data: Partial<HutangRecord>, userName?: string): Promise<void> {
+  requireUid();
   const collName = "hutang";
   await updateDoc(doc(db, collName, id), data as any);
 }
 
 export async function deleteHutang(id: string, userName?: string): Promise<void> {
+  requireUid();
   const collName = "hutang";
   await deleteDoc(doc(db, collName, id));
 }
 
 export async function getKontakList(userName?: string): Promise<KontakRecord[]> {
-  const isGratis = userName?.startsWith("GRATIS_");
+  const uid = requireUid();
   const collName = "kontak";
-  
-  let snap;
-  if (isGratis) {
-    const q = query(getTenantCollection(db, collName), where("createdBy", "==", userName));
-    snap = await getDocs(q);
-  } else {
-    snap = await getDocs(getTenantCollection(db, collName));
-  }
-  
+  const q = query(getTenantCollection(db, collName), where("uid", "==", uid));
+  const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as KontakRecord));
 }
 
 export async function createKontak(data: Omit<KontakRecord, "id">, userName?: string): Promise<string> {
+  const uid = requireUid();
   const collName = "kontak";
-  const ref = await addDoc(getTenantCollection(db, collName), data);
+  const ref = await addDoc(getTenantCollection(db, collName), { ...data, uid });
   return ref.id;
 }
 
 export async function updateKontak(id: string, data: Partial<KontakRecord>, userName?: string): Promise<void> {
+  requireUid();
   const collName = "kontak";
   await updateDoc(doc(db, collName, id), data as any);
 }
 
 export async function deleteKontak(id: string, userName?: string): Promise<void> {
+  requireUid();
   const collName = "kontak";
   await deleteDoc(doc(db, collName, id));
 }
@@ -540,7 +566,10 @@ export async function getAttendance(params: {
   kasirName?: string;
   month?: string;
 }): Promise<AttendanceRecord[]> {
-  const snap = await getDocs(getTenantCollection(db, "attendance"));
+  const uid = requireUid();
+  const col = getTenantCollection(db, "attendance");
+  const q = query(col, where("uid", "==", uid));
+  const snap = await getDocs(q);
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as AttendanceRecord));
 
   if (params.kasirName) {
@@ -554,8 +583,10 @@ export async function getAttendance(params: {
 }
 
 export async function createAttendance(data: Omit<AttendanceRecord, "id" | "createdAt">): Promise<string> {
+  const uid = requireUid();
   const ref = await addDoc(getTenantCollection(db, "attendance"), {
     ...data,
+    uid,
     createdAt: new Date().toISOString(),
   });
   return ref.id;
@@ -565,7 +596,10 @@ export async function getIzinList(params?: {
   month?: string;
   nama?: string;
 }): Promise<IzinRecord[]> {
-  const snap = await getDocs(getTenantCollection(db, "izin"));
+  const uid = requireUid();
+  const col = getTenantCollection(db, "izin");
+  const q = query(col, where("uid", "==", uid));
+  const snap = await getDocs(q);
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as IzinRecord));
 
   if (params?.month) {
@@ -579,8 +613,10 @@ export async function getIzinList(params?: {
 }
 
 export async function createIzin(data: Omit<IzinRecord, "id" | "createdAt">): Promise<string> {
+  const uid = requireUid();
   const ref = await addDoc(getTenantCollection(db, "izin"), {
     ...data,
+    uid,
     createdAt: new Date().toISOString(),
   });
   return ref.id;

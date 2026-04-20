@@ -1,36 +1,110 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /licenses/{document=**} {
+
+    // ── Lisensi: read/write publik (diperlukan sebelum login) ──
+    match /licenses/{docId} {
       allow read, write: if true;
     }
-    match /settings/{document=**} {
+
+    // ── Free trials: publik ──
+    match /freeTrials/{docId} {
       allow read, write: if true;
     }
-    match /freeTrials/{document=**} {
-      allow read, write: if true;
+
+    // ── Settings global & per-tenant: hanya user yang login ──
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
-    match /balances/{document=**} {
-      allow read, write: if true;
+
+    // ═══════════════════════════════════════════════════════════
+    // KOLEKSI TENANT – semua dengan prefix tenant_<id>_<nama>
+    // Pola: tenant_{tenantId}_{collection}/{docId}
+    // ═══════════════════════════════════════════════════════════
+
+    // ── Transactions: isolasi ketat per UID ──
+    match /transactions/{docId} {
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && request.auth.uid == resource.data.uid;
     }
-    match /transactions/{document=**} {
-      allow read, write: if true;
+
+    // Versi tenant-prefix untuk transactions
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_transactions')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_transactions')
+        && request.auth.uid == resource.data.uid;
     }
-    match /hutang_gratis/{document=**} {
-      allow read, write: if true;
+
+    // ── Saldo history: isolasi per UID ──
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_saldo_history')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_saldo_history')
+        && request.auth.uid == resource.data.uid;
     }
-    match /kontak_gratis/{document=**} {
-      allow read, write: if true;
+
+    // ── Hutang: isolasi per UID ──
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_hutang')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_hutang')
+        && request.auth.uid == resource.data.uid;
     }
-    match /daily_notes/{document=**} {
-      allow read, write: if true;
+
+    // ── Kontak: isolasi per UID ──
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_kontak')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_kontak')
+        && request.auth.uid == resource.data.uid;
     }
-    match /daily_snapshots/{document=**} {
-      allow read, write: if true;
+
+    // ── Attendance: isolasi per UID ──
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_attendance')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_attendance')
+        && request.auth.uid == resource.data.uid;
     }
-    match /saldo_history/{document=**} {
-      allow read, write: if true;
+
+    // ── Izin: isolasi per UID ──
+    match /{tenantCol}/{docId} {
+      allow create: if request.auth != null
+        && tenantCol.matches('tenant_.*_izin')
+        && request.auth.uid == request.resource.data.uid;
+      allow read, update, delete: if request.auth != null
+        && tenantCol.matches('tenant_.*_izin')
+        && request.auth.uid == resource.data.uid;
     }
+
+    // ── Koleksi per-tenant lainnya (users, balances, daily_notes, dll):
+    //    Hanya user yang sudah login (tenant-level auth) ──
+    match /{tenantCol}/{docId} {
+      allow read, write: if request.auth != null
+        && tenantCol.matches('tenant_.*_(users|balances|daily_notes|daily_snapshots)');
+    }
+
+    // ── Users namespace untuk /users/{userId} ──
+    match /users/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+
+    // ── Fallback: semua koleksi lain hanya untuk user login ──
     match /{document=**} {
       allow read, write: if request.auth != null;
     }
