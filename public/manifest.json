@@ -2,32 +2,34 @@
   "name": "KASIR CUBE",
   "short_name": "KASIR CUBE",
   "description": "Sistem Kasir Digital - KASIR CUBE",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f0f4ff",
+  "background_color": "#ffffff",
   "theme_color": "#2b67f6",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

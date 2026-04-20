@@ -1,11 +1,20 @@
-const CACHE_NAME = "alfaza-link-v15";
-const PRECACHE_URLS = ["/", "/index.html"];
+const CACHE_NAME = "kasir-cube-v16";
+const PRECACHE_URLS = ["/", "/index.html", "/manifest.json", "/logo.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Cache each URL individually so one failure won't block install
+      for (const url of PRECACHE_URLS) {
+        try {
+          await cache.add(url);
+        } catch (err) {
+          console.warn("SW precache skip:", url, err);
+        }
+      }
+    })
+  );
 });
 
 self.addEventListener("activate", (event) => {
