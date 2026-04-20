@@ -343,12 +343,13 @@ export async function deleteTransaction(id: string): Promise<void> {
   await deleteDoc(doc(db, "transactions", id));
 }
 
-async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id" | "createdAt">) {
+export async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id" | "createdAt">) {
   const ref = doc(db, "balances", kasirName);
   const snap = await getDoc(ref);
+  const uid = requireUid();
   const bal: BalanceRecord = snap.exists()
     ? (snap.data() as BalanceRecord)
-    : { bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
+    : { uid, bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
 
   const isNonTunai = tx.paymentMethod && tx.paymentMethod.toLowerCase().includes("non-tunai");
   const nominal = tx.nominal || 0;
@@ -374,9 +375,9 @@ async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id"
   }
 
   if (snap.exists()) {
-    await updateDoc(ref, bal as any);
+    await updateDoc(ref, { ...bal, uid } as any);
   } else {
-    await setDoc(ref, bal);
+    await setDoc(ref, { ...bal, uid });
   }
 }
 
@@ -423,7 +424,8 @@ export async function getBalance(kasirName: string): Promise<BalanceRecord> {
 
 export async function resetBalance(kasirName: string): Promise<void> {
   const ref = doc(db, "balances", kasirName);
-  await setDoc(ref, { bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 });
+  const uid = requireUid();
+  await setDoc(ref, { uid, bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 });
 }
 
 export async function getSaldoHistory(params: {
@@ -475,7 +477,7 @@ export async function addSaldo(kasirName: string, data: {
   const balSnap = await getDoc(balRef);
   const bal: BalanceRecord = balSnap.exists()
     ? (balSnap.data() as BalanceRecord)
-    : { bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
+    : { uid, bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
 
   if (data.jenis === "Bank") {
     bal.bank += data.nominal;
@@ -484,9 +486,9 @@ export async function addSaldo(kasirName: string, data: {
   }
 
   if (balSnap.exists()) {
-    await updateDoc(balRef, bal as any);
+    await updateDoc(balRef, { ...bal, uid } as any);
   } else {
-    await setDoc(balRef, bal);
+    await setDoc(balRef, { ...bal, uid });
   }
 
   return ref.id;
@@ -660,10 +662,11 @@ export async function updateDailyNote(
 
   current[field] = (current[field] || 0) + amount;
 
+  const uid = requireUid();
   if (snap.exists()) {
-    await updateDoc(ref, current as any);
+    await updateDoc(ref, { ...current, uid } as any);
   } else {
-    await setDoc(ref, current);
+    await setDoc(ref, { ...current, uid });
   }
   return current;
 }
@@ -682,11 +685,12 @@ export async function setDailyNote(
     : { sisaSaldoBank: 0, saldoRealApp: 0 };
 
   current[field] = value;
+  const uid = requireUid();
 
   if (snap.exists()) {
-    await updateDoc(ref, current as any);
+    await updateDoc(ref, { ...current, uid } as any);
   } else {
-    await setDoc(ref, current);
+    await setDoc(ref, { ...current, uid });
   }
   return current;
 }
@@ -700,15 +704,17 @@ export async function getDailySnapshot(kasirName: string, date: string): Promise
 }
 
 export async function lockReport(kasirName: string, date: string): Promise<void> {
+  const uid = requireUid();
   const docId = `${kasirName}_${date}`;
   const ref = doc(db, "daily_snapshots", docId);
-  await setDoc(ref, { locked: true, lockedAt: new Date().toISOString() }, { merge: true });
+  await setDoc(ref, { locked: true, lockedAt: new Date().toISOString(), uid }, { merge: true });
 }
 
 export async function unlockReport(kasirName: string, date: string): Promise<void> {
+  const uid = requireUid();
   const docId = `${kasirName}_${date}`;
   const ref = doc(db, "daily_snapshots", docId);
-  await setDoc(ref, { locked: false }, { merge: true });
+  await setDoc(ref, { locked: false, uid }, { merge: true });
 }
 
 export async function resetAllData(): Promise<void> {
@@ -781,17 +787,18 @@ export async function ownerAddSaldo(kasirName: string, date: string, data: { ban
   // Update balances collection (adds to existing)
   const balRef = doc(db, "balances", kasirName);
   const balSnap = await getDoc(balRef);
+  const uid = requireUid();
   const bal: BalanceRecord = balSnap.exists()
     ? (balSnap.data() as BalanceRecord)
-    : { bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
+    : { uid, bank: 0, cash: 0, tarik: 0, aks: 0, adminTotal: 0, bankNonTunai: 0, cashNonTunai: 0, tarikNonTunai: 0, aksNonTunai: 0 };
   
   bal.bank += data.bank;
   bal.cash += data.cash;
   
   if (balSnap.exists()) {
-    await updateDoc(balRef, bal as any);
+    await updateDoc(balRef, { ...bal, uid } as any);
   } else {
-    await setDoc(balRef, bal);
+    await setDoc(balRef, { ...bal, uid });
   }
 
   // Update daily_notes collection (adds to existing)

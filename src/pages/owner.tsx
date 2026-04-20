@@ -18,14 +18,14 @@ import {
   Database, Settings, ArrowLeft, Plus, Trash2, Edit, Eye, EyeOff,
   Shield, Check, X, CalendarDays, Download, RefreshCw,
   BookOpen, AlertTriangle, Star, Activity, Loader2, Lock,
-  Share2, ImageIcon, PlusCircle
+  Share2, ImageIcon, PlusCircle, UserCog, Mail, KeyRound
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import html2canvas from "html2canvas";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 
-type OwnerPage = "main" | "kasir" | "grafik" | "performa" | "izin" | "gajih" | "absen" | "backup" | "setting" | "ringkasan";
+type OwnerPage = "main" | "kasir" | "grafik" | "performa" | "izin" | "gajih" | "absen" | "backup" | "setting" | "ringkasan" | "akun";
 
 export default function Owner() {
   const { user } = useAuth();
@@ -42,6 +42,7 @@ export default function Owner() {
     { id: "absen" as const, icon: Fingerprint, label: "Absen", desc: "Kehadiran kasir", color: "from-teal-600 to-teal-500" },
     { id: "izin" as const, icon: CalendarDays, label: "Izin", desc: "Kelola izin", color: "from-amber-600 to-amber-500" },
     { id: "gajih" as const, icon: DollarSign, label: "Gajih", desc: "Data gaji kasir", color: "from-green-600 to-green-500" },
+    { id: "akun" as const, icon: UserCog, label: "Akun", desc: "Profil & Password", color: "from-blue-800 to-blue-600" },
     { id: "backup" as const, icon: Database, label: "Backup", desc: "Backup & reset", color: "from-rose-600 to-rose-500" },
     { id: "setting" as const, icon: Settings, label: "Setting", desc: "Pengaturan app", color: "from-gray-600 to-gray-500" },
   ];
@@ -103,6 +104,7 @@ export default function Owner() {
     case "absen": return <AbsenPage goBack={() => setPage("main")} />;
     case "izin": return <IzinPage goBack={() => setPage("main")} />;
     case "gajih": return <GajihPage goBack={() => setPage("main")} />;
+    case "akun": return <AkunPage goBack={() => setPage("main")} />;
     case "backup": return <BackupPage goBack={() => setPage("main")} />;
     case "setting": return <SettingPage goBack={() => setPage("main")} />;
     case "ringkasan": return <RingkasanPage goBack={() => setPage("main")} />;
@@ -1787,5 +1789,162 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
         })
       )}
     </div>
+  );
+}
+function AkunPage({ goBack }: { goBack: () => void }) {
+  const { firebaseUser, user } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState(firebaseUser?.email || "");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [ownerPin, setOwnerPin] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [users, setUsers] = useState<UserRecord[]>([]);
+
+  useEffect(() => {
+    getUsers().then(setUsers).catch(() => {});
+  }, []);
+
+  const ownerData = users.find(u => u.role === "owner");
+
+  useEffect(() => {
+    if (ownerData) setOwnerPin(ownerData.pin);
+  }, [ownerData]);
+
+  const handleUpdateAuth = async () => {
+    if (!firebaseUser) return;
+    
+    setSaving(true);
+    try {
+      const { updatePassword, updateEmail } = await import("firebase/auth");
+      
+      let updated = false;
+      
+      if (email !== firebaseUser.email && email.trim() !== "") {
+        await updateEmail(firebaseUser, email);
+        updated = true;
+      }
+      
+      if (newPassword) {
+        if (newPassword !== confirmPassword) {
+          toast({ title: "Password tidak cocok", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        if (newPassword.length < 6) {
+          toast({ title: "Password minimal 6 karakter", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        await updatePassword(firebaseUser, newPassword);
+        updated = true;
+      }
+
+      if (ownerData && ownerPin !== ownerData.pin) {
+        if (ownerPin.length < 4) {
+          toast({ title: "PIN minimal 4 digit", variant: "destructive" });
+          setSaving(false);
+          return;
+        }
+        await updateUser(ownerData.id, { pin: ownerPin });
+        updated = true;
+      }
+
+      if (updated) {
+        toast({ title: "Data akun berhasil diperbarui" });
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast({ title: "Tidak ada perubahan" });
+      }
+    } catch (err: any) {
+      if (err.code === "auth/requires-recent-login") {
+        toast({ title: "Silakan logout dan login kembali untuk mengubah kredensial", variant: "destructive" });
+      } else {
+        toast({ title: err.message || "Gagal memperbarui data", variant: "destructive" });
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <PageWrapper title="Pengaturan Akun" icon={UserCog} goBack={goBack}>
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 mb-4">
+        <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-blue-600" />
+          Kredensial Login
+        </h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-gray-500 block mb-1">Email Firebase</label>
+            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
+              <Mail className="w-4 h-4 text-gray-400" />
+              <input 
+                type="email" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800"
+              />
+            </div>
+            <p className="text-[10px] text-gray-400 mt-1">*Digunakan untuk login ke sistem</p>
+          </div>
+
+          <div className="pt-2 border-t border-gray-100">
+            <label className="text-xs font-bold text-gray-500 block mb-1">Ganti Password</label>
+            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 mb-2">
+              <KeyRound className="w-4 h-4 text-gray-400" />
+              <input 
+                type="password" 
+                placeholder="Password Baru (Kosongkan jika tidak diganti)"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+              />
+            </div>
+            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
+              <KeyRound className="w-4 h-4 text-gray-400" />
+              <input 
+                type="password" 
+                placeholder="Konfirmasi Password Baru"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
+              />
+            </div>
+          </div>
+          
+          {ownerData && (
+            <div className="pt-2 border-t border-gray-100">
+              <label className="text-xs font-bold text-gray-500 block mb-1">Ganti PIN Owner</label>
+              <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
+                <Lock className="w-4 h-4 text-gray-400" />
+                <input 
+                  type="password" 
+                  inputMode="numeric"
+                  placeholder="PIN Owner"
+                  value={ownerPin}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    if (val.length <= 6) setOwnerPin(val);
+                  }}
+                  className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 tracking-widest placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1">*PIN untuk masuk ke Mode Owner jika fitur PIN diaktifkan</p>
+            </div>
+          )}
+
+          <button 
+            onClick={handleUpdateAuth}
+            disabled={saving}
+            className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md disabled:opacity-50 mt-4 active:scale-95 transition"
+          >
+            {saving ? "Menyimpan..." : "Simpan Perubahan Kredensial"}
+          </button>
+        </div>
+      </div>
+    </PageWrapper>
   );
 }
