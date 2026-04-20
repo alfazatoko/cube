@@ -2,14 +2,10 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
-import { getTransactions, getSaldoHistory, getUsers, updateTransaction, deleteTransaction, type TransactionRecord, type SaldoHistoryRecord, type UserRecord } from "@/lib/firestore";
-import { Receipt, AlertCircle } from "lucide-react";
+import { getTransactions, getSaldoHistory, getUsers, updateTransaction, deleteTransaction, getSettings, type TransactionRecord, type SaldoHistoryRecord, type UserRecord, type SettingsRecord } from "@/lib/firestore";
+import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, Filter, Receipt, AlertCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const CATEGORY_FILTERS = ["Semua", "Bank", "Flip", "App", "Dana", "Tarik", "Aks"];
-const CATEGORY_MAP: Record<string, string> = {
-  Bank: "BANK", Flip: "FLIP", App: "APP PULSA", Dana: "DANA", Tarik: "TARIK TUNAI", Aks: "AKSESORIS",
-};
 const SALDO_FILTERS = ["Semua", "Bank", "Cash", "Saldo Real", "Sisa Saldo"];
 
 export default function Riwayat() {
@@ -34,22 +30,29 @@ export default function Riwayat() {
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
   const [saldoHistory, setSaldoHistory] = useState<SaldoHistoryRecord[]>([]);
   const [allUsers, setAllUsers] = useState<UserRecord[]>([]);
+  const [shopSettings, setShopSettings] = useState<SettingsRecord | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const kasirFilter = selectedKasir === "Semua Kasir" ? undefined : selectedKasir;
 
   const loadData = useCallback(async () => {
     if (!user?.name) return;
+    setLoading(true);
     try {
-      const [txs, saldo, users] = await Promise.all([
+      const [txs, saldo, users, settings] = await Promise.all([
         getTransactions({ kasirName: kasirFilter || (user.role === "owner" ? undefined : user.name), startDate, endDate }),
         getSaldoHistory({ kasirName: kasirFilter || (user.role === "owner" ? undefined : user.name), startDate, endDate }),
         getUsers(),
+        getSettings(),
       ]);
       setTransactions(txs);
       setSaldoHistory(saldo);
       setAllUsers(users);
-    } catch {}
+      setShopSettings(settings);
+    } catch {} finally {
+      setLoading(false);
+    }
   }, [user?.name, user?.role, kasirFilter, startDate, endDate, refreshKey]);
 
   useEffect(() => { loadData(); }, [loadData]);
@@ -94,8 +97,17 @@ export default function Riwayat() {
   const filteredTx = useMemo(() => {
     let result = transactions;
     if (selectedCategory !== "Semua") {
-      const mapped = CATEGORY_MAP[selectedCategory];
-      if (mapped) result = result.filter(tx => tx.category === mapped);
+      const targetCat = shopSettings?.customCategories?.find(c => c.id === selectedCategory);
+      result = result.filter(tx => {
+        if (tx.categoryId === selectedCategory) return true;
+        if (!targetCat) return false;
+        
+        // Lenient name matching for legacy data (ignore spaces, underscores, dashes and case)
+        const norm = (s: string) => (s || "").toLowerCase().replace(/[\s_-]/g, "");
+        const txCatClean = norm(tx.category);
+        const targetNameClean = norm(targetCat.name);
+        return txCatClean === targetNameClean;
+      });
     }
     if (searchText.trim()) {
       const q = searchText.toLowerCase().trim();
@@ -119,14 +131,34 @@ export default function Riwayat() {
 
   const kasirList = allUsers.filter(u => u.role !== "owner");
 
-  const getShortCategory = (cat: string) => {
-    if (cat === "TARIK TUNAI") return "TARIK";
-    if (cat === "APP PULSA") return "APP";
-    if (cat === "AKSESORIS") return "AKS";
-    return cat;
+  const getCategoryDisplayName = (tx: TransactionRecord) => {
+    if (tx.categoryId && shopSettings?.customCategories) {
+      const found = shopSettings.customCategories.find(c => c.id === tx.categoryId);
+      if (found) return found.name;
+    }
+    return tx.category;
+  };
+
+  const getShortCategory = (catName: string) => {
+    if (catName === "TARIK TUNAI") return "TARIK";
+    if (catName === "APP PULSA") return "APP";
+    if (catName === "AKSESORIS") return "AKS";
+    return catName;
   };
 
   const isNonTunai = (tx: TransactionRecord) => tx.paymentMethod && tx.paymentMethod.toLowerCase().includes("non-tunai");
+
+  if (loading) {
+    return (
+      <div className="px-3 pt-3">
+        <Header />
+        <div className="flex flex-col items-center gap-3 py-16">
+          <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+          <p className="text-sm text-gray-400">Memuat riwayat...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-3 pt-3 pb-20">
@@ -157,10 +189,26 @@ export default function Riwayat() {
         </div>
       )}
 
-      <div className="grid grid-cols-7 gap-1.5 mb-3">
-        {CATEGORY_FILTERS.map(c => (
-          <button key={c} onClick={() => setSelectedCategory(c)} className={`rounded-full py-1.5 text-xs font-semibold border-[1.5px] text-center ${selectedCategory === c ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-900 border-gray-300'}`}>{c}</button>
-        ))}
+      <div className="mb-4 bg-green-50/50 border-2 border-green-200 rounded-2xl p-3 shadow-sm">
+        <div className="flex items-center justify-between mb-2 px-1">
+          <label className="text-[11px] font-extrabold text-green-700 uppercase tracking-wider flex items-center gap-1.5">
+            📂 Pilih Kategori Transaksi
+          </label>
+          <span className="text-[9px] font-bold text-green-400 bg-white px-2 py-0.5 rounded-full border border-green-100">FILTER</span>
+        </div>
+        <div className="relative">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full bg-white border-2 border-green-200 rounded-xl px-4 py-3 text-sm font-black text-gray-800 outline-none focus:border-green-500 transition-all appearance-none cursor-pointer shadow-inner"
+          >
+            <option value="Semua">Tampilkan Semua Kategori</option>
+            {shopSettings?.customCategories?.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-green-500 pointer-events-none" />
+        </div>
       </div>
 
       <div className="bg-white rounded-[14px] overflow-hidden shadow-sm mb-3.5">
@@ -183,7 +231,7 @@ export default function Riwayat() {
                 <div onClick={() => setExpandedTx(isExpanded ? null : tx.id)} className="grid gap-0.5 px-1.5 py-1.5 border-b border-gray-100 text-[9px] items-center cursor-pointer" style={{ gridTemplateColumns: '20px 36px 48px 1fr 52px 1fr 18px' }}>
                   <span className="text-gray-400">{i + 1}</span>
                   <span>{(tx.transTime || "").slice(0, 5)}</span>
-                  <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-900'}`}>{getShortCategory(tx.category)}</span>
+                  <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-900'}`}>{getShortCategory(getCategoryDisplayName(tx))}</span>
                   <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-600'}`}>{formatRupiah(tx.nominal)}</span>
                   <span className="truncate">{formatRupiah(tx.admin || 0)}</span>
                   <span className="text-gray-500 truncate">{nt ? "💳 " : ""}{ketText}</span>

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { addSaldo, addSaldoHistoryOnly, updateDailyNote, getUsers, type UserRecord } from "@/lib/firestore";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatThousands, parseThousands, formatRupiah, getWibDate } from "@/lib/utils";
+import { formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Building2, Wallet, Smartphone, Landmark, Users, ChevronDown } from "lucide-react";
 
@@ -18,9 +18,10 @@ interface AddSaldoModalProps {
   onOpenChange: (open: boolean) => void;
   kasirName: string;
   isOwnerMode?: boolean;
+  mode?: "isi-saldo" | "penyesuaian";
 }
 
-export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: AddSaldoModalProps) {
+export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode, mode = "isi-saldo" }: AddSaldoModalProps) {
   const [jenis, setJenis] = useState("Bank");
   const [selectedKasir, setSelectedKasir] = useState(kasirName || "Semua Kasir");
   const [nominalDisplay, setNominalDisplay] = useState("");
@@ -34,6 +35,14 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
   const queryClient = useQueryClient();
 
   const today = getWibDate();
+
+  useEffect(() => {
+    if (mode === "penyesuaian") {
+      setJenis("Real App");
+    } else {
+      setJenis("Bank");
+    }
+  }, [mode, open]);
 
   useEffect(() => {
     if (open && isOwnerMode) {
@@ -52,6 +61,10 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
       setSelectedKasir(kasirName);
     }
   }, [kasirName, isOwnerMode]);
+
+  const filteredTabs = mode === "isi-saldo" 
+    ? JENIS_TABS.filter(t => t.id === "Bank" || t.id === "Cash")
+    : JENIS_TABS.filter(t => t.id === "Real App" || t.id === "Sisa Saldo");
 
   const isNoteOnly = jenis === "Real App" || jenis === "Sisa Saldo";
 
@@ -95,7 +108,7 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
       } else {
         const target = isOwnerMode ? selectedKasir : kasirName;
         await processTopup(target, n);
-        toast({ title: `Saldo ${target} berhasil ditambahkan` });
+        toast({ title: `Berhasil disimpan` });
       }
       
       queryClient.invalidateQueries();
@@ -110,30 +123,13 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
     }
   };
 
-  const getPlaceholder = () => {
-    if (jenis === "Sisa Saldo") return "Sisa Saldo Bank";
-    if (jenis === "Real App") return "Nominal Real App";
-    return "Nominal Saldo";
-  };
-
-  const getButtonText = () => {
-    if (saving) return "MEMPROSES...";
-    if (jenis === "Sisa Saldo") return "SIMPAN SISA SALDO";
-    if (jenis === "Real App") return "SIMPAN REAL APP";
-    return "TAMBAH SALDO";
-  };
-
-  const getInfoText = () => {
-    if (jenis === "Sisa Saldo") return "Catat sisa saldo bank (catatan manual). Nilai akan diakumulasi dan tampil di laporan.";
-    if (jenis === "Real App") return "Catat saldo real app (catatan manual). Nilai akan diakumulasi dan tampil di laporan.";
-    return "";
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-3xl max-w-sm mx-auto p-0 overflow-hidden">
         <DialogHeader className="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-4 pb-3">
-          <DialogTitle className="text-lg font-extrabold">+ Tambah Saldo</DialogTitle>
+          <DialogTitle className="text-lg font-extrabold">
+            {mode === "penyesuaian" ? "Penyesuaian Saldo" : "+ Tambah Saldo"}
+          </DialogTitle>
           <p className="text-blue-200 text-[11px]">
             {isOwnerMode ? (selectedKasir === "Semua Kasir" ? "Semua Kasir" : `Kasir: ${selectedKasir}`) : `Kasir: ${kasirName}`}
           </p>
@@ -160,8 +156,8 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
               </div>
             </div>
           )}
-          <div className="grid grid-cols-4 gap-2">
-            {JENIS_TABS.map(tab => {
+          <div className={`grid gap-2 ${filteredTabs.length === 2 ? "grid-cols-2" : "grid-cols-4"}`}>
+            {filteredTabs.map(tab => {
               const Icon = tab.icon;
               const isActive = jenis === tab.id;
               return (
@@ -181,19 +177,13 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
             })}
           </div>
 
-          {isNoteOnly && (
-            <div className={`${jenis === "Sisa Saldo" ? "bg-amber-50 border-amber-200" : "bg-purple-50 border-purple-200"} border rounded-xl px-3 py-2`}>
-              <p className={`text-[11px] ${jenis === "Sisa Saldo" ? "text-amber-700" : "text-purple-700"} font-semibold`}>{getInfoText()}</p>
-            </div>
-          )}
-
           <div className="flex items-center gap-2 border-2 border-gray-200 rounded-xl px-3 h-14 bg-gray-50/50">
             <span className="text-blue-600 font-bold text-sm">Rp</span>
             <input
               ref={nominalRef}
               type="text"
               inputMode="numeric"
-              placeholder={getPlaceholder()}
+              placeholder={isNoteOnly ? `Nominal ${jenis}` : "Nominal Saldo"}
               value={nominalDisplay}
               onChange={(e) => setNominalDisplay(formatThousands(e.target.value))}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); isNoteOnly ? handleSubmit() : ketRef.current?.focus(); } }}
@@ -220,7 +210,7 @@ export function AddSaldoModal({ open, onOpenChange, kasirName, isOwnerMode }: Ad
             disabled={saving}
             className="w-full h-12 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 active:scale-[0.98] transition disabled:opacity-50"
           >
-            {getButtonText()}
+            {saving ? "MEMPROSES..." : "SIMPAN"}
           </button>
         </div>
       </DialogContent>

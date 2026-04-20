@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { getUsers, getSettings, loginUser, type UserRecord } from "@/lib/firestore";
-import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store } from "lucide-react";
+import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const logoUrl = "/logo.png";
 
@@ -10,6 +11,111 @@ const SHIFT_OPTIONS = [
   { value: "PAGI", label: "Pagi", icon: SunMedium },
   { value: "SIANG", label: "Siang", icon: SunMoon },
 ];
+
+const GUIDE_PAGES = [
+  {
+    title: "1. Cara Isi Saldo",
+    content: "Untuk menambah modal awal atau mengisi saldo laci:\n\n1. Tekan tombol **+ Saldo** di halaman Beranda.\n2. Pilih jenis saldo: **Bank** (untuk saldo di rekening) atau **Cash** (untuk uang fisik di laci).\n3. Masukkan nominal saldo dan keterangan (opsional).\n4. Tekan Simpan. Saldo Anda akan otomatis bertambah di dashboard.",
+    icon: Store,
+    color: "bg-blue-500"
+  },
+  {
+    title: "2. Cara Catat Transaksi",
+    content: "Cara melakukan pencatatan transaksi harian:\n\n1. Pilih **Kategori** transaksi (misal: Bank BRI, Dana, dll).\n2. Masukkan **Nominal** transaksi.\n3. Masukkan biaya **Admin** yang dikenakan ke pelanggan.\n4. Tambahkan **Keterangan** jika diperlukan (misal: nomor HP atau nama).\n5. Tekan **Proses Transaksi**.",
+    icon: KeyRound,
+    color: "bg-emerald-500"
+  },
+  {
+    title: "3. Non Tunai & Catatan",
+    content: "**Non Tunai**:\nGunakan menu ini untuk transaksi yang tidak melibatkan uang cash fisik (transfer ke transfer).\n\n**Catatan (Kasbon & Kontak)**:\n- **KASBON**: Catat piutang pelanggan agar tidak lupa.\n- **KONTAK**: Simpan nomor WA pelanggan agar mudah dihubungi kembali.",
+    icon: BookOpen,
+    color: "bg-purple-500"
+  },
+  {
+    title: "4. Laporan & Penyesuaian",
+    content: "**Laporan**:\nBerisi rekapitulasi total uang yang masuk, keluar, dan admin.\n\n**Penyesuaian**:\nTombol di bagian atas laporan untuk mencatat **Saldo Real App** dan **Sisa Saldo Bank** di akhir hari agar laporan keuangan sinkron dengan saldo asli di aplikasi bank/e-wallet.",
+    icon: Mail,
+    color: "bg-amber-500"
+  },
+  {
+    title: "5. Mode Owner (Pemilik)",
+    content: "Menu khusus pemilik toko untuk kontrol penuh:\n\n- **Kasir**: Tambah atau edit akun karyawan.\n- **Absen**: Pantau jam kehadiran karyawan secara real-time.\n- **Setting**: Ganti Nama Toko, Logo, Running Text, dan **Custom Kategori**.\n- **Backup**: Ekspor data transaksi ke Excel untuk arsip permanen.",
+    icon: Lock,
+    color: "bg-rose-500"
+  },
+  {
+    title: "6. Izin & Gaji (Owner)",
+    content: "**Manajemen Izin**:\nOwner bisa menyetujui atau menolak pengajuan izin kasir. Izin yang disetujui akan tercatat otomatis.\n\n**Sistem Gaji**:\nFitur untuk menghitung total gaji berdasarkan jumlah hari kerja (dari absen) dikalikan gaji per hari, ditambah bonus atau potongan yang bisa diatur secara manual per kasir.",
+    icon: HelpCircle,
+    color: "bg-indigo-500"
+  }
+];
+
+function GuideModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+  const [page, setPage] = useState(0);
+  const current = GUIDE_PAGES[page];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="rounded-3xl max-w-sm mx-auto p-0 overflow-hidden border-none bg-white shadow-2xl">
+        <DialogHeader className={`p-6 pb-12 relative overflow-hidden text-white ${current.color} transition-colors duration-500`}>
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+          <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-black/5 rounded-full blur-3xl" />
+          
+          <div className="relative z-10 flex flex-col items-center gap-3">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-lg">
+              <current.icon className="w-8 h-8 text-white" />
+            </div>
+            <DialogTitle className="text-xl font-black text-center">{current.title}</DialogTitle>
+          </div>
+        </DialogHeader>
+
+        <div className="p-6 -mt-8 relative z-20 bg-white rounded-t-[2.5rem] min-h-[300px] flex flex-col">
+          <div className="flex-1">
+            <div className="prose prose-sm prose-slate">
+              <p className="text-gray-600 leading-relaxed text-sm whitespace-pre-wrap font-medium italic mb-4">
+                "{current.content.split('\n\n')[0]}"
+              </p>
+              <div className="space-y-3">
+                {current.content.split('\n\n').slice(1).map((text, i) => (
+                  <div key={i} className="text-gray-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    {text.split('\n').map((line, j) => (
+                      <p key={j} className={line.startsWith('**') ? 'font-bold text-blue-700' : ''}>{line}</p>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center justify-between">
+            <div className="flex gap-1.5">
+              {GUIDE_PAGES.map((_, i) => (
+                <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === page ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-200'}`} />
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button
+                disabled={page === 0}
+                onClick={() => setPage(p => p - 1)}
+                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 disabled:opacity-30 active:scale-90 transition"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button
+                disabled={page === GUIDE_PAGES.length - 1}
+                onClick={() => setPage(p => p + 1)}
+                className="px-5 h-10 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center gap-1 shadow-md shadow-blue-500/20 active:scale-95 transition"
+              >
+                LANJUT <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function FirebaseAuthScreen() {
   const { firebaseLogin, firebaseRegister } = useAuth();
@@ -191,6 +297,7 @@ function KasirSelectionScreen() {
   const [selectedShift, setSelectedShift] = useState<string>("PAGI");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showPin, setShowPin] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { login, firebaseLogout, firebaseUser } = useAuth();
 
@@ -414,11 +521,21 @@ function KasirSelectionScreen() {
 
             <button
               type="button"
+              onClick={() => setIsGuideOpen(true)}
+              className="w-full flex items-center justify-center gap-2 text-blue-600 text-sm font-bold py-2.5 mb-2 hover:bg-blue-50 rounded-xl transition"
+            >
+              <HelpCircle className="w-4 h-4" /> Buka Buku Panduan
+            </button>
+
+            <button
+              type="button"
               onClick={firebaseLogout}
               className="w-full flex items-center justify-center gap-2 text-red-500 text-sm font-semibold py-2"
             >
               <LogOut className="w-4 h-4" /> Logout Firebase
             </button>
+
+            <GuideModal open={isGuideOpen} onOpenChange={setIsGuideOpen} />
           </>
         )}
       </div>

@@ -3,8 +3,8 @@ import { useAuth } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
 import {
   getTransactions, getSaldoHistory, getDailySnapshot, getDailyNotes,
-  lockReport, resetBalance, getUsers,
-  type TransactionRecord, type SaldoHistoryRecord, type DailyNoteRecord, type UserRecord
+  lockReport, resetBalance, getUsers, getSettings,
+  type TransactionRecord, type SaldoHistoryRecord, type DailyNoteRecord, type UserRecord, type SettingsRecord
 } from "@/lib/firestore";
 import { formatRupiah, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,7 @@ export default function Laporan() {
   const [loading, setLoading] = useState(true);
   const [locking, setLocking] = useState(false);
   const [dailyNotes, setDailyNotes] = useState<DailyNoteRecord>({ sisaSaldoBank: 0, saldoRealApp: 0 });
+  const [shopSettings, setShopSettings] = useState<SettingsRecord | null>(null);
 
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -61,16 +62,18 @@ export default function Laporan() {
       } else if (kasirFilter !== "Semua") {
         kasirName = kasirFilter;
       }
-      const [txs, saldo, snap, notes] = await Promise.all([
+      const [txs, saldo, snap, notes, settings] = await Promise.all([
         getTransactions({ kasirName, startDate, endDate }),
         getSaldoHistory({ kasirName, startDate, endDate }),
         isOwner ? Promise.resolve(null) : getDailySnapshot(user.name, startDate),
         isOwner ? Promise.resolve({ sisaSaldoBank: 0, saldoRealApp: 0 }) : getDailyNotes(user.name, startDate),
+        getSettings(),
       ]);
       setTransactions(txs);
       setSaldoHistory(saldo);
       setIsLocked((snap as any)?.locked || false);
       setDailyNotes(notes as DailyNoteRecord);
+      setShopSettings(settings);
     } catch {} finally {
       setLoading(false);
     }
@@ -78,27 +81,38 @@ export default function Laporan() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  const bankTx = transactions.filter(t => t.category === "BANK");
-  const flipTx = transactions.filter(t => t.category === "FLIP");
-  const appTx = transactions.filter(t => t.category === "APP PULSA");
-  const danaTx = transactions.filter(t => t.category === "DANA");
-  const tarikTx = transactions.filter(t => t.category === "TARIK TUNAI");
-  const aksTx = transactions.filter(t => t.category === "AKSESORIS");
+  const getCategoryName = (tx: TransactionRecord) => {
+    if (tx.categoryId && shopSettings?.customCategories) {
+      const found = shopSettings.customCategories.find(c => c.id === tx.categoryId);
+      if (found) return found.name;
+    }
+    return tx.category;
+  };
+
+  const bankTx = transactions.filter(t => {
+    // Standard exclusions
+    if (t.categoryType === "tarik" || t.category === "TARIK TUNAI") return false;
+    if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
+    if (t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
+    if (t.categoryType === "admin" || t.category === "ADMIN") return false;
+    
+    // Everything else is considered "Penjualan/Bank"
+    return true;
+  });
+  const tarikTx = transactions.filter(t => t.categoryType === "tarik" || t.category === "TARIK TUNAI");
+  const aksTx = transactions.filter(t => t.categoryType === "aks" || t.category === "AKSESORIS");
   const nonTunaiTx = transactions.filter(t => (t.paymentMethod || "").toLowerCase().includes("non-tunai") || t.category === "NON TUNAI");
 
   const sumNominal = (list: TransactionRecord[]) => list.reduce((s, t) => s + (t.nominal || 0), 0);
   const sumAdmin = (list: TransactionRecord[]) => list.reduce((s, t) => s + (t.admin || 0), 0);
 
   const totalBank = sumNominal(bankTx);
-  const totalFlip = sumNominal(flipTx);
-  const totalApp = sumNominal(appTx);
-  const totalDana = sumNominal(danaTx);
   const totalTarik = sumNominal(tarikTx);
   const totalAks = sumNominal(aksTx);
   const totalAdmin = sumAdmin(transactions);
   const totalNonTunai = sumNominal(nonTunaiTx);
 
-  const totalPenjualan = totalBank + totalFlip + totalApp + totalDana;
+  const totalPenjualan = totalBank;
   const sisaCashPenjualan = totalPenjualan - totalTarik;
   const sisaCashTotal = sisaCashPenjualan + totalAdmin + totalAks;
 
@@ -109,12 +123,21 @@ export default function Laporan() {
   const saldoRealApp = dailyNotes.saldoRealApp || 0;
   const selisih = saldoRealApp - sisaSaldoBank;
 
-  const categoryItems = [
-    { label: "BANK", count: bankTx.length, total: totalBank },
-    { label: "FLIP", count: flipTx.length, total: totalFlip },
-    { label: "DANA", count: danaTx.length, total: totalDana },
-    { label: "APP PULSA", count: appTx.length, total: totalApp },
-  ].filter(c => c.count > 0);
+  // Group by category name for "Rincian Kategori"
+  const categoryGroups = transactions.reduce((acc, tx) => {
+    // Standard exclusions (must match bankTx logic)
+    if (tx.categoryType === "tarik" || tx.category === "TARIK TUNAI") return acc;
+    if (tx.categoryType === "aks" || tx.category === "AKSESORIS") return acc;
+    if (tx.category === "NON TUNAI" || (tx.paymentMethod || "").toLowerCase().includes("non-tunai")) return acc;
+    
+    const name = getCategoryName(tx);
+    if (!acc[name]) acc[name] = { label: name, count: 0, total: 0 };
+    acc[name].count++;
+    acc[name].total += (tx.nominal || 0);
+    return acc;
+  }, {} as Record<string, { label: string; count: number; total: number }>);
+
+  const categoryItems = Object.values(categoryGroups).filter(c => c.count > 0);
 
   const handleResetSaldo = async () => {
     if (!confirm("Reset saldo kasir ini ke Rp 0? Tindakan tidak bisa dibatalkan.")) return;
@@ -153,7 +176,7 @@ export default function Laporan() {
         ["#", "Jam", "Kategori", "Nominal", "Admin", "Keterangan", "Pembayaran"],
       ];
       transactions.forEach((tx, i) => {
-        wsData.push([String(i + 1), tx.transTime || "", tx.category, tx.nominal || 0, tx.admin || 0, tx.keterangan || "", tx.paymentMethod || "tunai"]);
+        wsData.push([String(i + 1), tx.transTime || "", getCategoryName(tx), tx.nominal || 0, tx.admin || 0, tx.keterangan || "", tx.paymentMethod || "tunai"]);
       });
       wsData.push([]);
       wsData.push(["Ringkasan"]);
@@ -302,7 +325,7 @@ export default function Laporan() {
         }
         pdf.setTextColor(60, 60, 60);
         pdf.text(String(idx + 1), colX[0] + 2, y + 4.3);
-        pdf.text(tx.category || "-", colX[1] + 2, y + 4.3);
+        pdf.text(getCategoryName(tx) || "-", colX[1] + 2, y + 4.3);
         pdf.text(formatRupiah(tx.nominal || 0), colX[2] + 2, y + 4.3);
         pdf.text(formatRupiah(tx.admin || 0), colX[3] + 2, y + 4.3);
         const ket = (tx.keterangan || "-").substring(0, 30);
@@ -464,6 +487,7 @@ export default function Laporan() {
           <p className="text-[10px] text-gray-800">Sisa Cash: {formatRupiah(sisaCashPenjualan)} + Admin: {formatRupiah(totalAdmin)} + Aks: {formatRupiah(totalAks)}</p>
         </div>
       </div>
+
 
       {/* GRUP 2: Jurnal Penyesuaian + Saldo & Selisih */}
       <div className="rounded-2xl border-2 border-gray-900 overflow-hidden mb-4">

@@ -60,11 +60,14 @@ export function Header() {
             <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white/40">
               <img src={settings?.profilePhotoUrl || "https://ui-avatars.com/api/?name=KASIR+CUBE&background=2563eb&color=fff&size=256"} alt="KASIR CUBE" className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h1 className="text-lg font-extrabold tracking-wide leading-tight">
+            <div className="flex flex-col">
+              <h1 className="text-white font-black text-sm tracking-tight leading-none uppercase">
                 {settings?.shopName || "KASIR CUBE"}
               </h1>
-              <p className="text-[10px] font-medium text-blue-200 -mt-0.5">Sistem Kasir Digital</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[9px] font-bold text-white/60 tracking-wider">V.2.1-SYNC</span>
+                <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
+              </div>
             </div>
           </div>
           <div className="text-right">

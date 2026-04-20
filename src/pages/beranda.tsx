@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 import { getBalance, createTransaction, getSettings, type BalanceRecord, type SettingsRecord } from "@/lib/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
-import { Landmark, Wallet, ArrowDownToLine, Gem, RefreshCw, Send, Plus, Lock, Save, ClipboardList, BookUser, Settings } from "lucide-react";
+import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const DEFAULT_QUOTES = [
@@ -14,20 +14,10 @@ const DEFAULT_QUOTES = [
   "Pelayanan terbaik adalah investasi terbaik",
 ];
 
-const CATEGORIES = [
-  { id: "BANK", label: "Bank", icon: Landmark, activeColor: "bg-blue-600 text-white shadow-blue-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-  { id: "FLIP", label: "Flip", icon: RefreshCw, activeColor: "bg-orange-500 text-white shadow-orange-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-  { id: "APP PULSA", label: "App", icon: Send, activeColor: "bg-purple-600 text-white shadow-purple-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-  { id: "DANA", label: "Dana", icon: Wallet, activeColor: "bg-sky-500 text-white shadow-sky-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-  { id: "TARIK TUNAI", label: "Tarik", icon: ArrowDownToLine, activeColor: "bg-emerald-600 text-white shadow-emerald-600/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-  { id: "AKSESORIS", label: "Aks", icon: Gem, activeColor: "bg-rose-500 text-white shadow-rose-500/40", inactiveColor: "bg-card text-gray-400 border border-border" },
-];
-
 export default function Beranda() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const [isSaldoModalOpen, setIsSaldoModalOpen] = useState(false);
-  const [category, setCategory] = useState("BANK");
+  const [category, setCategory] = useState("");
   const [nominalDisplay, setNominalDisplay] = useState("");
   const [adminDisplay, setAdminDisplay] = useState("");
   const [keterangan, setKeterangan] = useState("");
@@ -51,7 +41,9 @@ export default function Beranda() {
 
   useEffect(() => {
     loadBalance();
-    getSettings().then(setShopSettings).catch(() => {});
+    getSettings().then((s) => {
+      setShopSettings(s);
+    }).catch(() => {});
     const interval = setInterval(loadBalance, 5000);
     return () => clearInterval(interval);
   }, [loadBalance]);
@@ -72,15 +64,26 @@ export default function Beranda() {
     const timeStr = now.toTimeString().substring(0, 5);
     const n = parseInt(parseThousands(nominalDisplay));
     const a = parseInt(parseThousands(adminDisplay)) || 0;
+    
+    if (!category || category === "") {
+      toast({ title: "Pilih kategori terlebih dahulu", variant: "destructive" });
+      return;
+    }
+    
     if (!n || n <= 0) {
       toast({ title: "Nominal harus diisi", variant: "destructive" });
       return;
     }
+
     setSaving(true);
     try {
+      const selectedCat = shopSettings?.customCategories?.find(c => c.id === category);
+      
       await createTransaction({
         kasirName: user.name,
-        category,
+        category: selectedCat ? selectedCat.name : category,
+        categoryId: selectedCat ? selectedCat.id : undefined,
+        categoryType: selectedCat ? selectedCat.type : "bank",
         keterangan,
         transDate: dateStr,
         transTime: timeStr,
@@ -94,55 +97,25 @@ export default function Beranda() {
       setNominalDisplay("");
       setAdminDisplay("");
       setKeterangan("");
+      setCategory("");
       nominalRef.current?.focus();
       await loadBalance();
     } catch (err: any) {
-      toast({ title: "Gagal menyimpan transaksi", description: err.message, variant: "destructive" });
+      toast({ title: err.message || "Gagal menyimpan", variant: "destructive" });
     } finally {
       setSaving(false);
     }
-  }, [user, nominalDisplay, adminDisplay, category, keterangan, toast, loadBalance]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const active = document.activeElement;
-      const isInput = active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement || active instanceof HTMLSelectElement;
-      if (isInput) return;
-
-      const catIdx = CATEGORIES.findIndex(c => c.id === category);
-      if (e.key === "ArrowLeft" && catIdx > 0) {
-        e.preventDefault();
-        setCategory(CATEGORIES[catIdx - 1].id);
-      } else if (e.key === "ArrowRight" && catIdx < CATEGORIES.length - 1) {
-        e.preventDefault();
-        setCategory(CATEGORIES[catIdx + 1].id);
-      } else if (e.key === "ArrowUp" && catIdx >= 3) {
-        e.preventDefault();
-        setCategory(CATEGORIES[catIdx - 3].id);
-      } else if (e.key === "ArrowDown" && catIdx + 3 < CATEGORIES.length) {
-        e.preventDefault();
-        setCategory(CATEGORIES[catIdx + 3].id);
-      } else if (e.key === "Tab") {
-        e.preventDefault();
-        const nextIdx = (catIdx + 1) % CATEGORIES.length;
-        setCategory(CATEGORIES[nextIdx].id);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [category]);
+  }, [user, category, nominalDisplay, adminDisplay, keterangan, shopSettings, toast, loadBalance]);
 
   return (
-    <div className="px-3 pt-3 pb-2 landscape-scroll">
+    <div className="px-3 pt-3 pb-24 landscape-scroll">
       <Header />
 
-      {shopSettings?.runningText && (
-        <div className="overflow-hidden mb-3">
-          <div className="running-text text-red-600 text-sm font-bold text-center">
-            {shopSettings.runningText}
-          </div>
+      <div className="overflow-hidden mb-3">
+        <div className="running-text text-red-600 text-sm font-bold text-center">
+          {shopSettings?.runningText || "GRATIS BULAN INI CATAT PEMBUKUAN DI KASIR CUBE"}
         </div>
-      )}
+      </div>
 
       <div className="grid grid-cols-2 gap-2.5 mb-3">
         <div className="bg-gradient-to-br from-blue-900 to-blue-600 rounded-2xl p-3 text-white shadow-md relative overflow-hidden">
@@ -183,14 +156,14 @@ export default function Beranda() {
       </div>
 
       <div className="flex gap-2 mb-3">
-        <button onClick={() => setLocation("/catatan")} className="flex-1 bg-emerald-500 text-white py-2 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 shadow-sm active:scale-95 transition">
-          <ClipboardList className="w-3.5 h-3.5" /> KASBON
+        <button onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))} className="flex-1 bg-emerald-500 text-white py-2 rounded-full text-[11px] font-extrabold flex items-center justify-center shadow-sm active:scale-95 transition">
+          Penyesuaian
         </button>
-        <button onClick={() => setIsSaldoModalOpen(true)} className="flex-1 bg-blue-600 text-white py-2 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 shadow-sm active:scale-95 transition">
-          <Plus className="w-3.5 h-3.5" /> +Saldo
+        <button onClick={() => setLocation("/non-tunai")} className="flex-1 bg-blue-600 text-white py-2 rounded-full text-[11px] font-extrabold flex items-center justify-center shadow-sm active:scale-95 transition">
+          Nontunai
         </button>
-        <button onClick={() => setLocation("/catatan?tab=kontak")} className="flex-1 bg-teal-500 text-white py-2 rounded-full text-[11px] font-bold flex items-center justify-center gap-1 shadow-sm active:scale-95 transition">
-          <BookUser className="w-3.5 h-3.5" /> KONTAK
+        <button onClick={() => setLocation("/catatan")} className="flex-1 bg-teal-500 text-white py-2 rounded-full text-[11px] font-extrabold flex items-center justify-center shadow-sm active:scale-95 transition">
+          Catatan
         </button>
       </div>
 
@@ -199,23 +172,22 @@ export default function Beranda() {
       </div>
 
       {user?.role !== "owner" && (
-        <div className="grid grid-cols-6 gap-2 mb-3 px-1">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = category === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.id)}
-                className="flex flex-col items-center gap-1 transition-all"
-              >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-all ${isActive ? cat.activeColor + ' shadow-lg scale-110' : cat.inactiveColor}`}>
-                  <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 1.5} />
-                </div>
-                <span className={`text-[10px] font-bold ${isActive ? 'text-blue-700' : 'text-foreground'}`}>{cat.label}</span>
-              </button>
-            );
-          })}
+        <div className="mb-4">
+          <div className="relative">
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm font-extrabold text-gray-800 outline-none appearance-none focus:border-blue-500 transition-all shadow-sm cursor-pointer relative z-10"
+            >
+              <option value="" disabled>-- PILIH KATEGORI --</option>
+              {shopSettings?.customCategories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+          </div>
         </div>
       )}
 
@@ -278,17 +250,10 @@ export default function Beranda() {
             disabled={saving}
             className="w-full h-12 rounded-2xl font-bold text-sm bg-gradient-to-r from-blue-500 to-blue-700 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
-            {saving ? "MEMPROSES..." : "SIMPAN TRANSAKSI"}
+            PROSES TRANSAKSI
           </button>
         </div>
       )}
-
-      <AddSaldoModal
-        open={isSaldoModalOpen}
-        onOpenChange={setIsSaldoModalOpen}
-        kasirName={user?.name || ""}
-      />
     </div>
   );
 }

@@ -516,6 +516,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"ringkasan" | "lengkap">("ringkasan");
+  const [selectedKasir, setSelectedKasir] = useState("Semua");
   const now = new Date();
   const [monthDate, setMonthDate] = useState(new Date(now.getFullYear(), now.getMonth(), 1));
 
@@ -544,9 +545,27 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
     const pagi = kasirAbsen.filter(a => a.shift === "PAGI").length;
     const siang = kasirAbsen.filter(a => a.shift === "SIANG").length;
     return { name: k.name, hadir, pagi, siang };
-  });
+  }).filter(k => selectedKasir === "Semua" || k.name === selectedKasir);
+
+  const groupedAttendance = attendance
+    .filter(a => selectedKasir === "Semua" || a.kasirName === selectedKasir)
+    .reduce((acc, curr) => {
+      const date = curr.tanggal;
+      if (!acc[date]) acc[date] = [];
+      acc[date].push(curr);
+      return acc;
+    }, {} as Record<string, AttendanceRecord[]>);
+
+  const sortedDates = Object.keys(groupedAttendance).sort((a, b) => b.localeCompare(a));
 
   const cardColors = ["from-blue-500 to-blue-400", "from-pink-500 to-rose-400", "from-purple-500 to-purple-400", "from-teal-500 to-teal-400", "from-amber-500 to-amber-400"];
+  const softColors = [
+    { bg: "bg-blue-50", border: "border-blue-100", text: "text-blue-700", icon: "text-blue-400" },
+    { bg: "bg-rose-50", border: "border-rose-100", text: "text-rose-700", icon: "text-rose-400" },
+    { bg: "bg-amber-50", border: "border-amber-100", text: "text-amber-700", icon: "text-amber-400" },
+    { bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-700", icon: "text-emerald-400" },
+    { bg: "bg-indigo-50", border: "border-indigo-100", text: "text-indigo-700", icon: "text-indigo-400" },
+  ];
 
   return (
     <div className="px-3 pt-3 pb-20 min-h-screen bg-muted">
@@ -566,7 +585,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4 bg-card rounded-xl p-2 shadow-sm border border-border">
+      <div className="flex items-center justify-between mb-3 bg-card rounded-xl p-2 shadow-sm border border-border">
         <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -574,6 +593,22 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
         <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
           <ArrowLeft className="w-4 h-4 rotate-180" />
         </button>
+      </div>
+
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+        {["Semua", ...kasirList.map(k => k.name)].map(name => (
+          <button
+            key={name}
+            onClick={() => setSelectedKasir(name)}
+            className={`shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+              selectedKasir === name 
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30" 
+                : "bg-white text-muted-foreground border-border hover:bg-gray-50"
+            }`}
+          >
+            {name}
+          </button>
+        ))}
       </div>
 
       <div className="grid grid-cols-2 gap-2 mb-4">
@@ -608,21 +643,44 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
           ))
         )
       ) : (
-        attendance.length === 0 ? (
+        sortedDates.length === 0 ? (
           <div className="text-center py-10 text-gray-400 text-sm">Tidak ada data absensi</div>
         ) : (
-          <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
-            <div className="grid grid-cols-4 px-3 py-2 bg-muted border-b border-border text-[10px] font-bold text-muted-foreground">
-              <span>Tanggal</span><span>Kasir</span><span>Shift</span><span>Masuk</span>
-            </div>
-            {attendance.map(a => (
-              <div key={a.id} className="grid grid-cols-4 px-3 py-2 border-b border-border text-[11px]">
-                <span>{a.tanggal.slice(5)}</span>
-                <span className="font-semibold">{a.kasirName}</span>
-                <span className={a.shift === "PAGI" ? "text-amber-600" : "text-indigo-600"}>{a.shift}</span>
-                <span className="text-blue-600 font-semibold">{a.jamMasuk}</span>
-              </div>
-            ))}
+          <div className="space-y-4">
+            {sortedDates.map((date, idx) => {
+              const items = groupedAttendance[date];
+              const color = softColors[idx % softColors.length];
+              const dateObj = new Date(date);
+              const dayLabel = format(dateObj, "EEEE, dd MMMM", { locale: idLocale });
+
+              return (
+                <div key={date} className={`rounded-2xl border-2 ${color.border} ${color.bg} overflow-hidden shadow-sm`}>
+                  <div className={`px-4 py-2 border-b-2 ${color.border} flex justify-between items-center`}>
+                    <span className={`text-[11px] font-extrabold uppercase tracking-wider ${color.text}`}>{dayLabel}</span>
+                    <span className={`text-[10px] font-bold bg-white/60 px-2 py-0.5 rounded-full ${color.text}`}>{items.length} Absen</span>
+                  </div>
+                  <div className="divide-y divide-white/40">
+                    {items.sort((a,b) => a.jamMasuk.localeCompare(b.jamMasuk)).map(a => (
+                      <div key={a.id} className="px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm font-bold text-xs ${color.text}`}>
+                            {a.kasirName.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-[13px] font-extrabold text-gray-800 uppercase">{a.kasirName}</p>
+                            <p className={`text-[10px] font-bold ${a.shift === 'PAGI' ? 'text-amber-600' : 'text-indigo-600'}`}>{a.shift}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-black ${color.text}`}>{a.jamMasuk}</p>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Jam Masuk</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )
       )}
@@ -1232,6 +1290,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
     TARIK: { name: "TARIK", visible: true },
   };
   const [catLabels, setCatLabels] = useState<CategoryLabels>(defaultLabels);
+  const [customCategories, setCustomCategories] = useState<{ id: string; name: string; type: string; color: string }[]>([]);
 
   useEffect(() => {
     getSettings().then(s => {
@@ -1240,11 +1299,24 @@ function SettingPage({ goBack }: { goBack: () => void }) {
       setProfilePhotoUrl(s.profilePhotoUrl || "");
       setPinEnabled(s.pinEnabled || false);
       setQuotes(s.mutiaraQuotes || "");
-      setRunningText(s.runningText || "");
+      setRunningText(s.runningText || "GRATIS BULAN INI CATAT PEMBUKUAN DI KASIR CUBE");
       setAutoResetHour(s.autoResetHour ?? 2);
       setAutoResetMinute(s.autoResetMinute ?? 0);
       if (s.categoryLabels) {
         setCatLabels(s.categoryLabels);
+      }
+      if (s.customCategories) {
+        setCustomCategories(s.customCategories);
+      } else {
+        const defaults = [
+          { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground" },
+          { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground" },
+          { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground" },
+          { id: "dana", name: "Dana", type: "bank", color: "text-foreground" },
+          { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600" },
+          { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500" },
+        ];
+        setCustomCategories(defaults);
       }
     }).catch(() => {});
   }, []);
@@ -1252,6 +1324,11 @@ function SettingPage({ goBack }: { goBack: () => void }) {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // 0. Get old settings for migration reference
+      const oldSettings = await getSettings();
+      const oldCategories = oldSettings.customCategories || [];
+
+      // 1. Update Settings
       await updateSettings({
         shopName,
         profilePhotoUrl,
@@ -1261,10 +1338,43 @@ function SettingPage({ goBack }: { goBack: () => void }) {
         autoResetHour,
         autoResetMinute,
         categoryLabels: catLabels,
+        customCategories,
       });
-      toast({ title: "Pengaturan disimpan" });
-    } catch {
-      toast({ title: "Gagal menyimpan", variant: "destructive" });
+
+      // 2. Migration: Link legacy transactions (without categoryId) to IDs
+      const allTx = await getTransactions({});
+      let updateCount = 0;
+      
+      // Map names to their corresponding IDs and CURRENT names
+      const nameToIdMap: Record<string, string> = {};
+      const idToNewNameMap: Record<string, string> = {};
+      
+      oldCategories.forEach(c => { nameToIdMap[c.name] = c.id; });
+      customCategories.forEach(c => { 
+        nameToIdMap[c.name] = c.id; 
+        idToNewNameMap[c.id] = c.name;
+      });
+
+      for (const tx of allTx) {
+        const targetId = tx.categoryId || nameToIdMap[tx.category];
+        const newName = targetId ? idToNewNameMap[targetId] : null;
+        
+        // If we found a matching ID but it wasn't set, or the name is outdated
+        if (targetId && (tx.categoryId !== targetId || (newName && tx.category !== newName))) {
+          await updateTransaction(tx.id, { 
+            categoryId: targetId,
+            category: newName || tx.category // Sync the name string too
+          });
+          updateCount++;
+        }
+      }
+
+      toast({ 
+        title: "Pengaturan disimpan", 
+        description: updateCount > 0 ? `${updateCount} transaksi telah disinkronkan dengan kategori baru.` : "Kategori sudah sinkron.",
+      });
+    } catch (err: any) {
+      toast({ title: "Gagal menyimpan", description: err.message, variant: "destructive" });
     } finally { setSaving(false); }
   };
 
@@ -1395,26 +1505,58 @@ function SettingPage({ goBack }: { goBack: () => void }) {
         </div>
 
         <div className="bg-card rounded-2xl p-4 shadow-sm border border-border">
-          <h3 className="font-bold text-sm text-gray-700 mb-3 flex items-center gap-2">
-            <Edit className="w-4 h-4 text-purple-500" /> Edit Nama / Sembunyikan Kategori
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-sm text-gray-700 flex items-center gap-2">
+              <Edit className="w-4 h-4 text-purple-500" /> Kategori Transaksi
+            </h3>
+            <button onClick={() => setCustomCategories([...customCategories, { id: `cat_${Date.now()}`, name: "Kategori Baru", type: "bank", color: "text-foreground" }])} className="bg-blue-100 text-blue-600 px-2 py-1 rounded font-bold text-xs">
+              + Tambah
+            </button>
+          </div>
           <div className="space-y-2">
-            {catKeys.map(key => {
-              const cat = catLabels[key] || { name: key, visible: true };
-              return (
-                <div key={key} className="flex items-center gap-2">
-                  <button onClick={() => updateCatLabel(key, "visible", !cat.visible)} className={`w-8 h-8 rounded-lg flex items-center justify-center ${cat.visible ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                    {cat.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                  </button>
-                  <div className="flex-1">
-                    <input value={cat.name} onChange={e => updateCatLabel(key, "name", e.target.value)} className={`w-full border border-border rounded-lg px-3 py-2 text-xs outline-none font-semibold ${!cat.visible ? 'opacity-40 line-through' : ''}`} />
-                  </div>
-                  <span className="text-[9px] text-gray-400 w-10">{key}</span>
+            {customCategories.map((cat, index) => (
+              <div key={cat.id} className="flex flex-col gap-2 border border-gray-200 p-2.5 rounded-xl bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <input value={cat.name} onChange={e => {
+                    const newCats = [...customCategories];
+                    newCats[index].name = e.target.value;
+                    setCustomCategories(newCats);
+                  }} className="flex-1 border border-border rounded-lg px-2 py-1.5 text-xs outline-none font-bold text-gray-700" placeholder="Nama Kategori" />
+                  <button onClick={() => {
+                    if (confirm("Hapus kategori ini?")) {
+                      setCustomCategories(customCategories.filter(c => c.id !== cat.id));
+                    }
+                  }} className="bg-red-100 text-red-500 p-1.5 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                 </div>
-              );
-            })}
+                <div className="flex gap-2">
+                  <select value={cat.type} onChange={e => {
+                    const newCats = [...customCategories];
+                    newCats[index].type = e.target.value;
+                    setCustomCategories(newCats);
+                  }} className="flex-1 border border-border rounded-lg px-2 py-1.5 text-[10px] outline-none bg-white font-semibold text-gray-600">
+                    <option value="bank">Bank \u2192 Cash (CASH +, BANK -)</option>
+                    <option value="tarik">Tarik Tunai (TARIK +, CASH -)</option>
+                    <option value="aks">Aksesoris (AKSESORIS +)</option>
+                    <option value="admin">Admin Only (Hanya Admin +)</option>
+                  </select>
+                  <select value={cat.color} onChange={e => {
+                    const newCats = [...customCategories];
+                    newCats[index].color = e.target.value;
+                    setCustomCategories(newCats);
+                  }} className="w-24 border border-border rounded-lg px-2 py-1.5 text-[10px] outline-none bg-white font-semibold text-gray-600">
+                    <option value="text-foreground">Hitam</option>
+                    <option value="text-red-600">Merah</option>
+                    <option value="text-orange-500">Orange</option>
+                    <option value="text-blue-600">Biru</option>
+                    <option value="text-green-600">Hijau</option>
+                    <option value="text-purple-600">Ungu</option>
+                  </select>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+
 
         <button onClick={handleSave} disabled={saving} className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30">
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
@@ -1432,6 +1574,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
   const [allTransactions, setAllTransactions] = useState<TransactionRecord[]>([]);
   const [allNotes, setAllNotes] = useState<Record<string, { sisaSaldoBank: number; saldoRealApp: number }>>({});
   const [allSaldoHistory, setAllSaldoHistory] = useState<any[]>([]);
+  const [shopSettings, setShopSettings] = useState<SettingsRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const today = getWibDate();
   const [date, setDate] = useState(today);
@@ -1456,10 +1599,12 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
       getUsers(),
       getTransactions({ startDate, endDate }),
       getSaldoHistory({ startDate, endDate }),
-    ]).then(async ([u, t, sh]) => {
+      getSettings(),
+    ]).then(async ([u, t, sh, s]) => {
       setUsers(u);
       setAllTransactions(t);
       setAllSaldoHistory(sh);
+      setShopSettings(s);
       const kasirList = u.filter(usr => usr.role !== "owner" && usr.isActive);
       const notesMap: Record<string, { sisaSaldoBank: number; saldoRealApp: number }> = {};
       if (viewMode === "day") {
@@ -1488,14 +1633,19 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
 
   const getKasirData = (kasirName: string, isAdmin: boolean) => {
     const tx = isAdmin ? allTransactions : allTransactions.filter(t => t.kasirName === kasirName);
-    const bank = tx.filter(t => t.category === "BANK").reduce((s, t) => s + (t.nominal || 0), 0);
-    const flip = tx.filter(t => t.category === "FLIP").reduce((s, t) => s + (t.nominal || 0), 0);
-    const app = tx.filter(t => t.category === "APP PULSA").reduce((s, t) => s + (t.nominal || 0), 0);
-    const dana = tx.filter(t => t.category === "DANA").reduce((s, t) => s + (t.nominal || 0), 0);
-    const tarik = tx.filter(t => t.category === "TARIK TUNAI").reduce((s, t) => s + (t.nominal || 0), 0);
-    const aks = tx.filter(t => t.category === "AKSESORIS").reduce((s, t) => s + (t.nominal || 0), 0);
+    
+    const bank = tx.filter(t => {
+      if (t.categoryType === "tarik" || t.category === "TARIK TUNAI") return false;
+      if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
+      if (t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
+      if (t.categoryType === "admin" || t.category === "ADMIN") return false;
+      return true;
+    }).reduce((s, t) => s + (t.nominal || 0), 0);
+    const tarik = tx.filter(t => t.categoryType === "tarik" || t.category === "TARIK TUNAI").reduce((s, t) => s + (t.nominal || 0), 0);
+    const aks = tx.filter(t => t.categoryType === "aks" || t.category === "AKSESORIS").reduce((s, t) => s + (t.nominal || 0), 0);
+    
     const totalAdmin = tx.reduce((s, t) => s + (t.admin || 0), 0);
-    const totalPenjualan = bank + flip + dana + app;
+    const totalPenjualan = bank;
     const sisaCash = totalPenjualan - tarik;
     const nonTunai = tx.filter(t => (t.nominalNonTunai || 0) > 0).reduce((s, t) => s + (t.nominalNonTunai || 0), 0);
     const totalUangCash = sisaCash + totalAdmin + aks;

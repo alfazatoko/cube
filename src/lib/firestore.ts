@@ -60,6 +60,13 @@ export interface LicenseRecord {
   status: "active" | "expired" | "revoked";
 }
 
+export interface CustomCategory {
+  id: string;
+  name: string;
+  type: "bank" | "tarik" | "aks";
+  color: string;
+}
+
 export interface CategoryLabels {
   BANK: { name: string; visible: boolean };
   FLIP: { name: string; visible: boolean };
@@ -85,18 +92,21 @@ export interface SettingsRecord {
   categoryLabels: CategoryLabels;
   requireLicense?: boolean;
   waNumber?: string;
+  customCategories?: CustomCategory[];
 }
 
 export interface TransactionRecord {
   id: string;
   kasirName: string;
   category: string;
+  categoryId?: string;
   nominal: number;
   admin: number;
   keterangan: string;
   transDate: string;
   transTime: string;
   paymentMethod: string;
+  categoryType?: string;
   nominalTunai?: number;
   adminTunai?: number;
   nominalNonTunai?: number;
@@ -300,16 +310,19 @@ async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id"
   const nominal = tx.nominal || 0;
   const admin = tx.admin || 0;
 
+  const catType = tx.categoryType;
+
   if (tx.category === "NON TUNAI" || isNonTunai) {
     bal.bankNonTunai += nominal;
-  } else if (["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
+  } else if (catType === "bank" || ["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
     bal.cash += nominal;
     bal.bank -= nominal;
-  } else if (tx.category === "TARIK TUNAI") {
+  } else if (catType === "tarik" || tx.category === "TARIK TUNAI") {
     bal.tarik += nominal;
     bal.cash -= nominal;
-  } else if (tx.category === "AKSESORIS") {
+  } else if (catType === "aks" || tx.category === "AKSESORIS") {
     bal.aks += nominal;
+    bal.cash += nominal;
   }
 
   if (!(tx.category === "NON TUNAI" || isNonTunai)) {
@@ -333,16 +346,19 @@ async function reverseBalance(kasirName: string, tx: TransactionRecord) {
   const nominal = tx.nominal || 0;
   const admin = tx.admin || 0;
 
+  const catType = tx.categoryType;
+
   if (tx.category === "NON TUNAI" || isNonTunai) {
     bal.bankNonTunai -= nominal;
-  } else if (["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
+  } else if (catType === "bank" || ["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
     bal.cash -= nominal;
     bal.bank += nominal;
-  } else if (tx.category === "TARIK TUNAI") {
+  } else if (catType === "tarik" || tx.category === "TARIK TUNAI") {
     bal.tarik -= nominal;
     bal.cash += nominal;
-  } else if (tx.category === "AKSESORIS") {
+  } else if (catType === "aks" || tx.category === "AKSESORIS") {
     bal.aks -= nominal;
+    bal.cash -= nominal;
   }
 
   if (!(tx.category === "NON TUNAI" || isNonTunai)) {

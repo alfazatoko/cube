@@ -5,7 +5,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore/lite";
 import { db } from "@/lib/firebase";
 import {
   Lock, User, Crown, ShieldCheck, Loader2, Calendar,
-  AlertTriangle, MessageCircle, Mail, KeyRound, Eye, EyeOff, RotateCw, LogOut, Gift
+  AlertTriangle, MessageCircle, Mail, KeyRound, Eye, EyeOff, RotateCw, LogOut, Gift, Gem, Sparkles
 } from "lucide-react";
 import { getSettings } from "@/lib/firestore";
 
@@ -96,7 +96,7 @@ function AuthScreen({ onAuthenticated, waNumber }: { onAuthenticated: (data: Fre
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-700 via-blue-600 to-sky-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-700 via-blue-600 to-sky-500 flex flex-col items-center justify-start sm:justify-center p-4 overflow-y-auto py-10">
       <div className="bg-white p-6 sm:p-8 rounded-[2rem] w-full max-w-sm shadow-2xl">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg">
@@ -162,6 +162,20 @@ function AuthScreen({ onAuthenticated, waNumber }: { onAuthenticated: (data: Fre
         </button>
 
         <UpgradeButton waNumber={waNumber} />
+
+        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-3xl p-4 flex gap-3 items-start shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-blue-500/20">
+             <Gem className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col gap-1 text-left">
+            <h4 className="text-[12px] font-black text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
+              Upgrade Full System <Sparkles className="w-3.5 h-3.5 text-amber-500 fill-amber-500 animate-pulse" />
+            </h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed font-medium">
+              Beli lisensi untuk full upgrade system. <span className="font-bold text-blue-600 uppercase">Mode Owner bisa ganti nama toko dan photo profil</span>, pengaturan lainnya, tambah kasir, dll.
+            </p>
+          </div>
+        </div>
 
         <p className="text-center text-gray-400 text-[10px] mt-4">
           Data Anda aman tersimpan di cloud.<br />
@@ -312,6 +326,20 @@ function DashboardScreen({ trial, waNumber }: { trial: FreeTrialData; waNumber: 
         </div>
 
         {/* Upgrade CTA */}
+        <div className="mt-4 mb-6 bg-blue-50 border border-blue-100 rounded-3xl p-4 flex gap-3 items-start shadow-sm">
+          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-blue-500/20">
+             <Gem className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col gap-1 text-left">
+            <h4 className="text-[12px] font-black text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
+              Upgrade Full System <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
+            </h4>
+            <p className="text-[10px] text-gray-600 leading-relaxed font-medium">
+              Beli lisensi untuk full upgrade system. <span className="font-bold text-blue-600 uppercase">Mode Owner bisa ganti nama toko dan photo profil</span>, pengaturan lainnya, tambah kasir, dll.
+            </p>
+          </div>
+        </div>
+
         <UpgradeButton large waNumber={waNumber} />
 
         <div className="mt-8 pt-6 border-t border-gray-200">
