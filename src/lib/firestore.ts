@@ -180,15 +180,17 @@ export async function getUsers(): Promise<UserRecord[]> {
   const users = snap.docs.map(d => ({ id: d.id, ...d.data() } as UserRecord));
 
   if (users.length === 0) {
-    // Auto-create owner for new tenant
-    const ownerData = {
-      name: "Owner",
-      role: "owner",
-      pin: "1234",
-      isActive: true
-    };
-    const ref = await addDoc(getTenantCollection(db, "users"), ownerData);
-    return [{ id: ref.id, ...ownerData }];
+    // Auto-create owner and Kasir 1 for new tenant
+    const ownerData = { name: "Owner", role: "owner", pin: "1234", isActive: true };
+    const kasirData = { name: "Kasir 1", role: "kasir", pin: "1234", isActive: true };
+    
+    const ownerRef = await addDoc(getTenantCollection(db, "users"), ownerData);
+    const kasirRef = await addDoc(getTenantCollection(db, "users"), kasirData);
+    
+    return [
+      { id: ownerRef.id, ...ownerData },
+      { id: kasirRef.id, ...kasirData }
+    ];
   }
   
   return users;
