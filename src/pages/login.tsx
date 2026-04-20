@@ -189,7 +189,8 @@ function FirebaseAuthScreen() {
         </div>
 
         <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{authSettings?.shopName || "KASIR CUBE"}</h2>
-        <p className="text-center text-muted-foreground text-sm mb-1">Sistem Kasir Pro</p>
+        <p className="text-center text-muted-foreground text-sm mb-0">Sistem Kasir Pro</p>
+        <p className="text-center text-[10px] text-blue-400 font-bold mb-1 tracking-widest">v2.1.0</p>
         <p className="text-center text-blue-500 text-xs font-semibold mb-6">
           {isRegister ? "Daftar Akun Baru" : "Login Firebase"}
         </p>
@@ -391,7 +392,8 @@ function KasirSelectionScreen() {
         </div>
 
         <h2 className="text-2xl font-extrabold text-blue-700 text-center mb-0.5">{shopNameSetting || "KASIR CUBE"}</h2>
-        <p className="text-center text-gray-500 text-sm mb-1">Sistem Kasir Pro</p>
+        <p className="text-center text-gray-500 text-sm mb-0">Sistem Kasir Pro</p>
+        <p className="text-center text-[10px] text-blue-400 font-bold mb-1 tracking-widest">v2.1.0</p>
         {firebaseUser && (
           <p className="text-center text-[10px] text-green-600 mb-4 font-semibold">
             🔒 {firebaseUser.email}
@@ -556,6 +558,7 @@ export default function Login() {
           </div>
           <h2 className="text-xl font-extrabold text-blue-700">KASIR CUBE</h2>
           <p className="text-gray-500 text-sm">Sistem Kasir Pro</p>
+          <p className="text-[10px] text-blue-400 font-bold tracking-widest">v2.1.0</p>
           <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
           <p className="text-sm text-gray-400">Memuat data...</p>
         </div>
