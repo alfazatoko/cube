@@ -6,11 +6,11 @@ import {
   getSettings, updateSettings,
   getTransactions, getSaldoHistory, getBalance, resetBalance,
   getAttendance, getIzinList, createIzin, updateIzin,
-  resetAllData, getDailyNotes, ownerAddSaldo,
+  resetAllData, getDailyNotes, ownerAddSaldo, getTenantCollection,
   type UserRecord, type SettingsRecord, type TransactionRecord, type AttendanceRecord, type IzinRecord, type SaldoHistoryRecord, type CategoryLabels,
 } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore/lite";
+import { getDocs } from "firebase/firestore/lite";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -1176,7 +1176,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
       const wb = utils.book_new();
 
       for (const colName of collections) {
-        const snap = await getDocs(collection(db, colName));
+        const snap = await getDocs(getTenantCollection(db, colName));
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (data.length > 0) {
           const ws = utils.json_to_sheet(data);

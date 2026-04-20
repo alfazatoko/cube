@@ -6,29 +6,20 @@ import { db } from "./firebase";
 import { getWibDate } from "./utils";
 
 const getTenantColName = (name: string) => {
-  if (name === "licenses" || name === "freeTrials" || name === "users" || name === "settings") return name;
+  if (name === "licenses" || name === "freeTrials") return name;
   
-  // New preferred way: use a specific tenant ID set during login/activation
   const tenantId = localStorage.getItem("kasir_tenant_id");
-  if (tenantId) {
-    return `gratis_${tenantId}_${name}`;
+  
+  // If no tenant or if it's the original owner, use root collections
+  if (!tenantId || tenantId === "eltarmiji_gmail_com") {
+    return name;
   }
 
-  // Backward compatibility for existing free users
-  const isFree = localStorage.getItem("kasir_free_trial");
-  if (isFree) {
-    try {
-      const data = JSON.parse(isFree);
-      if (data.email) {
-        const prefix = data.email.replace(/[^a-zA-Z0-9]/g, "_");
-        return `gratis_${prefix}_${name}`;
-      }
-    } catch(e) {}
-  }
-  return name;
+  // Isolate data for all other accounts
+  return `tenant_${tenantId}_${name}`;
 };
 
-const collection = (database: any, path: string) => {
+export const getTenantCollection = (database: any, path: string) => {
   return fbCollection(database, getTenantColName(path));
 };
 
@@ -185,12 +176,26 @@ export interface DailySnapshotRecord {
 }
 
 export async function getUsers(): Promise<UserRecord[]> {
-  const snap = await getDocs(collection(db, "users"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as UserRecord));
+  const snap = await getDocs(getTenantCollection(db, "users"));
+  const users = snap.docs.map(d => ({ id: d.id, ...d.data() } as UserRecord));
+
+  if (users.length === 0) {
+    // Auto-create owner for new tenant
+    const ownerData = {
+      name: "Owner",
+      role: "owner",
+      pin: "1234",
+      isActive: true
+    };
+    const ref = await addDoc(getTenantCollection(db, "users"), ownerData);
+    return [{ id: ref.id, ...ownerData }];
+  }
+  
+  return users;
 }
 
 export async function createUser(data: Omit<UserRecord, "id">): Promise<string> {
-  const ref = await addDoc(collection(db, "users"), data);
+  const ref = await addDoc(getTenantCollection(db, "users"), data);
   return ref.id;
 }
 
@@ -249,7 +254,7 @@ export async function getTransactions(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<TransactionRecord[]> {
-  const snap = await getDocs(collection(db, "transactions"));
+  const snap = await getDocs(getTenantCollection(db, "transactions"));
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as TransactionRecord));
 
   if (params.kasirName) {
@@ -266,7 +271,7 @@ export async function getTransactions(params: {
 }
 
 export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, "transactions"), {
+  const ref = await addDoc(getTenantCollection(db, "transactions"), {
     ...data,
     createdAt: new Date().toISOString(),
   });
@@ -387,7 +392,7 @@ export async function getSaldoHistory(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<SaldoHistoryRecord[]> {
-  const snap = await getDocs(collection(db, "saldo_history"));
+  const snap = await getDocs(getTenantCollection(db, "saldo_history"));
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as SaldoHistoryRecord));
 
   if (params.kasirName) {
@@ -412,7 +417,7 @@ export async function addSaldo(kasirName: string, data: {
   const saldoDate = getWibDate();
   const saldoTime = now.toTimeString().substring(0, 5);
 
-  const ref = await addDoc(collection(db, "saldo_history"), {
+  const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
     kasirName,
     jenis: data.jenis,
     nominal: data.nominal,
@@ -452,7 +457,7 @@ export async function addSaldoHistoryOnly(kasirName: string, data: {
   const saldoDate = getWibDate();
   const saldoTime = now.toTimeString().substring(0, 5);
 
-  const ref = await addDoc(collection(db, "saldo_history"), {
+  const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
     kasirName,
     jenis: data.jenis,
     nominal: data.nominal,
@@ -470,10 +475,10 @@ export async function getHutangList(userName?: string): Promise<HutangRecord[]> 
   
   let snap;
   if (isGratis) {
-    const q = query(collection(db, collName), where("createdBy", "==", userName));
+    const q = query(getTenantCollection(db, collName), where("createdBy", "==", userName));
     snap = await getDocs(q);
   } else {
-    snap = await getDocs(collection(db, collName));
+    snap = await getDocs(getTenantCollection(db, collName));
   }
   
   const results = snap.docs.map(d => ({ id: d.id, ...d.data() } as HutangRecord));
@@ -483,7 +488,7 @@ export async function getHutangList(userName?: string): Promise<HutangRecord[]> 
 
 export async function createHutang(data: Omit<HutangRecord, "id">, userName?: string): Promise<string> {
   const collName = "hutang";
-  const ref = await addDoc(collection(db, collName), data);
+  const ref = await addDoc(getTenantCollection(db, collName), data);
   return ref.id;
 }
 
@@ -503,10 +508,10 @@ export async function getKontakList(userName?: string): Promise<KontakRecord[]> 
   
   let snap;
   if (isGratis) {
-    const q = query(collection(db, collName), where("createdBy", "==", userName));
+    const q = query(getTenantCollection(db, collName), where("createdBy", "==", userName));
     snap = await getDocs(q);
   } else {
-    snap = await getDocs(collection(db, collName));
+    snap = await getDocs(getTenantCollection(db, collName));
   }
   
   return snap.docs.map(d => ({ id: d.id, ...d.data() } as KontakRecord));
@@ -514,7 +519,7 @@ export async function getKontakList(userName?: string): Promise<KontakRecord[]> 
 
 export async function createKontak(data: Omit<KontakRecord, "id">, userName?: string): Promise<string> {
   const collName = "kontak";
-  const ref = await addDoc(collection(db, collName), data);
+  const ref = await addDoc(getTenantCollection(db, collName), data);
   return ref.id;
 }
 
@@ -532,7 +537,7 @@ export async function getAttendance(params: {
   kasirName?: string;
   month?: string;
 }): Promise<AttendanceRecord[]> {
-  const snap = await getDocs(collection(db, "attendance"));
+  const snap = await getDocs(getTenantCollection(db, "attendance"));
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as AttendanceRecord));
 
   if (params.kasirName) {
@@ -546,7 +551,7 @@ export async function getAttendance(params: {
 }
 
 export async function createAttendance(data: Omit<AttendanceRecord, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, "attendance"), {
+  const ref = await addDoc(getTenantCollection(db, "attendance"), {
     ...data,
     createdAt: new Date().toISOString(),
   });
@@ -557,7 +562,7 @@ export async function getIzinList(params?: {
   month?: string;
   nama?: string;
 }): Promise<IzinRecord[]> {
-  const snap = await getDocs(collection(db, "izin"));
+  const snap = await getDocs(getTenantCollection(db, "izin"));
   let results = snap.docs.map(d => ({ id: d.id, ...d.data() } as IzinRecord));
 
   if (params?.month) {
@@ -571,7 +576,7 @@ export async function getIzinList(params?: {
 }
 
 export async function createIzin(data: Omit<IzinRecord, "id" | "createdAt">): Promise<string> {
-  const ref = await addDoc(collection(db, "izin"), {
+  const ref = await addDoc(getTenantCollection(db, "izin"), {
     ...data,
     createdAt: new Date().toISOString(),
   });
@@ -661,7 +666,7 @@ export async function unlockReport(kasirName: string, date: string): Promise<voi
 export async function resetAllData(): Promise<void> {
   const colNames = ["transactions", "saldo_history", "balances", "hutang", "kontak", "attendance", "izin", "daily_notes", "daily_snapshots"];
   for (const col of colNames) {
-    const snap = await getDocs(collection(db, col));
+    const snap = await getDocs(getTenantCollection(db, col));
     for (const d of snap.docs) {
       await deleteDoc(d.ref);
     }
@@ -691,7 +696,7 @@ export async function loginUser(name: string, pin?: string, shift?: string, devi
     const now = new Date();
     const jamMasuk = deviceTime || now.toTimeString().substring(0, 5);
 
-    const allAttendance = await getDocs(collection(db, "attendance"));
+    const allAttendance = await getDocs(getTenantCollection(db, "attendance"));
     const alreadyExists = allAttendance.docs.some(d => {
       const data = d.data();
       return data.kasirName === name && data.tanggal === today && data.shift === shift;
