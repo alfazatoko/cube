@@ -120,8 +120,8 @@ function Router() {
 
   return (
     <div className="bg-background min-h-screen">
-      {/* Responsive Toolbar - Only visible on PC screens */}
-      <div className="hidden lg:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
+      {/* Responsive Toolbar - Visible on PC and Tablet screens */}
+      <div className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div 
             onClick={handleInstall}
@@ -173,7 +173,7 @@ function Router() {
         </div>
       </div>
 
-      <div className={`pt-0 lg:pt-14`}>
+      <div className={`pt-0 md:pt-14`}>
         <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
 
       <Switch>

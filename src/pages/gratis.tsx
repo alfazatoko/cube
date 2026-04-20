@@ -216,19 +216,57 @@ function ExpiredScreen({ waNumber }: { waNumber: string }) {
   );
 }
 
+// ===================== FULL SYSTEM BUTTON =====================
+function FullSystemButton({ large }: { large?: boolean }) {
+  return (
+    <a
+      href="https://www.kasir-cube.web.app"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`w-full flex items-center justify-center gap-2.5 relative overflow-hidden rounded-2xl font-extrabold tracking-wide text-white active:scale-[0.98] transition-all duration-300 ${
+        large ? "h-14 text-base" : "h-12 text-sm"
+      }`}
+      style={{
+        background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 45%, #ec4899 100%)",
+        boxShadow: "0 8px 24px -4px rgba(168,85,247,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset",
+      }}
+    >
+      {/* Shine sweep animation */}
+      <span
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%)",
+          animation: "shine 2.5s infinite",
+        }}
+      />
+      <style>{`
+        @keyframes shine {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
+        }
+      `}</style>
+      <Sparkles className="w-4 h-4 text-yellow-300 fill-yellow-300" />
+      🚀 Coba Versi FULL SYSTEM — Gratis Preview!
+    </a>
+  );
+}
+
 // ===================== UPGRADE BUTTON =====================
 function UpgradeButton({ large, waNumber }: { large?: boolean; waNumber?: string }) {
   const num = waNumber || DEFAULT_WA;
   return (
-    <a
-      href={`https://wa.me/${num}?text=${WA_MESSAGE}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition ${large ? "h-14 text-base" : "h-12 text-sm"}`}
-    >
-      <MessageCircle className="w-5 h-5" />
-      HUBUNGI ADMIN - Beli Lisensi
-    </a>
+    <div className="flex flex-col gap-3 w-full">
+      <FullSystemButton large={large} />
+      <a
+        href={`https://wa.me/${num}?text=${WA_MESSAGE}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition ${large ? "h-14 text-base" : "h-12 text-sm"}`}
+      >
+        <MessageCircle className="w-5 h-5" />
+        HUBUNGI ADMIN - Beli Lisensi
+      </a>
+    </div>
   );
 }
 

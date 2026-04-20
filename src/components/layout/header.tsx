@@ -65,7 +65,7 @@ export function Header() {
                 {settings?.shopName || "KASIR CUBE"}
               </h1>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[9px] font-bold text-white/60 tracking-wider">V.2.1-SYNC</span>
+                <span className="text-[9px] font-bold text-white/60 tracking-wider">V.2.1</span>
                 <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse" />
               </div>
             </div>
@@ -134,6 +134,7 @@ export function Header() {
               >
                 <Moon className="w-3 h-3" />
               </button>
+                <a href="https://www.kasir-cube.web.app" target="_blank" rel="noopener noreferrer" className="ml-2 px-3 py-1 rounded-md bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold hover:from-purple-500 hover:to-pink-400 transition-all duration-300 ease-in-out shadow-lg">Coba Full System Sekarang</a>
             </div>
           </div>
         </div>
