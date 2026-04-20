@@ -5,65 +5,62 @@ import {
 import { db, auth } from "./firebase";
 import { getWibDate } from "./utils";
 
-/**
- * Mendapatkan UID user yang sedang login.
- * Mengembalikan null jika user belum login.
- */
+// ═══════════════════════════════════════════════════════════
+// CORE HELPERS — Flat Collections + field `uid`
+// Struktur: transactions/{docId} { uid, ... }
+// Isolasi data via: where("uid", "==", uid)
+// ═══════════════════════════════════════════════════════════
+
+/** UID user aktif, atau null jika belum login */
 export function getCurrentUid(): string | null {
   return auth.currentUser?.uid ?? null;
 }
 
-/**
- * Mendapatkan UID atau melempar error jika user belum login.
- * Gunakan ini sebelum operasi write ke Firestore.
- */
+/** UID user aktif, atau throw error jika belum login */
 function requireUid(): string {
   const uid = auth.currentUser?.uid;
-  if (!uid) {
-    throw new Error("Autentikasi diperlukan. Silakan login terlebih dahulu.");
-  }
+  if (!uid) throw new Error("Autentikasi diperlukan. Silakan login terlebih dahulu.");
   return uid;
 }
 
 /**
- * Menghasilkan nama koleksi yang diisolasi per user.
- * PRIORITAS: auth.currentUser.uid > localStorage (fallback) > guest
- * Ini mencegah race condition saat ganti akun.
+ * Document reference — flat collection, tanpa prefix.
+ * Khusus untuk koleksi dengan docId berbasis kasirName/date
+ * (balances, daily_notes, daily_snapshots), uid di-prefix ke docId
+ * agar unik antar user tanpa prefix pada nama koleksi.
  */
-const getTenantColName = (name: string): string => {
-  if (name === "licenses" || name === "freeTrials") return name;
-
-  // Selalu prioritaskan UID dari Firebase Auth (real-time, tidak bisa stale)
-  const currentUser = auth.currentUser;
-  if (currentUser?.uid) {
-    // Gunakan UID sebagai namespace tenant yang unik dan aman
-    return `tenant_${currentUser.uid}_${name}`;
+const doc = (dbOrCol: any, name: string, ...segments: string[]): any => {
+  if (dbOrCol?.type !== "database") {
+    return fbDoc(dbOrCol, name, ...segments);
   }
-
-  // Fallback ke localStorage jika auth belum siap (misal saat booting awal)
-  const tenantId = localStorage.getItem("kasir_tenant_id");
-  if (tenantId) {
-    if (name === "settings") return name;
-    return `tenant_${tenantId}_${name}`;
+  // Koleksi global — tidak perlu isolasi user
+  if (name === "licenses" || name === "freeTrials") {
+    return fbDoc(db, name, ...segments);
   }
-
-  // Tidak ada user aktif sama sekali
-  if (name === "settings") return name;
-  return `tenant_guest_${name}`;
+  // Settings: per-user jika sudah login
+  if (name === "settings") {
+    const uid = auth.currentUser?.uid;
+    if (uid) return fbDoc(db, "settings", uid);
+    return fbDoc(db, "settings", ...segments);
+  }
+  // Balances/notes/snapshots: prefix uid ke docId agar unik per user
+  if (name === "balances" || name === "daily_notes" || name === "daily_snapshots") {
+    const uid = auth.currentUser?.uid || "guest";
+    return fbDoc(db, name, `${uid}_${segments[0]}`, ...segments.slice(1));
+  }
+  // Semua koleksi lain — flat, docId apa adanya
+  return fbDoc(db, name, ...segments);
 };
 
-export const getTenantCollection = (database: any, path: string) => {
-  return fbCollection(database, getTenantColName(path));
+/** Flat collection reference — tidak ada prefix. Backward compat untuk owner.tsx */
+export const getTenantCollection = (_db: any, name: string) => {
+  return fbCollection(db, name);
 };
 
-const doc = (dbOrCol: any, path: string, ...segments: string[]) => {
-  if (dbOrCol?.type === "database") {
-     return fbDoc(dbOrCol, getTenantColName(path), ...segments);
-  } else {
-     // It's a CollectionReference
-     return fbDoc(dbOrCol, path, ...segments);
-  }
-};
+/** Export untuk query data per user (backup/reset) */
+export function getUserCollection(name: string) {
+  return fbCollection(db, name);
+}
 
 export interface UserRecord {
   id: string;
@@ -211,37 +208,37 @@ export interface DailySnapshotRecord {
 }
 
 export async function getUsers(): Promise<UserRecord[]> {
-  const snap = await getDocs(getTenantCollection(db, "users"));
+  const uid = requireUid();
+  const q = query(fbCollection(db, "kasirs"), where("uid", "==", uid));
+  const snap = await getDocs(q);
   const users = snap.docs.map(d => ({ id: d.id, ...d.data() } as UserRecord));
 
   if (users.length === 0) {
-    // Auto-create owner and Kasir 1 for new tenant
-    const ownerData = { name: "Owner", role: "owner", pin: "1234", isActive: true };
-    const kasirData = { name: "Kasir 1", role: "kasir", pin: "1234", isActive: true };
-    
-    const ownerRef = await addDoc(getTenantCollection(db, "users"), ownerData);
-    const kasirRef = await addDoc(getTenantCollection(db, "users"), kasirData);
-    
+    // Auto-create Owner dan Kasir 1 untuk akun baru
+    const ownerData = { uid, name: "Owner", role: "owner", pin: "1234", isActive: true };
+    const kasirData = { uid, name: "Kasir 1", role: "kasir", pin: "1234", isActive: true };
+    const ownerRef = await addDoc(fbCollection(db, "kasirs"), ownerData);
+    const kasirRef = await addDoc(fbCollection(db, "kasirs"), kasirData);
     return [
       { id: ownerRef.id, ...ownerData },
       { id: kasirRef.id, ...kasirData }
     ];
   }
-  
   return users;
 }
 
 export async function createUser(data: Omit<UserRecord, "id">): Promise<string> {
-  const ref = await addDoc(getTenantCollection(db, "users"), data);
+  const uid = requireUid();
+  const ref = await addDoc(fbCollection(db, "kasirs"), { ...data, uid });
   return ref.id;
 }
 
 export async function updateUser(id: string, data: Partial<UserRecord>): Promise<void> {
-  await updateDoc(doc(db, "users", id), data as any);
+  await updateDoc(fbDoc(db, "kasirs", id), data as any);
 }
 
 export async function deleteUser(id: string): Promise<void> {
-  await deleteDoc(doc(db, "users", id));
+  await deleteDoc(fbDoc(db, "kasirs", id));
 }
 
 export async function getSettings(): Promise<SettingsRecord> {
@@ -715,13 +712,18 @@ export async function unlockReport(kasirName: string, date: string): Promise<voi
 }
 
 export async function resetAllData(): Promise<void> {
-  const colNames = ["transactions", "saldo_history", "balances", "hutang", "kontak", "attendance", "izin", "daily_notes", "daily_snapshots"];
-  for (const col of colNames) {
-    const snap = await getDocs(getTenantCollection(db, col));
+  const uid = requireUid();
+  const colNames = ["transactions", "saldo_history", "balances", "hutang", "kontak",
+                    "attendance", "izin", "daily_notes", "daily_snapshots", "kasirs"];
+  for (const name of colNames) {
+    const q = query(fbCollection(db, name), where("uid", "==", uid));
+    const snap = await getDocs(q);
     for (const d of snap.docs) {
       await deleteDoc(d.ref);
     }
   }
+  // Hapus settings per user
+  try { await deleteDoc(fbDoc(db, "settings", uid)); } catch { /* ignored */ }
 }
 
 export async function loginUser(name: string, pin?: string, shift?: string, deviceTime?: string): Promise<{
@@ -747,11 +749,14 @@ export async function loginUser(name: string, pin?: string, shift?: string, devi
     const now = new Date();
     const jamMasuk = deviceTime || now.toTimeString().substring(0, 5);
 
-    const allAttendance = await getDocs(getTenantCollection(db, "attendance"));
-    const alreadyExists = allAttendance.docs.some(d => {
-      const data = d.data();
-      return data.kasirName === name && data.tanggal === today && data.shift === shift;
-    });
+    const uid = auth.currentUser?.uid || "";
+    const attQ = query(fbCollection(db, "attendance"),
+      where("uid", "==", uid),
+      where("kasirName", "==", name),
+      where("tanggal", "==", today)
+    );
+    const allAttendance = await getDocs(attQ);
+    const alreadyExists = allAttendance.docs.some(d => d.data().shift === shift);
     if (!alreadyExists) {
       await createAttendance({
         kasirName: name,

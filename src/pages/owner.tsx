@@ -9,8 +9,8 @@ import {
   resetAllData, getDailyNotes, ownerAddSaldo, getTenantCollection,
   type UserRecord, type SettingsRecord, type TransactionRecord, type AttendanceRecord, type IzinRecord, type SaldoHistoryRecord, type CategoryLabels,
 } from "@/lib/firestore";
-import { db } from "@/lib/firebase";
-import { getDocs } from "firebase/firestore/lite";
+import { db, auth } from "@/lib/firebase";
+import { getDocs, query, where, collection } from "firebase/firestore/lite";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -1172,11 +1172,14 @@ function BackupPage({ goBack }: { goBack: () => void }) {
     try {
       const { utils, writeFile } = await import("xlsx");
       
-      const collections = ["transactions", "saldo_history", "hutang", "kontak", "attendance", "izin", "daily_notes", "users"];
+      const uid = auth.currentUser?.uid || "";
+      const cols = ["transactions", "saldo_history", "hutang", "kontak",
+                    "attendance", "izin", "daily_notes", "balances", "kasirs"];
       const wb = utils.book_new();
 
-      for (const colName of collections) {
-        const snap = await getDocs(getTenantCollection(db, colName));
+      for (const colName of cols) {
+        const q = query(collection(db, colName), where("uid", "==", uid));
+        const snap = await getDocs(q);
         const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         if (data.length > 0) {
           const ws = utils.json_to_sheet(data);
