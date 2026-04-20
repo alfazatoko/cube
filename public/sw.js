@@ -1,4 +1,4 @@
-const CACHE_NAME = "alfaza-link-v14";
+const CACHE_NAME = "alfaza-link-v15";
 const PRECACHE_URLS = ["/", "/index.html"];
 
 self.addEventListener("install", (event) => {

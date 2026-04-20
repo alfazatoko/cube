@@ -17,7 +17,6 @@ import Laporan from "@/pages/laporan";
 import Owner from "@/pages/owner";
 import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
-import Gratis from "@/pages/gratis";
 import { useEffect, useState } from "react";
 import { getSettings } from "@/lib/firestore";
 import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon } from "lucide-react";
@@ -37,17 +36,15 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
 
   useEffect(() => {
     if (firebaseLoading) return;
-    const isGratis = user?.id === "gratis_kasir";
     
-    if (!user || (!firebaseUser && !isGratis)) {
+    if (!user || !firebaseUser) {
       setLocation("/");
     } else if (allowedRoles && !allowedRoles.includes(user.role)) {
       setLocation(user.role === "owner" ? "/owner" : "/beranda");
     }
   }, [user, firebaseUser, firebaseLoading, setLocation, allowedRoles]);
 
-  const isGratis = user?.id === "gratis_kasir";
-  if (firebaseLoading || (!firebaseUser && !isGratis) || !user) return null;
+  if (firebaseLoading || !firebaseUser || !user) return null;
   return <Component />;
 }
 
@@ -79,7 +76,7 @@ function Router() {
   };
 
   useEffect(() => {
-    if (location === "/admin" || location === "/license" || location === "/gratis") return;
+    if (location === "/admin" || location === "/license") return;
     
     const checkLicense = async () => {
       try {
@@ -89,15 +86,7 @@ function Router() {
         console.error("Failed to fetch settings for license check", e);
       }
 
-      const trialData = localStorage.getItem("kasir_free_trial");
-      if (trialData) {
-        try {
-          const parsed = JSON.parse(trialData);
-          if (new Date(parsed.expiresAt) > new Date()) {
-            return; // Bypass license check for active free trial
-          }
-        } catch (e) {}
-      }
+
 
       const licString = localStorage.getItem("kasir_license");
       if (!licString) {
@@ -186,7 +175,6 @@ function Router() {
         <Route path="/owner" component={() => <ProtectedRoute component={Owner} allowedRoles={["owner"]} />} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/license" component={License} />
-        <Route path="/gratis" component={Gratis} />
         <Route component={NotFound} />
       </Switch>
         <BottomNav />

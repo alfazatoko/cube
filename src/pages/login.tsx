@@ -547,18 +547,6 @@ export default function Login() {
   const { firebaseUser, firebaseLoading } = useAuth();
   const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    const trialData = localStorage.getItem("kasir_free_trial");
-    if (trialData) {
-      try {
-        const parsed = JSON.parse(trialData);
-        if (parsed.email) {
-          setLocation("/gratis");
-        }
-      } catch (e) {}
-    }
-  }, [setLocation]);
-
   if (firebaseLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-700 via-blue-600 to-sky-500 flex items-center justify-center p-4">

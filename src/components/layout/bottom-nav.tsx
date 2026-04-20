@@ -29,7 +29,7 @@ export function BottomNav() {
     };
   }, []);
 
-  if (location === "/" || location === "/admin" || location === "/license" || location === "/gratis") return null;
+  if (location === "/" || location === "/admin" || location === "/license") return null;
 
   const isOwnerMode = location.startsWith("/owner");
 
@@ -65,11 +65,7 @@ export function BottomNav() {
 
   const handleLogout = () => {
     logout();
-    if (localStorage.getItem("kasir_free_trial")) {
-      window.location.href = "/gratis";
-    } else {
-      window.location.href = "/";
-    }
+    window.location.href = "/";
   };
 
   return (
