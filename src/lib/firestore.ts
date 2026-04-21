@@ -28,11 +28,11 @@ function requireUid(): string {
  * Semua data disimpan di dalam `users/{uid}/{collection}/...`
  */
 const doc = (dbOrCol: any, name: string, ...segments: string[]): any => {
-  if (dbOrCol?.type !== "database") {
+  if (dbOrCol !== db) {
     return fbDoc(dbOrCol, name, ...segments);
   }
   // Koleksi global — tidak perlu isolasi user
-  if (name === "licenses" || name === "freeTrials" || name === "settings" && segments[0] === "main") {
+  if (name === "licenses" || name === "freeTrials" || name === "system") {
     return fbDoc(db, name, ...segments);
   }
   // Data user terisolasi secara root
@@ -103,6 +103,11 @@ export interface SettingsRecord {
   requireLicense?: boolean;
   waNumber?: string;
   customCategories?: CustomCategory[];
+}
+
+export interface SystemConfigRecord {
+  requireLicense?: boolean;
+  waNumber?: string;
 }
 
 export interface TransactionRecord {
@@ -262,6 +267,30 @@ export async function getSettings(): Promise<SettingsRecord> {
 
 export async function updateSettings(data: Partial<SettingsRecord>): Promise<void> {
   const ref = doc(db, "settings", "main");
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, data);
+  } else {
+    await updateDoc(ref, data as any);
+  }
+}
+
+export async function getSystemConfig(): Promise<SystemConfigRecord> {
+  const ref = doc(db, "system", "main");
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    const defaults: SystemConfigRecord = {
+      requireLicense: true,
+      waNumber: "6287824889706"
+    };
+    await setDoc(ref, defaults);
+    return defaults;
+  }
+  return snap.data() as SystemConfigRecord;
+}
+
+export async function updateSystemConfig(data: Partial<SystemConfigRecord>): Promise<void> {
+  const ref = doc(db, "system", "main");
   const snap = await getDoc(ref);
   if (!snap.exists()) {
     await setDoc(ref, data);
@@ -773,14 +802,14 @@ export async function ownerAddSaldo(kasirName: string, date: string, data: { ban
 // =======================
 
 export async function getLicenses(): Promise<LicenseRecord[]> {
-  const colRef = collection(db, "licenses");
+  const colRef = fbCollection(db, "licenses");
   const snap = await getDocs(colRef);
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as LicenseRecord));
 }
 
 export async function generateLicense(type: "demo" | "4_months" | "lifetime", email: string): Promise<string> {
   const code = Array.from({ length: 3 }, () => Math.random().toString(36).substring(2, 6).toUpperCase()).join('-');
-  const colRef = collection(db, "licenses");
+  const colRef = fbCollection(db, "licenses");
   const now = new Date();
   
   let expiresAt = null;

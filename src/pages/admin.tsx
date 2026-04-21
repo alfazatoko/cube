@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone } from "lucide-react";
-import { generateLicense, getLicenses, deleteLicense, getSettings, updateSettings, type LicenseRecord } from "@/lib/firestore";
+import { generateLicense, getLicenses, deleteLicense, getSystemConfig, updateSystemConfig, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 
@@ -29,7 +29,7 @@ export default function AdminPanel() {
     try {
       const [data, settings] = await Promise.all([
         getLicenses(),
-        getSettings()
+        getSystemConfig()
       ]);
       const sorted = data.sort((a, b) => {
         const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -79,9 +79,10 @@ export default function AdminPanel() {
     const newValue = !requireLicense;
     setRequireLicense(newValue);
     try {
-      await updateSettings({ requireLicense: newValue });
-    } catch (err) {
+      await updateSystemConfig({ requireLicense: newValue });
+    } catch (err: any) {
       console.error("Gagal update setting", err);
+      alert("Error dari Firebase: " + err.message);
       setRequireLicense(!newValue);
     }
   };
@@ -322,7 +323,7 @@ export default function AdminPanel() {
               onClick={async () => {
                 setWaSaving(true);
                 try {
-                  await updateSettings({ waNumber });
+                  await updateSystemConfig({ waNumber });
                   alert("Nomor WhatsApp berhasil disimpan!");
                 } catch (err) {
                   console.error(err);

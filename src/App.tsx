@@ -18,7 +18,7 @@ import Owner from "@/pages/owner";
 import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
 import { useEffect, useState } from "react";
-import { getSettings } from "@/lib/firestore";
+import { getSystemConfig } from "@/lib/firestore";
 import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -86,7 +86,7 @@ function Router() {
     
     const checkLicense = async () => {
       try {
-        const settings = await getSettings();
+        const settings = await getSystemConfig();
         if (settings.requireLicense === false) return; // By-pass license check
       } catch (e) {
         console.error("Failed to fetch settings for license check", e);
