@@ -190,7 +190,7 @@ export default function License() {
         <button
           type="button"
           onClick={handleContactAdmin}
-          className="w-full h-14 rounded-2xl font-black text-base bg-orange-500 text-white shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 active:scale-[0.98] transition mb-6"
+          className="w-full h-14 rounded-2xl font-black text-base bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-3 active:scale-[0.98] transition mb-6"
         >
           <FaWhatsapp className="w-6 h-6" />
           HUBUNGI ADMIN
