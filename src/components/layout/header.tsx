@@ -61,7 +61,7 @@ export function Header() {
               onClick={() => setShowSimulator(!showSimulator)}
               className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white/40 cursor-pointer hover:scale-105 active:scale-95 transition-all"
             >
-              <img src={settings?.profilePhotoUrl || "https://ui-avatars.com/api/?name=KASIR+CUBE&background=2563eb&color=fff&size=256"} alt="KASIR CUBE" className="w-full h-full object-cover" />
+              <img src={settings?.profilePhotoUrl || "/logo.png"} alt="KASIR CUBE" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">
               <h1 className="text-white font-black text-sm tracking-tight leading-none uppercase">

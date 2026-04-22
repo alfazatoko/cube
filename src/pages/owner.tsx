@@ -1455,7 +1455,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
                 {profilePhotoUrl ? (
                   <img src={profilePhotoUrl} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-white text-2xl font-bold">{shopName.charAt(0)}</span>
+                  <img src="/logo.png" alt="Profile" className="w-full h-full object-cover" />
                 )}
               </div>
               <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer shadow">
