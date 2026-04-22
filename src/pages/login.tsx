@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { getUsers, getSettings, loginUser, type UserRecord } from "@/lib/firestore";
-import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const logoUrl = "/logo.png";
@@ -124,14 +124,28 @@ function FirebaseAuthScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [shopCode, setShopCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
-  const SHOP_CODE = "ALFAZA2024";
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA install: ${outcome}`);
+      setDeferredPrompt(null);
+    }
+  };
     if (!email || !password) {
       setError("Email dan password harus diisi");
       return;
@@ -141,10 +155,6 @@ function FirebaseAuthScreen() {
       return;
     }
     if (isRegister) {
-      if (shopCode !== SHOP_CODE) {
-        setError("Kode toko salah. Hubungi pemilik toko.");
-        return;
-      }
       if (password !== confirmPassword) {
         setError("Password tidak cocok");
         return;
@@ -172,6 +182,18 @@ function FirebaseAuthScreen() {
       } else {
         setError(err?.message || "Gagal autentikasi");
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      await firebaseGoogleLogin();
+    } catch (err: any) {
+      setError(err?.message || "Gagal Login Google");
     } finally {
       setLoading(false);
     }
@@ -221,18 +243,6 @@ function FirebaseAuthScreen() {
         )}
 
         <div className="space-y-3 mb-5">
-          {isRegister && (
-            <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
-              <Store className="w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Kode Toko"
-                value={shopCode}
-                onChange={e => setShopCode(e.target.value.toUpperCase())}
-                className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground tracking-widest placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal"
-              />
-            </div>
-          )}
 
           <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
             <Mail className="w-5 h-5 text-gray-400" />
@@ -300,6 +310,29 @@ function FirebaseAuthScreen() {
           {isResetting ? "KIRIM LINK RESET" : (isRegister ? "DAFTAR" : "LOGIN")}
         </button>
 
+        {!isResetting && (
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground font-bold">Atau</span>
+            </div>
+          </div>
+        )}
+
+        {!isResetting && (
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full h-14 rounded-3xl font-extrabold text-sm bg-white border-2 border-gray-100 text-gray-700 shadow-sm flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-50 mb-4 hover:bg-gray-50"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
+            {isRegister ? "DAFTAR DENGAN GOOGLE" : "LOGIN DENGAN GOOGLE"}
+          </button>
+        )}
+
         <button
           type="button"
           onClick={() => { 
@@ -309,13 +342,22 @@ function FirebaseAuthScreen() {
               setIsRegister(!isRegister); 
             }
             setError(""); 
-            setShopCode(""); 
             setConfirmPassword(""); 
           }}
           className="w-full text-center text-sm text-blue-600 font-semibold"
         >
           {isResetting ? "Kembali ke Login" : (isRegister ? "Sudah punya akun? Login" : "Belum punya akun? Daftar")}
         </button>
+
+        {deferredPrompt && (
+          <button
+            type="button"
+            onClick={handleInstall}
+            className="w-full h-12 rounded-2xl bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 mb-4 animate-bounce shadow-lg shadow-emerald-500/20"
+          >
+            <Download className="w-4 h-4" /> INSTALL APLIKASI KASIR
+          </button>
+        )}
 
         <div className="mt-4 bg-blue-50 rounded-xl p-3 border border-blue-200">
           <p className="text-[10px] text-blue-600 text-center">
@@ -343,6 +385,25 @@ function KasirSelectionScreen() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { login, firebaseLogout, firebaseUser } = useAuth();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`PWA install: ${outcome}`);
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -578,6 +639,16 @@ function KasirSelectionScreen() {
             >
               <LogOut className="w-4 h-4" /> Logout Firebase
             </button>
+
+            {deferredPrompt && (
+              <button
+                type="button"
+                onClick={handleInstall}
+                className="w-full h-12 rounded-2xl bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 mt-4 animate-bounce shadow-lg shadow-emerald-500/20"
+              >
+                <Download className="w-4 h-4" /> INSTALL APLIKASI KASIR
+              </button>
+            )}
 
             <GuideModal open={isGuideOpen} onOpenChange={setIsGuideOpen} />
           </>

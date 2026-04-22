@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  signInWithPopup,
+  GoogleAuthProvider,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -21,6 +23,7 @@ interface AuthContextType {
   logout: () => void;
   firebaseLogin: (email: string, password: string) => Promise<void>;
   firebaseRegister: (email: string, password: string) => Promise<void>;
+  firebaseGoogleLogin: () => Promise<void>;
   firebaseLogout: () => Promise<void>;
   firebaseResetPassword: (email: string) => Promise<void>;
 }
@@ -109,6 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await createUserWithEmailAndPassword(auth, email, password);
   };
 
+  const firebaseGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  };
+
   const firebaseLogout = async () => {
     logout();
     await signOut(auth);
@@ -131,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         firebaseLogin,
         firebaseRegister,
+        firebaseGoogleLogin,
         firebaseLogout,
         firebaseResetPassword,
       }}
