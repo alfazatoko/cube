@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
 import { getHutangList, createHutang, updateHutang, deleteHutang, getKontakList, createKontak, updateKontak, deleteKontak, type HutangRecord, type KontakRecord } from "@/lib/firestore";
+import { uploadImage } from "@/lib/storage";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Receipt, BookUser, Plus, Trash2, Edit, Check, Search, Ban, Phone, Copy, Camera, Image as ImageIcon, X } from "lucide-react";
@@ -110,10 +111,16 @@ export default function Catatan() {
     if (!n || n <= 0) { toast({ title: "Nominal harus diisi", variant: "destructive" }); return; }
     setSaving(true);
     try {
+      let finalFoto = foto;
+      if (foto && foto.startsWith("data:image")) {
+        const path = `notes/${user?.name || "common"}/kasbon_${Date.now()}.jpg`;
+        finalFoto = await uploadImage(foto, path);
+      }
+
       if (editItem && "nominal" in editItem) {
-        await updateHutang(editItem.id, { nama, nominal: n, keterangan, foto }, user?.name);
+        await updateHutang(editItem.id, { nama, nominal: n, keterangan, foto: finalFoto }, user?.name);
       } else {
-        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name, foto }, user?.name);
+        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name, foto: finalFoto }, user?.name);
       }
       toast({ title: editItem ? "Kasbon diperbarui" : "Kasbon ditambahkan" });
       resetForm();
@@ -127,10 +134,16 @@ export default function Catatan() {
     if (!nama.trim()) { toast({ title: "Nama harus diisi", variant: "destructive" }); return; }
     setSaving(true);
     try {
+      let finalFoto = foto;
+      if (foto && foto.startsWith("data:image")) {
+        const path = `notes/${user?.name || "common"}/kontak_${Date.now()}.jpg`;
+        finalFoto = await uploadImage(foto, path);
+      }
+
       if (editItem && "nomor" in editItem) {
-        await updateKontak(editItem.id, { nama, nomor, keterangan, foto }, user?.name);
+        await updateKontak(editItem.id, { nama, nomor, keterangan, foto: finalFoto }, user?.name);
       } else {
-        await createKontak({ nama, nomor, keterangan, createdBy: user?.name, foto }, user?.name);
+        await createKontak({ nama, nomor, keterangan, createdBy: user?.name, foto: finalFoto }, user?.name);
       }
       toast({ title: editItem ? "Kontak diperbarui" : "Kontak ditambahkan" });
       resetForm();
