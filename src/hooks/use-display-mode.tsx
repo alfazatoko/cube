@@ -10,6 +10,8 @@ interface DisplayModeContextType {
   setIsLandscape: (val: boolean) => void;
   theme: ThemeMode;
   setTheme: (val: ThemeMode) => void;
+  showSimulator: boolean;
+  setShowSimulator: (val: boolean) => void;
 }
 
 const DisplayModeContext = createContext<DisplayModeContextType>({ 
@@ -18,7 +20,9 @@ const DisplayModeContext = createContext<DisplayModeContextType>({
   isLandscape: false,
   setIsLandscape: () => {},
   theme: "light",
-  setTheme: () => {}
+  setTheme: () => {},
+  showSimulator: false,
+  setShowSimulator: () => {}
 });
 
 export function DisplayModeProvider({ children }: { children: React.ReactNode }) {
@@ -34,6 +38,10 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
     return (localStorage.getItem("alfaza_theme") as ThemeMode) || "light";
   });
 
+  const [showSimulator, setShowSimulator] = useState(() => {
+    return localStorage.getItem("alfaza_show_simulator") === "true";
+  });
+
   useEffect(() => {
     localStorage.setItem("alfaza_display_mode", mode);
   }, [mode]);
@@ -41,6 +49,10 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     localStorage.setItem("alfaza_is_landscape", String(isLandscape));
   }, [isLandscape]);
+
+  useEffect(() => {
+    localStorage.setItem("alfaza_show_simulator", String(showSimulator));
+  }, [showSimulator]);
 
   useEffect(() => {
     localStorage.setItem("alfaza_theme", theme);
@@ -54,7 +66,7 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
   }, [theme]);
 
   return (
-    <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, theme, setTheme }}>
+    <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, theme, setTheme, showSimulator, setShowSimulator }}>
       {children}
     </DisplayModeContext.Provider>
   );

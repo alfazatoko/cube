@@ -49,7 +49,7 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
 }
 
 function Router() {
-  const { mode, setMode, isLandscape, setIsLandscape, theme, setTheme } = useDisplayMode();
+  const { mode, setMode, isLandscape, setIsLandscape, theme, setTheme, showSimulator } = useDisplayMode();
   const { user } = useAuth();
   const maxW = getMaxWidth(mode, isLandscape);
   useAutoScheduler(!!user);
@@ -115,61 +115,63 @@ function Router() {
 
   return (
     <div className="bg-background min-h-screen text-foreground">
-      {/* Responsive Toolbar - Visible on PC and Tablet screens */}
-      <div className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div 
-            onClick={handleInstall}
-            className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
-            title="Install App"
-          >
-            CUBE
+      {/* Responsive Toolbar - Visible on PC and Tablet screens when toggled */}
+      {showSimulator && (
+        <div className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div 
+              onClick={handleInstall}
+              className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-xs cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-lg shadow-blue-500/20"
+              title="Instal Aplikasi"
+            >
+              CUBE
+            </div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Kontrol Simulator</span>
           </div>
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Simulator Control</span>
+
+          <div className="flex items-center bg-muted p-1 rounded-2xl gap-2 px-4">
+            {/* 1. Theme Cycler */}
+            <button 
+              onClick={() => {
+                if (theme === "light") setTheme("blue");
+                else if (theme === "blue") setTheme("dark");
+                else setTheme("light");
+              }}
+              className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
+              title="Ganti Tema"
+            >
+              <Sun className={`w-4 h-4 ${theme === "blue" ? "text-blue-500" : theme === "dark" ? "text-yellow-500" : ""}`} />
+              <span>Tema: {theme === "light" ? "TERANG" : theme === "blue" ? "BIRU" : "GELAP"}</span>
+            </button>
+
+            {/* 2. Landscape Toggle */}
+            <button 
+              onClick={() => setIsLandscape(!isLandscape)}
+              className={`p-2 rounded-xl shadow-sm transition-all flex items-center gap-2 text-xs font-bold ${isLandscape ? "bg-blue-600 text-white" : "bg-card text-foreground hover:bg-muted"}`}
+              title="Ganti Orientasi"
+            >
+              <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''}`} />
+              <span>{isLandscape ? "Lanskap" : "Potret"}</span>
+            </button>
+
+            {/* 3. Scale Cycler */}
+            <button 
+              onClick={() => {
+                if (mode === "hp") setMode("tablet");
+                else if (mode === "tablet") setMode("pc");
+                else setMode("hp");
+              }}
+              className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
+              title="Ganti Ukuran"
+            >
+              <Monitor className="w-4 h-4" />
+              <span>Ukuran: {mode === "hp" ? "Kecil" : mode === "tablet" ? "Sedang" : "Besar"}</span>
+            </button>
+          </div>
         </div>
+      )}
 
-        <div className="flex items-center bg-muted p-1 rounded-2xl gap-2 px-4">
-          {/* 1. Theme Cycler */}
-          <button 
-            onClick={() => {
-              if (theme === "light") setTheme("blue");
-              else if (theme === "blue") setTheme("dark");
-              else setTheme("light");
-            }}
-            className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
-            title="Cycle Theme"
-          >
-            <Sun className={`w-4 h-4 ${theme === "blue" ? "text-blue-500" : theme === "dark" ? "text-yellow-500" : ""}`} />
-            <span>Theme: {theme.toUpperCase()}</span>
-          </button>
-
-          {/* 2. Landscape Toggle */}
-          <button 
-            onClick={() => setIsLandscape(!isLandscape)}
-            className={`p-2 rounded-xl shadow-sm transition-all flex items-center gap-2 text-xs font-bold ${isLandscape ? "bg-blue-600 text-white" : "bg-card text-foreground hover:bg-muted"}`}
-            title="Toggle Landscape"
-          >
-            <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''}`} />
-            <span>{isLandscape ? "Landscape" : "Portrait"}</span>
-          </button>
-
-          {/* 3. Scale Cycler */}
-          <button 
-            onClick={() => {
-              if (mode === "hp") setMode("tablet");
-              else if (mode === "tablet") setMode("pc");
-              else setMode("hp");
-            }}
-            className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
-            title="Cycle Scale"
-          >
-            <Monitor className="w-4 h-4" />
-            <span>Scale: {mode === "hp" ? "Small" : mode === "tablet" ? "Medium" : "Large"}</span>
-          </button>
-        </div>
-      </div>
-
-      <div className={`pt-0 md:pt-14`}>
+      <div className={`pt-0 ${showSimulator ? "md:pt-14" : ""}`}>
         <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
 
       <Switch>

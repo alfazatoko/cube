@@ -52,7 +52,7 @@ export function BottomNav() {
   ];
 
   const ownerNav = [
-    { icon: Home, label: "Home", href: "/owner" },
+    { icon: Home, label: "Beranda", href: "/owner" },
     { icon: History, label: "Riwayat", href: "/riwayat" },
     { icon: ArrowLeft, label: "Kembali", href: "/beranda" },
     { icon: LogOut, label: "Keluar", href: "logout", isLogout: true },

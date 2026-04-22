@@ -250,7 +250,7 @@ function FirebaseAuthScreen() {
             <Mail className="w-5 h-5 text-gray-400" />
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Alamat Email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
@@ -263,7 +263,7 @@ function FirebaseAuthScreen() {
               <KeyRound className="w-5 h-5 text-gray-400" />
               <input
                 type={showPass ? "text" : "password"}
-                placeholder="Password"
+                placeholder="Kata Sandi"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
@@ -297,7 +297,7 @@ function FirebaseAuthScreen() {
               onClick={() => { setIsResetting(true); setError(""); }}
               className="text-xs text-blue-600 font-bold hover:underline"
             >
-              Lupa Password?
+              Lupa Kata Sandi?
             </button>
           </div>
         )}
@@ -348,7 +348,7 @@ function FirebaseAuthScreen() {
           }}
           className="w-full text-center text-sm text-blue-600 font-semibold"
         >
-          {isResetting ? "Kembali ke Login" : (isRegister ? "Sudah punya akun? Login" : "Belum punya akun? Daftar")}
+          {isResetting ? "Kembali ke Masuk" : (isRegister ? "Sudah punya akun? Masuk" : "Belum punya akun? Daftar")}
         </button>
 
         {deferredPrompt && (

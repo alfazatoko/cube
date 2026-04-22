@@ -95,8 +95,8 @@ export default function License() {
             <Download className="w-5 h-5" />
           </div>
           <div className="flex flex-col items-start">
-            <span className="text-xs font-black uppercase tracking-widest">Download Panduan</span>
-            <span className="text-[10px] text-white/80 font-medium">Klik untuk download semua panduan</span>
+            <span className="text-xs font-black uppercase tracking-widest">Unduh Panduan</span>
+            <span className="text-[10px] text-white/80 font-medium">Klik untuk unduh semua panduan</span>
           </div>
         </button>
 

@@ -86,7 +86,7 @@ export default function NonTunai() {
                 ref={nominalRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Nominal"
+                placeholder="Nominal (Rp)"
                 value={nominalDisplay}
                 onChange={(e) => setNominalDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); adminRef.current?.focus(); } }}
@@ -96,13 +96,13 @@ export default function NonTunai() {
 
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                <span className="text-amber-600 font-extrabold text-sm">%</span>
+                <span className="text-amber-600 font-extrabold text-sm">Rp</span> {/* Rp Admin */}
               </div>
               <input
                 ref={adminRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Admin"
+                placeholder="Admin (Rp)"
                 value={adminDisplay}
                 onChange={(e) => setAdminDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); ketRef.current?.focus(); } }}

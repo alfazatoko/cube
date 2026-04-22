@@ -9,7 +9,7 @@ import { useDisplayMode } from "@/hooks/use-display-mode";
 export function Header() {
   const { user, shift, loginTime, absenTime } = useAuth();
   const [clock, setClock] = useState("");
-  const { mode, setMode, theme, setTheme, isLandscape, setIsLandscape } = useDisplayMode();
+  const { mode, setMode, theme, setTheme, isLandscape, setIsLandscape, showSimulator, setShowSimulator } = useDisplayMode();
   const [settings, setSettings] = useState<SettingsRecord | null>(null);
 
   useEffect(() => {
@@ -57,7 +57,10 @@ export function Header() {
       <div className="relative z-10">
         <div className="flex justify-between items-start mb-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white/40">
+            <div 
+              onClick={() => setShowSimulator(!showSimulator)}
+              className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white/40 cursor-pointer hover:scale-105 active:scale-95 transition-all"
+            >
               <img src={settings?.profilePhotoUrl || "https://ui-avatars.com/api/?name=KASIR+CUBE&background=2563eb&color=fff&size=256"} alt="KASIR CUBE" className="w-full h-full object-cover" />
             </div>
             <div className="flex flex-col">

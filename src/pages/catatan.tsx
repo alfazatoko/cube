@@ -230,7 +230,7 @@ export default function Catatan() {
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-base font-bold text-blue-600 flex items-center gap-1"><Phone className="w-4 h-4" /> {k.nomor}</p>
                         <button onClick={() => { navigator.clipboard.writeText(k.nomor || ""); toast({ title: "Nomor disalin" }); }} className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-lg text-[10px] font-bold flex items-center gap-0.5 active:scale-95 transition">
-                          <Copy className="w-3 h-3" /> Copy
+                          <Copy className="w-3 h-3" /> Salin
                         </button>
                       </div>
                     )}

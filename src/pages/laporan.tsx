@@ -464,7 +464,7 @@ export default function Laporan() {
             <span className="text-sm font-bold text-emerald-700">{formatRupiah(sisaCashPenjualan)}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-200">
-            <span className="text-sm text-gray-700 flex items-center gap-1">📱 <strong className="text-amber-600">Admin</strong></span>
+            <span className="text-sm text-gray-700 flex items-center gap-1"><span className="text-amber-600 font-black">Rp</span> <strong className="text-amber-600">Admin</strong></span>
             <span className="text-sm font-bold text-amber-600">{formatRupiah(totalAdmin)}</span>
           </div>
           {aksTx.length > 0 && (

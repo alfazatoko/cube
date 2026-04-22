@@ -154,7 +154,7 @@ export default function Beranda() {
         </div>
         <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
           <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-            <Lock className="w-2.5 h-2.5" /> Admin
+            <span className="text-amber-600 font-black">Rp</span> Admin
           </span>
           <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.adminTotal || 0)}</span>
         </div>
@@ -217,7 +217,7 @@ export default function Beranda() {
                 ref={nominalRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Nominal"
+                placeholder="Nominal (Rp)"
                 value={nominalDisplay}
                 onChange={(e) => setNominalDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); adminRef.current?.focus(); } }}
@@ -225,12 +225,12 @@ export default function Beranda() {
               />
             </div>
             <div className="flex items-center gap-2 border border-border rounded-xl px-3 h-11 bg-muted/50">
-              <span className="text-amber-500 font-bold text-sm">%</span>
+              <span className="text-amber-500 font-bold text-sm">Rp</span> {/* Rp Admin */}
               <input
                 ref={adminRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Admin"
+                placeholder="Admin (Rp)"
                 value={adminDisplay}
                 onChange={(e) => setAdminDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); ketRef.current?.focus(); } }}
