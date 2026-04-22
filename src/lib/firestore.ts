@@ -127,7 +127,7 @@ export interface TransactionRecord {
   adminTunai?: number;
   nominalNonTunai?: number;
   adminNonTunai?: number;
-  createdAt: any;
+  createdAt: string;
 }
 
 export interface SaldoHistoryRecord {
@@ -322,9 +322,11 @@ export async function getTransactions(params: {
   return results;
 }
 
-export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt">): Promise<string> {
+export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt" | "uid">): Promise<string> {
+  const uid = requireUid();
   const ref = await addDoc(getTenantCollection(db, "transactions"), {
     ...data,
+    uid,
     createdAt: new Date().toISOString(),
   });
 
@@ -356,7 +358,7 @@ export async function deleteTransaction(id: string): Promise<void> {
   await deleteDoc(doc(db, "transactions", id));
 }
 
-export async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id" | "createdAt">) {
+export async function updateBalance(kasirName: string, tx: Omit<TransactionRecord, "id" | "createdAt" | "uid">) {
   const ref = doc(db, "balances", kasirName);
   const snap = await getDoc(ref);
   const bal: BalanceRecord = snap.exists()
@@ -599,7 +601,7 @@ export async function createAttendance(data: Omit<AttendanceRecord, "id" | "crea
   return ref.id;
 }
 
-export async function getIzinList(params: { month?: string; kasirName?: string }): Promise<IzinRecord[]> {
+export async function getIzinList(params: { month?: string; nama?: string }): Promise<IzinRecord[]> {
   const col = getTenantCollection(db, "izin");
   const q = query(col);
   const snap = await getDocs(q);
@@ -786,8 +788,9 @@ export async function ownerAddSaldo(kasirName: string, date: string, data: { ban
   // Update daily_notes collection (adds to existing)
   const noteRef = doc(db, "daily_notes", `${date}_${kasirName}`);
   const noteSnap = await getDoc(noteRef);
-  const currentSisa = noteSnap.exists() ? (noteSnap.data().sisaSaldoBank || 0) : 0;
-  const currentRealApp = noteSnap.exists() ? (noteSnap.data().saldoRealApp || 0) : 0;
+  const noteData = noteSnap.exists() ? (noteSnap.data() as DailyNoteRecord) : null;
+  const currentSisa = noteData ? (noteData.sisaSaldoBank || 0) : 0;
+  const currentRealApp = noteData ? (noteData.saldoRealApp || 0) : 0;
 
   await setDoc(noteRef, { 
     date,
@@ -847,7 +850,7 @@ export async function validateLicense(code: string, email: string, deviceId: str
     return { valid: false, message: "Kode lisensi tidak valid." };
   }
   
-  const license = { id: snap.id, ...snap.data() } as LicenseRecord;
+  const license = { id: snap.id, ...(snap.data() as any) } as LicenseRecord;
   
   if (license.status !== "active") {
     return { valid: false, message: "Lisensi ini sudah tidak aktif." };
