@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone } from "lucide-react";
+import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone, Eye, EyeOff } from "lucide-react";
 import { generateLicense, getLicenses, deleteLicense, getSystemConfig, updateSystemConfig, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -141,6 +141,8 @@ export default function AdminPanel() {
     alert("Kode lisensi disalin!");
   };
 
+  const [showPass, setShowPass] = useState(false);
+
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -155,13 +157,22 @@ export default function AdminPanel() {
           
           {error && <div className="bg-red-50 text-red-600 text-sm font-bold p-3 rounded-xl mb-4 text-center">{error}</div>}
           
-          <input
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3 mb-4 outline-none focus:border-blue-500 transition"
-          />
+          <div className="relative mb-4">
+            <input
+              type={showPass ? "text" : "password"}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full bg-gray-50 border-2 border-gray-200 rounded-2xl px-4 py-3 outline-none focus:border-blue-500 transition"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass(!showPass)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+            >
+              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
           <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl hover:bg-blue-700 transition">
             MASUK
           </button>

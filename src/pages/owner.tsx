@@ -138,6 +138,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
   const [role, setRole] = useState("kasir");
   const [saving, setSaving] = useState(false);
   const [showPins, setShowPins] = useState<Record<string, boolean>>({});
+  const [showPinInput, setShowPinInput] = useState(false);
 
   const loadUsers = useCallback(async () => {
     const u = await getUsers();
@@ -254,7 +255,20 @@ function KasirPage({ goBack }: { goBack: () => void }) {
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">PIN Keamanan (4 Digit)</label>
-                <input value={pin} onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} inputMode="numeric" placeholder="0000" className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition" />
+                <div className="relative">
+                  <input
+                    type={showPinInput ? "text" : "password"}
+                    value={pin}
+                    onChange={e => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                    maxLength={4}
+                    inputMode="numeric"
+                    placeholder="0000"
+                    className="w-full border border-border rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 transition"
+                  />
+                  <button type="button" onClick={() => setShowPinInput(!showPinInput)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                    {showPinInput ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </div>
             <button onClick={handleSave} disabled={saving} className="w-full bg-blue-600 text-white font-black py-3.5 rounded-2xl text-sm disabled:opacity-60 shadow-lg shadow-blue-500/30">
@@ -1798,6 +1812,9 @@ function AkunPage({ goBack }: { goBack: () => void }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [ownerPin, setOwnerPin] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showNewPass, setShowNewPass] = useState(false);
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [showOwnerPin, setShowOwnerPin] = useState(false);
   const [users, setUsers] = useState<UserRecord[]>([]);
 
   useEffect(() => {
@@ -1892,35 +1909,41 @@ function AkunPage({ goBack }: { goBack: () => void }) {
 
           <div className="pt-2 border-t border-gray-100">
             <label className="text-xs font-bold text-gray-500 block mb-1">Ganti Password</label>
-            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 mb-2">
+            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 mb-2 relative">
               <KeyRound className="w-4 h-4 text-gray-400" />
               <input
-                type="password"
+                type={showNewPass ? "text" : "password"}
                 placeholder="Password Baru (Kosongkan jika tidak diganti)"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
               />
+              <button type="button" onClick={() => setShowNewPass(!showNewPass)} className="text-gray-400">
+                {showNewPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
+            <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 relative">
               <KeyRound className="w-4 h-4 text-gray-400" />
               <input
-                type="password"
+                type={showConfirmPass ? "text" : "password"}
                 placeholder="Konfirmasi Password Baru"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 placeholder:text-gray-400 placeholder:font-normal"
               />
+              <button type="button" onClick={() => setShowConfirmPass(!showConfirmPass)} className="text-gray-400">
+                {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
           {ownerData && (
             <div className="pt-2 border-t border-gray-100">
               <label className="text-xs font-bold text-gray-500 block mb-1">Ganti PIN Owner</label>
-              <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
+              <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 relative">
                 <Lock className="w-4 h-4 text-gray-400" />
                 <input
-                  type="password"
+                  type={showOwnerPin ? "text" : "password"}
                   inputMode="numeric"
                   placeholder="PIN Owner"
                   value={ownerPin}
@@ -1930,6 +1953,9 @@ function AkunPage({ goBack }: { goBack: () => void }) {
                   }}
                   className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800 tracking-widest placeholder:text-gray-400 placeholder:font-normal placeholder:tracking-normal"
                 />
+                <button type="button" onClick={() => setShowOwnerPin(!showOwnerPin)} className="text-gray-400">
+                  {showOwnerPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               <p className="text-[10px] text-gray-400 mt-1">*PIN untuk masuk ke Mode Owner jika fitur PIN diaktifkan</p>
             </div>

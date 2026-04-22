@@ -286,6 +286,9 @@ function FirebaseAuthScreen() {
                 onKeyDown={e => e.key === "Enter" && handleSubmit()}
                 className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
               />
+              <button type="button" onClick={() => setShowPass(!showPass)} className="text-gray-400">
+                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           )}
         </div>
