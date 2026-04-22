@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
-import { getUsers, getSettings, loginUser, type UserRecord } from "@/lib/firestore";
+import { getUsers, getSettings, loginUser, getSystemConfig, type UserRecord } from "@/lib/firestore";
 import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle, Download } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
