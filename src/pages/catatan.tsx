@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/header";
 import { getHutangList, createHutang, updateHutang, deleteHutang, getKontakList, createKontak, updateKontak, deleteKontak, type HutangRecord, type KontakRecord } from "@/lib/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Receipt, BookUser, Plus, Trash2, Edit, Check, Search, Ban, Phone, Copy } from "lucide-react";
+import { Receipt, BookUser, Plus, Trash2, Edit, Check, Search, Ban, Phone, Copy, Camera, Image as ImageIcon, X } from "lucide-react";
 
 export default function Catatan() {
   const { user } = useAuth();
@@ -28,6 +28,8 @@ export default function Catatan() {
   const [nomor, setNomor] = useState("");
   const [saving, setSaving] = useState(false);
   const [showLunas, setShowLunas] = useState(false);
+  const [foto, setFoto] = useState<string | null>(null);
+  const [selectedFoto, setSelectedFoto] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -47,8 +49,59 @@ export default function Catatan() {
     setNominalDisplay("");
     setKeterangan("");
     setNomor("");
+    setKeterangan("");
+    setFoto(null);
     setEditItem(null);
     setShowForm(false);
+  };
+
+  const handleCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        // Max dimensions
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Quality compression until < 200kb
+        let quality = 0.7;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        
+        while (dataUrl.length > 200 * 1024 && quality > 0.1) {
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+
+        setFoto(dataUrl);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveKasbon = async () => {
@@ -58,9 +111,9 @@ export default function Catatan() {
     setSaving(true);
     try {
       if (editItem && "nominal" in editItem) {
-        await updateHutang(editItem.id, { nama, nominal: n, keterangan }, user?.name);
+        await updateHutang(editItem.id, { nama, nominal: n, keterangan, foto }, user?.name);
       } else {
-        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name }, user?.name);
+        await createHutang({ nama, nominal: n, keterangan, tanggal: getWibDate(), lunas: false, createdBy: user?.name, foto }, user?.name);
       }
       toast({ title: editItem ? "Kasbon diperbarui" : "Kasbon ditambahkan" });
       resetForm();
@@ -75,9 +128,9 @@ export default function Catatan() {
     setSaving(true);
     try {
       if (editItem && "nomor" in editItem) {
-        await updateKontak(editItem.id, { nama, nomor, keterangan }, user?.name);
+        await updateKontak(editItem.id, { nama, nomor, keterangan, foto }, user?.name);
       } else {
-        await createKontak({ nama, nomor, keterangan, createdBy: user?.name }, user?.name);
+        await createKontak({ nama, nomor, keterangan, createdBy: user?.name, foto }, user?.name);
       }
       toast({ title: editItem ? "Kontak diperbarui" : "Kontak ditambahkan" });
       resetForm();
@@ -118,6 +171,7 @@ export default function Catatan() {
     setNama(h.nama);
     setNominalDisplay(formatThousands(String(h.nominal)));
     setKeterangan(h.keterangan || "");
+    setFoto(h.foto || null);
     setShowForm(true);
   };
 
@@ -126,6 +180,7 @@ export default function Catatan() {
     setNama(k.nama);
     setNomor(k.nomor || "");
     setKeterangan(k.keterangan || "");
+    setFoto(k.foto || null);
     setShowForm(true);
   };
 
@@ -191,6 +246,14 @@ export default function Catatan() {
                   <div>
                     <span className="font-bold text-sm text-gray-800">{h.nama}</span>
                     {h.keterangan && <p className="text-[11px] text-gray-500 mt-0.5">{h.keterangan}</p>}
+                    {h.foto && (
+                      <div className="mt-2 relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 cursor-pointer active:scale-95 transition" onClick={() => setSelectedFoto(h.foto || null)}>
+                        <img src={h.foto} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                          <Search className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <span className={`font-extrabold text-sm ${h.lunas ? 'text-green-600 line-through' : 'text-red-600'}`}>{formatRupiah(h.nominal)}</span>
                 </div>
@@ -235,6 +298,14 @@ export default function Catatan() {
                       </div>
                     )}
                     {k.keterangan && <p className="text-[11px] text-gray-500 mt-0.5">{k.keterangan}</p>}
+                    {k.foto && (
+                      <div className="mt-2 relative w-16 h-16 rounded-lg overflow-hidden border border-gray-200 cursor-pointer active:scale-95 transition" onClick={() => setSelectedFoto(k.foto || null)}>
+                        <img src={k.foto} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                          <Search className="w-3 h-3 text-white" />
+                        </div>
+                      </div>
+                    )}
                     {k.createdBy && <p className="text-[10px] text-blue-400 mt-0.5">Dibuat oleh: {k.createdBy}</p>}
                   </div>
                   <div className="flex gap-1.5 flex-shrink-0 ml-2">
@@ -264,10 +335,46 @@ export default function Catatan() {
                 <input value={nomor} onChange={e => setNomor(e.target.value)} inputMode="tel" placeholder="Nomor HP" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
               )}
               <input value={keterangan} onChange={e => setKeterangan(e.target.value)} placeholder="Keterangan" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none" />
+              
+              <div className="flex gap-2">
+                <label className="flex-1 flex items-center justify-center gap-2 bg-slate-100 text-slate-600 py-3 rounded-xl cursor-pointer active:scale-95 transition border border-dashed border-slate-300">
+                  <Camera className="w-4 h-4" />
+                  <span className="text-xs font-bold">Ambil Foto</span>
+                  <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleCapture} />
+                </label>
+                {foto && (
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-gray-200">
+                    <img src={foto} className="w-full h-full object-cover" />
+                    <button onClick={() => setFoto(null)} className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl-lg">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <button onClick={tab === "kasbon" ? handleSaveKasbon : handleSaveKontak} disabled={saving} className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-3 rounded-full text-sm disabled:opacity-60">
               {saving ? "Menyimpan..." : "Simpan"}
             </button>
+          </div>
+        </div>
+      )}
+      {/* Modal Preview Foto */}
+      {selectedFoto && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4" onClick={() => setSelectedFoto(null)}>
+          <button className="absolute top-6 right-6 text-white bg-white/20 p-2 rounded-full backdrop-blur-md">
+            <X className="w-6 h-6" />
+          </button>
+          <img src={selectedFoto} className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl" onClick={e => e.stopPropagation()} />
+          <div className="mt-6 flex gap-4">
+             <button onClick={(e) => {
+               e.stopPropagation();
+               const link = document.createElement('a');
+               link.href = selectedFoto;
+               link.download = `foto-${Date.now()}.jpg`;
+               link.click();
+             }} className="bg-white/20 text-white px-6 py-2.5 rounded-full font-bold text-sm backdrop-blur-md flex items-center gap-2">
+               Unduh Foto
+             </button>
           </div>
         </div>
       )}
