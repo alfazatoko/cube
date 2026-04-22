@@ -3,13 +3,13 @@ import { useAuth } from "@/lib/auth";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { getSettings, type SettingsRecord } from "@/lib/firestore";
-import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone } from "lucide-react";
+import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone, RotateCw } from "lucide-react";
 import { useDisplayMode } from "@/hooks/use-display-mode";
 
 export function Header() {
   const { user, shift, loginTime, absenTime } = useAuth();
   const [clock, setClock] = useState("");
-  const { mode, setMode, isDark, setIsDark } = useDisplayMode();
+  const { mode, setMode, theme, setTheme, isLandscape, setIsLandscape } = useDisplayMode();
   const [settings, setSettings] = useState<SettingsRecord | null>(null);
 
   useEffect(() => {
@@ -102,39 +102,46 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
-            <div className="flex items-center gap-0.5 bg-white/10 rounded-full p-0.5 border border-white/5">
-              {displayModes.map(dm => {
-                const Icon = dm.icon;
-                return (
-                  <button
-                    key={dm.id}
-                    onClick={() => setMode(dm.id)}
-                    className={`p-1.5 rounded-full transition-all ${mode === dm.id ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
-                    title={dm.id.toUpperCase()}
-                  >
-                    <Icon className="w-3 h-3" />
-                  </button>
-                );
-              })}
-            </div>
+          <div className="flex items-center gap-1.5 bg-white/10 rounded-full p-1 border border-white/5">
+            {/* 1. ICON TEMA MATAHARI */}
+            <button
+              onClick={() => {
+                if (theme === "light") setTheme("blue");
+                else if (theme === "blue") setTheme("dark");
+                else setTheme("light");
+              }}
+              className="p-1.5 rounded-full transition-all bg-white/20 hover:bg-white/40 shadow-sm"
+              title="Ganti Tema (3x Klik)"
+            >
+              <Sun className={`w-3.5 h-3.5 ${theme === "blue" ? "text-blue-300" : theme === "dark" ? "text-yellow-200" : "text-white"}`} />
+            </button>
 
-            <div className="flex items-center gap-0.5 bg-white/10 rounded-full p-0.5 border border-white/5">
-              <button
-                onClick={() => setIsDark(false)}
-                className={`p-1.5 rounded-full transition-all ${!isDark ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
-                title="Mode Terang"
-              >
-                <Sun className="w-3 h-3" />
-              </button>
-              <button
-                onClick={() => setIsDark(true)}
-                className={`p-1.5 rounded-full transition-all ${isDark ? 'bg-white/30 shadow-sm' : 'opacity-50 hover:opacity-80 hover:bg-white/5'}`}
-                title="Mode Gelap"
-              >
-                <Moon className="w-3 h-3" />
-              </button>
-            </div>
+            {/* 2. ICON LANDSCAPE */}
+            <button
+              onClick={() => setIsLandscape(!isLandscape)}
+              className={`p-1.5 rounded-full transition-all ${isLandscape ? 'bg-white/40' : 'bg-white/20'} hover:bg-white/40 shadow-sm`}
+              title="Toggle Landscape/Portrait"
+            >
+              <RotateCw className={`w-3.5 h-3.5 ${isLandscape ? "rotate-90" : ""} transition-transform`} />
+            </button>
+
+            {/* 3. ICON PC */}
+            <button
+              onClick={() => {
+                if (mode === "hp") setMode("tablet");
+                else if (mode === "tablet") setMode("pc");
+                else setMode("hp");
+              }}
+              className="p-1.5 rounded-full transition-all bg-white/20 hover:bg-white/40 shadow-sm"
+              title="Ukuran Layar (3x Klik)"
+            >
+              <div className="relative">
+                <Monitor className="w-3.5 h-3.5" />
+                <span className="absolute -bottom-1 -right-1 text-[6px] font-bold">
+                  {mode === "hp" ? "S" : mode === "tablet" ? "M" : "L"}
+                </span>
+              </div>
+            </button>
           </div>
         </div>
       </div>

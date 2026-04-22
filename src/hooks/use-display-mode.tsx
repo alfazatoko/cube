@@ -1,14 +1,15 @@
 import { useState, useEffect, createContext, useContext } from "react";
 
 type DisplayMode = "hp" | "tablet" | "pc";
+type ThemeMode = "light" | "blue" | "dark";
 
 interface DisplayModeContextType {
   mode: DisplayMode;
   setMode: (mode: DisplayMode) => void;
   isLandscape: boolean;
   setIsLandscape: (val: boolean) => void;
-  isDark: boolean;
-  setIsDark: (val: boolean) => void;
+  theme: ThemeMode;
+  setTheme: (val: ThemeMode) => void;
 }
 
 const DisplayModeContext = createContext<DisplayModeContextType>({ 
@@ -16,8 +17,8 @@ const DisplayModeContext = createContext<DisplayModeContextType>({
   setMode: () => {},
   isLandscape: false,
   setIsLandscape: () => {},
-  isDark: false,
-  setIsDark: () => {}
+  theme: "light",
+  setTheme: () => {}
 });
 
 export function DisplayModeProvider({ children }: { children: React.ReactNode }) {
@@ -29,8 +30,8 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
     return localStorage.getItem("alfaza_is_landscape") === "true";
   });
 
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem("alfaza_is_dark") === "true";
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    return (localStorage.getItem("alfaza_theme") as ThemeMode) || "light";
   });
 
   useEffect(() => {
@@ -42,16 +43,18 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
   }, [isLandscape]);
 
   useEffect(() => {
-    localStorage.setItem("alfaza_is_dark", String(isDark));
-    if (isDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    localStorage.setItem("alfaza_theme", theme);
+    const root = document.documentElement;
+    root.classList.remove("dark", "blue-theme");
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else if (theme === "blue") {
+      root.classList.add("blue-theme");
     }
-  }, [isDark]);
+  }, [theme]);
 
   return (
-    <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, isDark, setIsDark }}>
+    <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, theme, setTheme }}>
       {children}
     </DisplayModeContext.Provider>
   );

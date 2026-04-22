@@ -118,11 +118,12 @@ function GuideModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open
 }
 
 function FirebaseAuthScreen() {
-  const { firebaseLogin, firebaseRegister } = useAuth();
+  const { firebaseLogin, firebaseRegister, firebaseResetPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [shopCode, setShopCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -176,6 +177,24 @@ function FirebaseAuthScreen() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Masukkan email Anda terlebih dahulu");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      await firebaseResetPassword(email);
+      alert("Link reset password telah dikirim ke email Anda.");
+      setIsResetting(false);
+    } catch (err: any) {
+      setError(err?.message || "Gagal mengirim email reset");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [authSettings, setAuthSettings] = useState<{ profilePhotoUrl?: string; shopName?: string } | null>(null);
   useEffect(() => { getSettings().then(s => setAuthSettings(s)).catch(() => {}); }, []);
 
@@ -192,7 +211,7 @@ function FirebaseAuthScreen() {
         <p className="text-center text-muted-foreground text-sm mb-0">Sistem Kasir Pro</p>
         <p className="text-center text-[10px] text-blue-400 font-bold mb-1 tracking-widest">v2.1.0</p>
         <p className="text-center text-blue-500 text-xs font-semibold mb-6">
-          {isRegister ? "Daftar Akun Baru" : "Login Firebase"}
+          {isResetting ? "Reset Password" : (isRegister ? "Daftar Akun Baru" : "Login Firebase")}
         </p>
 
         {error && (
@@ -227,22 +246,24 @@ function FirebaseAuthScreen() {
             />
           </div>
 
-          <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
-            <KeyRound className="w-5 h-5 text-gray-400" />
-            <input
-              type={showPass ? "text" : "password"}
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
-              className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
-            />
-            <button type="button" onClick={() => setShowPass(!showPass)} className="text-gray-400">
-              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
+          {!isResetting && (
+            <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
+              <KeyRound className="w-5 h-5 text-gray-400" />
+              <input
+                type={showPass ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && !isRegister && handleSubmit()}
+                className="flex-1 bg-transparent outline-none text-sm font-semibold text-foreground placeholder:text-gray-400 placeholder:font-normal"
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)} className="text-gray-400">
+                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          )}
 
-          {isRegister && (
+          {isRegister && !isResetting && (
             <div className="flex items-center gap-3 border-2 border-border rounded-2xl px-4 h-14 bg-muted focus-within:border-blue-500">
               <KeyRound className="w-5 h-5 text-gray-400" />
               <input
@@ -257,22 +278,43 @@ function FirebaseAuthScreen() {
           )}
         </div>
 
+        {!isRegister && !isResetting && (
+          <div className="flex justify-end mb-4 px-1">
+            <button 
+              type="button" 
+              onClick={() => { setIsResetting(true); setError(""); }}
+              className="text-xs text-blue-600 font-bold hover:underline"
+            >
+              Lupa Password?
+            </button>
+          </div>
+        )}
+
         <button
           type="button"
-          onClick={handleSubmit}
+          onClick={isResetting ? handleResetPassword : handleSubmit}
           disabled={loading}
           className="w-full h-14 rounded-3xl font-extrabold text-lg bg-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50 mb-4"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-          {isRegister ? "DAFTAR" : "LOGIN"}
+          {isResetting ? "KIRIM LINK RESET" : (isRegister ? "DAFTAR" : "LOGIN")}
         </button>
 
         <button
           type="button"
-          onClick={() => { setIsRegister(!isRegister); setError(""); setShopCode(""); setConfirmPassword(""); }}
+          onClick={() => { 
+            if (isResetting) {
+              setIsResetting(false);
+            } else {
+              setIsRegister(!isRegister); 
+            }
+            setError(""); 
+            setShopCode(""); 
+            setConfirmPassword(""); 
+          }}
           className="w-full text-center text-sm text-blue-600 font-semibold"
         >
-          {isRegister ? "Sudah punya akun? Login" : "Belum punya akun? Daftar"}
+          {isResetting ? "Kembali ke Login" : (isRegister ? "Sudah punya akun? Login" : "Belum punya akun? Daftar")}
         </button>
 
         <div className="mt-4 bg-blue-50 rounded-xl p-3 border border-blue-200">

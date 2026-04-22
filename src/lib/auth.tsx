@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  sendPasswordResetEmail,
   type User as FirebaseUser,
 } from "firebase/auth";
 import { auth } from "./firebase";
@@ -21,6 +22,7 @@ interface AuthContextType {
   firebaseLogin: (email: string, password: string) => Promise<void>;
   firebaseRegister: (email: string, password: string) => Promise<void>;
   firebaseLogout: () => Promise<void>;
+  firebaseResetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,6 +114,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOut(auth);
   };
 
+  const firebaseResetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -126,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         firebaseLogin,
         firebaseRegister,
         firebaseLogout,
+        firebaseResetPassword,
       }}
     >
       {children}

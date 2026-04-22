@@ -49,7 +49,7 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
 }
 
 function Router() {
-  const { mode, setMode, isLandscape, setIsLandscape, isDark, setIsDark } = useDisplayMode();
+  const { mode, setMode, isLandscape, setIsLandscape, theme, setTheme } = useDisplayMode();
   const { user } = useAuth();
   const maxW = getMaxWidth(mode, isLandscape);
   useAutoScheduler(!!user);
@@ -114,7 +114,7 @@ function Router() {
   }, [location, setLocation]);
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen text-foreground">
       {/* Responsive Toolbar - Visible on PC and Tablet screens */}
       <div className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-card/80 backdrop-blur-md border-b border-border z-[100] items-center justify-between px-6 shadow-sm">
         <div className="flex items-center gap-3">
@@ -125,45 +125,46 @@ function Router() {
           >
             CUBE
           </div>
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Simulator</span>
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Simulator Control</span>
         </div>
 
-        <div className="flex items-center bg-muted p-1 rounded-2xl gap-1">
+        <div className="flex items-center bg-muted p-1 rounded-2xl gap-2 px-4">
+          {/* 1. Theme Cycler */}
           <button 
-            onClick={() => setMode("hp")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "hp" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            onClick={() => {
+              if (theme === "light") setTheme("blue");
+              else if (theme === "blue") setTheme("dark");
+              else setTheme("light");
+            }}
+            className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
+            title="Cycle Theme"
           >
-            <Smartphone className="w-4 h-4" /> Smartphone
+            <Sun className={`w-4 h-4 ${theme === "blue" ? "text-blue-500" : theme === "dark" ? "text-yellow-500" : ""}`} />
+            <span>Theme: {theme.toUpperCase()}</span>
           </button>
-          <button 
-            onClick={() => setMode("tablet")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "tablet" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            <Tablet className="w-4 h-4" /> Tablet
-          </button>
-          <button 
-            onClick={() => setMode("pc")} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${mode === "pc" ? "bg-card text-blue-600 shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            <Monitor className="w-4 h-4" /> Desktop PC
-          </button>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setIsDark(!isDark)}
-            className={`p-2.5 rounded-xl transition-all ${isDark ? "bg-gray-800 text-yellow-400" : "bg-muted text-muted-foreground hover:text-blue-600"}`}
-            title={isDark ? "Layar Terang" : "Layar Gelap"}
-          >
-            {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          
+          {/* 2. Landscape Toggle */}
           <button 
             onClick={() => setIsLandscape(!isLandscape)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${isLandscape ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground"}`}
+            className={`p-2 rounded-xl shadow-sm transition-all flex items-center gap-2 text-xs font-bold ${isLandscape ? "bg-blue-600 text-white" : "bg-card text-foreground hover:bg-muted"}`}
+            title="Toggle Landscape"
           >
-            <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''} transition-transform`} /> 
-            {isLandscape ? "Landscape" : "Portrait"}
+            <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''}`} />
+            <span>{isLandscape ? "Landscape" : "Portrait"}</span>
+          </button>
+
+          {/* 3. Scale Cycler */}
+          <button 
+            onClick={() => {
+              if (mode === "hp") setMode("tablet");
+              else if (mode === "tablet") setMode("pc");
+              else setMode("hp");
+            }}
+            className="p-2 rounded-xl bg-card shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold"
+            title="Cycle Scale"
+          >
+            <Monitor className="w-4 h-4" />
+            <span>Scale: {mode === "hp" ? "Small" : mode === "tablet" ? "Medium" : "Large"}</span>
           </button>
         </div>
       </div>
