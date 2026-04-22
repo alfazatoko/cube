@@ -118,7 +118,7 @@ function GuideModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open
 }
 
 function FirebaseAuthScreen() {
-  const { firebaseLogin, firebaseRegister, firebaseResetPassword } = useAuth();
+  const { firebaseLogin, firebaseRegister, firebaseResetPassword, firebaseGoogleLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -146,6 +146,8 @@ function FirebaseAuthScreen() {
       setDeferredPrompt(null);
     }
   };
+
+  const handleSubmit = async () => {
     if (!email || !password) {
       setError("Email dan password harus diisi");
       return;

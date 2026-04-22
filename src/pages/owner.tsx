@@ -1539,7 +1539,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
                     newCats[index].type = e.target.value;
                     setCustomCategories(newCats);
                   }} className="flex-1 border border-border rounded-lg px-2 py-1.5 text-[10px] outline-none bg-white font-semibold text-gray-600">
-                    <option value="bank">Bank \u2192 Cash (CASH +, BANK -)</option>
+                    <option value="bank">Bank → Cash (CASH +, BANK -)</option>
                     <option value="tarik">Tarik Tunai (TARIK +, CASH -)</option>
                     <option value="aks">Aksesoris (AKSESORIS +)</option>
                     <option value="admin">Admin Only (Hanya Admin +)</option>
