@@ -119,14 +119,6 @@ export function Header() {
               <Sun className={`w-3.5 h-3.5 ${theme === "blue" ? "text-blue-300" : theme === "dark" ? "text-yellow-200" : "text-white"}`} />
             </button>
 
-            {/* 2. ICON LANDSCAPE */}
-            <button
-              onClick={() => setIsLandscape(!isLandscape)}
-              className={`p-1.5 rounded-full transition-all ${isLandscape ? 'bg-white/40' : 'bg-white/20'} hover:bg-white/40 shadow-sm`}
-              title="Toggle Landscape/Portrait"
-            >
-              <RotateCw className={`w-3.5 h-3.5 ${isLandscape ? "rotate-90" : ""} transition-transform`} />
-            </button>
 
             {/* 3. ICON PC */}
             <button

@@ -144,15 +144,6 @@ function Router() {
               <span>Tema: {theme === "light" ? "TERANG" : theme === "blue" ? "BIRU" : "GELAP"}</span>
             </button>
 
-            {/* 2. Landscape Toggle */}
-            <button 
-              onClick={() => setIsLandscape(!isLandscape)}
-              className={`p-2 rounded-xl shadow-sm transition-all flex items-center gap-2 text-xs font-bold ${isLandscape ? "bg-blue-600 text-white" : "bg-card text-foreground hover:bg-muted"}`}
-              title="Ganti Orientasi"
-            >
-              <RotateCw className={`w-4 h-4 ${isLandscape ? 'rotate-90' : ''}`} />
-              <span>{isLandscape ? "Lanskap" : "Potret"}</span>
-            </button>
 
             {/* 3. Scale Cycler */}
             <button 

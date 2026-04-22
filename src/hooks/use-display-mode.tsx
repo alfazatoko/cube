@@ -65,6 +65,18 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
     }
   }, [theme]);
 
+  // Otomatis deteksi landscape berdasarkan rasio layar
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isWindowLandscape = window.innerWidth > window.innerHeight;
+      setIsLandscape(isWindowLandscape);
+    };
+
+    checkOrientation();
+    window.addEventListener("resize", checkOrientation);
+    return () => window.removeEventListener("resize", checkOrientation);
+  }, []);
+
   return (
     <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, theme, setTheme, showSimulator, setShowSimulator }}>
       {children}

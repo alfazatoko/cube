@@ -108,6 +108,7 @@ export interface SettingsRecord {
 export interface SystemConfigRecord {
   requireLicense?: boolean;
   waNumber?: string;
+  lockOwnerMode?: boolean;
 }
 
 export interface TransactionRecord {
@@ -289,7 +290,8 @@ export async function getSystemConfig(): Promise<SystemConfigRecord> {
   if (!snap.exists()) {
     const defaults: SystemConfigRecord = {
       requireLicense: true,
-      waNumber: "6287824889706"
+      waNumber: "6287824889706",
+      lockOwnerMode: false
     };
     await setDoc(ref, defaults);
     return defaults;

@@ -410,6 +410,8 @@ function KasirSelectionScreen() {
     }
   };
 
+  const [lockOwnerMode, setLockOwnerMode] = useState(false);
+
   useEffect(() => {
     let cancelled = false;
     const timeout = setTimeout(() => {
@@ -421,9 +423,10 @@ function KasirSelectionScreen() {
 
     const load = async () => {
       try {
-        const [usersData, settingsData] = await Promise.all([
+        const [usersData, settingsData, sysConfig] = await Promise.all([
           getUsers(),
           getSettings(),
+          getSystemConfig()
         ]);
         if (!cancelled) {
           clearTimeout(timeout);
@@ -431,6 +434,7 @@ function KasirSelectionScreen() {
           setPinEnabled(settingsData.pinEnabled ?? false);
           setProfilePhoto(settingsData.profilePhotoUrl || "");
           setShopNameSetting(settingsData.shopName || "");
+          setLockOwnerMode(sysConfig.lockOwnerMode ?? false);
           setLoading(false);
         }
       } catch (err: any) {
@@ -448,6 +452,11 @@ function KasirSelectionScreen() {
   const doLogin = async (userName: string) => {
     const user = users.find((u) => u.name === userName);
     if (!user) return;
+
+    if (user.role === "owner" && lockOwnerMode) {
+      alert("Akses MODE OWNER sedang dikunci oleh Admin!");
+      return;
+    }
     if (pinEnabled && pin.length < 4) {
       setError("PIN harus 4 digit");
       return;
@@ -555,13 +564,18 @@ function KasirSelectionScreen() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (lockOwnerMode) {
+                        alert("Akses MODE OWNER sedang dikunci oleh Admin!");
+                        return;
+                      }
                       setSelected(ownerUser.name);
                       setDropdownOpen(false);
                       setSelectedShift("PAGI");
                     }}
-                    className="w-full px-5 py-4 text-left text-base font-semibold text-gray-900"
+                    className={`w-full px-5 py-4 text-left text-base font-semibold border-t border-border flex items-center justify-between ${lockOwnerMode ? 'text-gray-400 bg-gray-50' : 'text-gray-900'}`}
                   >
-                    {ownerUser.name} 👑
+                    <span>{ownerUser.name} 👑</span>
+                    {lockOwnerMode && <Lock className="w-4 h-4 text-rose-500" />}
                   </button>
                 )}
               </div>

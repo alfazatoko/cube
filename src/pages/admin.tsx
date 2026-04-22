@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone, Eye, EyeOff } from "lucide-react";
+import { Loader2, Key, Trash2, Copy, ShieldCheck, CheckCircle2, Clock, Infinity, Download, Phone, Eye, EyeOff, Lock } from "lucide-react";
 import { generateLicense, getLicenses, deleteLicense, getSystemConfig, updateSystemConfig, type LicenseRecord } from "@/lib/firestore";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -17,6 +17,7 @@ export default function AdminPanel() {
   const [genEmail, setGenEmail] = useState("");
   const [waNumber, setWaNumber] = useState("6287824889706");
   const [waSaving, setWaSaving] = useState(false);
+  const [lockOwnerMode, setLockOwnerMode] = useState(false);
 
   useEffect(() => {
     if (authenticated) {
@@ -38,11 +39,24 @@ export default function AdminPanel() {
       });
       setLicenses(sorted);
       setRequireLicense(settings.requireLicense ?? true);
+      setLockOwnerMode(settings.lockOwnerMode ?? false);
       setWaNumber(settings.waNumber || "6287824889706");
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleLockOwnerMode = async () => {
+    const newValue = !lockOwnerMode;
+    setLockOwnerMode(newValue);
+    try {
+      await updateSystemConfig({ lockOwnerMode: newValue });
+    } catch (err: any) {
+      console.error("Gagal update setting", err);
+      alert("Error dari Firebase: " + err.message);
+      setLockOwnerMode(!newValue);
     }
   };
 
@@ -204,8 +218,23 @@ export default function AdminPanel() {
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${requireLicense ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 mb-4">
             {requireLicense ? "Aktif: Pengguna wajib memasukkan kode lisensi." : "Nonaktif: Aplikasi bisa digunakan tanpa lisensi."}
+          </p>
+
+          <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
+            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+              <Lock className="w-5 h-5 text-rose-500" /> Lock Owner Mode
+            </h3>
+            <button 
+              onClick={toggleLockOwnerMode}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${lockOwnerMode ? 'bg-rose-600' : 'bg-gray-300'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${lockOwnerMode ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {lockOwnerMode ? "Aktif: Tombol 'MASUK MODE OWNER' terkunci." : "Nonaktif: Tombol owner bisa diklik."}
           </p>
         </div>
 
