@@ -258,6 +258,14 @@ export async function getSettings(): Promise<SettingsRecord> {
         AKS: { name: "AKS", visible: true },
         TARIK: { name: "TARIK", visible: true },
       },
+      customCategories: [
+        { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground" },
+        { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground" },
+        { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground" },
+        { id: "dana", name: "Dana", type: "bank", color: "text-foreground" },
+        { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600" },
+        { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500" },
+      ],
     };
     await setDoc(ref, defaults);
     return defaults;
