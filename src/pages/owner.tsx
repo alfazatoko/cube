@@ -80,11 +80,11 @@ export default function Owner() {
           })}
         </div>
 
-        <AddSaldoModal 
-          open={isSaldoModalOpen} 
-          onOpenChange={setIsSaldoModalOpen} 
-          kasirName="" 
-          isOwnerMode={true} 
+        <AddSaldoModal
+          open={isSaldoModalOpen}
+          onOpenChange={setIsSaldoModalOpen}
+          kasirName=""
+          isOwnerMode={true}
         />
 
       </div>
@@ -138,7 +138,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
   const [role, setRole] = useState("kasir");
   const [saving, setSaving] = useState(false);
   const [showPins, setShowPins] = useState<Record<string, boolean>>({});
-  
+
   const loadUsers = useCallback(async () => {
     const u = await getUsers();
     setUsers(u);
@@ -188,7 +188,7 @@ function KasirPage({ goBack }: { goBack: () => void }) {
     try {
       await updateUser(u.id, { isActive: !u.isActive });
       await loadUsers();
-    } catch {}
+    } catch { }
   };
 
 
@@ -300,7 +300,7 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
     ]).then(([t, u]) => {
       setTransactions(t);
       setUsers(u);
-    }).catch(() => {});
+    }).catch(() => { });
   }, [startDate, endDate, month, viewMode]);
 
   const kasirList = users.filter(u => u.role !== "owner" && u.isActive);
@@ -434,7 +434,7 @@ function PerformaPage({ goBack }: { goBack: () => void }) {
     ]).then(([u, t]) => {
       setUsers(u);
       setTransactions(t);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => { }).finally(() => setLoading(false));
   }, [month]);
 
   const [y, m] = month.split("-").map(Number);
@@ -532,7 +532,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
     ]).then(([a, u]) => {
       setAttendance(a);
       setUsers(u);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => { }).finally(() => setLoading(false));
   }, [monthStr]);
 
   const kasirList = users.filter(u => u.role !== "owner" && u.isActive);
@@ -602,11 +602,10 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
           <button
             key={name}
             onClick={() => setSelectedKasir(name)}
-            className={`shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
-              selectedKasir === name 
-                ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30" 
+            className={`shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${selectedKasir === name
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/30"
                 : "bg-white text-muted-foreground border-border hover:bg-gray-50"
-            }`}
+              }`}
           >
             {name}
           </button>
@@ -662,7 +661,7 @@ function AbsenPage({ goBack }: { goBack: () => void }) {
                     <span className={`text-[10px] font-bold bg-white/60 px-2 py-0.5 rounded-full ${color.text}`}>{items.length} Absen</span>
                   </div>
                   <div className="divide-y divide-white/40">
-                    {items.sort((a,b) => a.jamMasuk.localeCompare(b.jamMasuk)).map(a => (
+                    {items.sort((a, b) => a.jamMasuk.localeCompare(b.jamMasuk)).map(a => (
                       <div key={a.id} className="px-4 py-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`w-8 h-8 rounded-xl bg-white flex items-center justify-center shadow-sm font-bold text-xs ${color.text}`}>
@@ -849,7 +848,7 @@ function GajihPage({ goBack }: { goBack: () => void }) {
       if (!selectedKasir && u.filter(x => x.role !== "owner" && x.isActive).length > 0) {
         setSelectedKasir(u.filter(x => x.role !== "owner" && x.isActive)[0].name);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, [month]);
 
   useEffect(() => {
@@ -1139,7 +1138,7 @@ function BackupPage({ goBack }: { goBack: () => void }) {
   const [resetting, setResetting] = useState(false);
   const [users, setUsers] = useState<UserRecord[]>([]);
 
-  useEffect(() => { getUsers().then(setUsers).catch(() => {}); }, []);
+  useEffect(() => { getUsers().then(setUsers).catch(() => { }); }, []);
 
   const kasirList = users.filter(u => u.role !== "owner" && u.isActive);
 
@@ -1173,10 +1172,10 @@ function BackupPage({ goBack }: { goBack: () => void }) {
     setExporting(true);
     try {
       const { utils, writeFile } = await import("xlsx");
-      
+
       const uid = auth.currentUser?.uid || "";
       const cols = ["transactions", "saldo_history", "hutang", "kontak",
-                    "attendance", "izin", "daily_notes", "balances", "kasirs"];
+        "attendance", "izin", "daily_notes", "balances", "kasirs"];
       const wb = utils.book_new();
 
       for (const colName of cols) {
@@ -1233,8 +1232,8 @@ function BackupPage({ goBack }: { goBack: () => void }) {
       </div>
 
       <div className="grid grid-cols-1 gap-3 mb-6">
-        <button 
-          onClick={handleDownloadExcel} 
+        <button
+          onClick={handleDownloadExcel}
           disabled={exporting}
           className="w-full bg-green-600 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-green-500/20 active:scale-95 transition disabled:opacity-50"
         >
@@ -1242,8 +1241,8 @@ function BackupPage({ goBack }: { goBack: () => void }) {
           DOWNLOAD BACKUP (EXCEL)
         </button>
 
-        <button 
-          onClick={handleDownloadBackup} 
+        <button
+          onClick={handleDownloadBackup}
           className="w-full bg-blue-600 text-white py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition"
         >
           <Download className="w-4 h-4" /> Download Backup (JSON)
@@ -1323,7 +1322,7 @@ function SettingPage({ goBack }: { goBack: () => void }) {
         ];
         setCustomCategories(defaults);
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const handleSave = async () => {
@@ -1349,24 +1348,24 @@ function SettingPage({ goBack }: { goBack: () => void }) {
       // 2. Migration: Link legacy transactions (without categoryId) to IDs
       const allTx = await getTransactions({});
       let updateCount = 0;
-      
+
       // Map names to their corresponding IDs and CURRENT names
       const nameToIdMap: Record<string, string> = {};
       const idToNewNameMap: Record<string, string> = {};
-      
+
       oldCategories.forEach(c => { nameToIdMap[c.name] = c.id; });
-      customCategories.forEach(c => { 
-        nameToIdMap[c.name] = c.id; 
+      customCategories.forEach(c => {
+        nameToIdMap[c.name] = c.id;
         idToNewNameMap[c.id] = c.name;
       });
 
       for (const tx of allTx) {
         const targetId = tx.categoryId || nameToIdMap[tx.category];
         const newName = targetId ? idToNewNameMap[targetId] : null;
-        
+
         // If we found a matching ID but it wasn't set, or the name is outdated
         if (targetId && (tx.categoryId !== targetId || (newName && tx.category !== newName))) {
-          await updateTransaction(tx.id, { 
+          await updateTransaction(tx.id, {
             categoryId: targetId,
             category: newName || tx.category // Sync the name string too
           });
@@ -1374,8 +1373,8 @@ function SettingPage({ goBack }: { goBack: () => void }) {
         }
       }
 
-      toast({ 
-        title: "Pengaturan disimpan", 
+      toast({
+        title: "Pengaturan disimpan",
         description: updateCount > 0 ? `${updateCount} transaksi telah disinkronkan dengan kategori baru.` : "Kategori sudah sinkron.",
       });
     } catch (err: any) {
@@ -1623,7 +1622,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
         }
       }
       setAllNotes(notesMap);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch(() => { }).finally(() => setLoading(false));
   }, [date, month, viewMode]);
 
   const kasirList = users.filter(u => u.role !== "owner" && u.isActive);
@@ -1638,7 +1637,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
 
   const getKasirData = (kasirName: string, isAdmin: boolean) => {
     const tx = isAdmin ? allTransactions : allTransactions.filter(t => t.kasirName === kasirName);
-    
+
     const bank = tx.filter(t => {
       if (t.categoryType === "tarik" || t.category === "TARIK TUNAI") return false;
       if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
@@ -1648,7 +1647,7 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
     }).reduce((s, t) => s + (t.nominal || 0), 0);
     const tarik = tx.filter(t => t.categoryType === "tarik" || t.category === "TARIK TUNAI").reduce((s, t) => s + (t.nominal || 0), 0);
     const aks = tx.filter(t => t.categoryType === "aks" || t.category === "AKSESORIS").reduce((s, t) => s + (t.nominal || 0), 0);
-    
+
     const totalAdmin = tx.reduce((s, t) => s + (t.admin || 0), 0);
     const totalPenjualan = bank;
     const sisaCash = totalPenjualan - tarik;
@@ -1802,7 +1801,7 @@ function AkunPage({ goBack }: { goBack: () => void }) {
   const [users, setUsers] = useState<UserRecord[]>([]);
 
   useEffect(() => {
-    getUsers().then(setUsers).catch(() => {});
+    getUsers().then(setUsers).catch(() => { });
   }, []);
 
   const ownerData = users.find(u => u.role === "owner");
@@ -1813,18 +1812,18 @@ function AkunPage({ goBack }: { goBack: () => void }) {
 
   const handleUpdateAuth = async () => {
     if (!firebaseUser) return;
-    
+
     setSaving(true);
     try {
       const { updatePassword, updateEmail } = await import("firebase/auth");
-      
+
       let updated = false;
-      
+
       if (email !== firebaseUser.email && email.trim() !== "") {
         await updateEmail(firebaseUser, email);
         updated = true;
       }
-      
+
       if (newPassword) {
         if (newPassword !== confirmPassword) {
           toast({ title: "Password tidak cocok", variant: "destructive" });
@@ -1875,14 +1874,14 @@ function AkunPage({ goBack }: { goBack: () => void }) {
           <Shield className="w-5 h-5 text-blue-600" />
           Kredensial Login
         </h3>
-        
+
         <div className="space-y-4">
           <div>
             <label className="text-xs font-bold text-gray-500 block mb-1">Email Firebase</label>
             <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
               <Mail className="w-4 h-4 text-gray-400" />
-              <input 
-                type="email" 
+              <input
+                type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 className="flex-1 bg-transparent outline-none text-sm font-semibold text-gray-800"
@@ -1895,8 +1894,8 @@ function AkunPage({ goBack }: { goBack: () => void }) {
             <label className="text-xs font-bold text-gray-500 block mb-1">Ganti Password</label>
             <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50 mb-2">
               <KeyRound className="w-4 h-4 text-gray-400" />
-              <input 
-                type="password" 
+              <input
+                type="password"
                 placeholder="Password Baru (Kosongkan jika tidak diganti)"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
@@ -1905,8 +1904,8 @@ function AkunPage({ goBack }: { goBack: () => void }) {
             </div>
             <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
               <KeyRound className="w-4 h-4 text-gray-400" />
-              <input 
-                type="password" 
+              <input
+                type="password"
                 placeholder="Konfirmasi Password Baru"
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
@@ -1914,14 +1913,14 @@ function AkunPage({ goBack }: { goBack: () => void }) {
               />
             </div>
           </div>
-          
+
           {ownerData && (
             <div className="pt-2 border-t border-gray-100">
               <label className="text-xs font-bold text-gray-500 block mb-1">Ganti PIN Owner</label>
               <div className="flex items-center gap-3 border-2 border-gray-200 rounded-xl px-4 h-12 bg-gray-50">
                 <Lock className="w-4 h-4 text-gray-400" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   inputMode="numeric"
                   placeholder="PIN Owner"
                   value={ownerPin}
@@ -1936,7 +1935,7 @@ function AkunPage({ goBack }: { goBack: () => void }) {
             </div>
           )}
 
-          <button 
+          <button
             onClick={handleUpdateAuth}
             disabled={saving}
             className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-md disabled:opacity-50 mt-4 active:scale-95 transition"

@@ -37,7 +37,7 @@ export default function Laporan() {
 
   useEffect(() => {
     if (isOwner) {
-      getUsers().then(u => setKasirList(u.filter(k => k.role !== "owner" && k.isActive))).catch(() => {});
+      getUsers().then(u => setKasirList(u.filter(k => k.role !== "owner" && k.isActive))).catch(() => { });
     }
   }, [isOwner]);
 
@@ -74,7 +74,7 @@ export default function Laporan() {
       setIsLocked((snap as any)?.locked || false);
       setDailyNotes(notes as DailyNoteRecord);
       setShopSettings(settings);
-    } catch {} finally {
+    } catch { } finally {
       setLoading(false);
     }
   }, [user, isOwner, kasirFilter, getDateRange]);
@@ -95,7 +95,7 @@ export default function Laporan() {
     if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
     if (t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
     if (t.categoryType === "admin" || t.category === "ADMIN") return false;
-    
+
     // Everything else is considered "Penjualan/Bank"
     return true;
   });
@@ -129,7 +129,7 @@ export default function Laporan() {
     if (tx.categoryType === "tarik" || tx.category === "TARIK TUNAI") return acc;
     if (tx.categoryType === "aks" || tx.category === "AKSESORIS") return acc;
     if (tx.category === "NON TUNAI" || (tx.paymentMethod || "").toLowerCase().includes("non-tunai")) return acc;
-    
+
     const name = getCategoryName(tx);
     if (!acc[name]) acc[name] = { label: name, count: 0, total: 0 };
     acc[name].count++;
@@ -464,7 +464,7 @@ export default function Laporan() {
             <span className="text-sm font-bold text-emerald-700">{formatRupiah(sisaCashPenjualan)}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-200">
-            <span className="text-sm text-gray-700 flex items-center gap-1"><span className="text-amber-600 font-black">Rp</span> <strong className="text-amber-600">Admin</strong></span>
+            <span className="text-sm text-gray-700 flex items-center gap-1">♻️ <strong className="text-amber-600">ADMIN</strong></span>
             <span className="text-sm font-bold text-amber-600">{formatRupiah(totalAdmin)}</span>
           </div>
           {aksTx.length > 0 && (

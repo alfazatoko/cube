@@ -50,7 +50,7 @@ export default function Riwayat() {
       setSaldoHistory(saldo);
       setAllUsers(users);
       setShopSettings(settings);
-    } catch {} finally {
+    } catch { } finally {
       setLoading(false);
     }
   }, [user?.name, user?.role, kasirFilter, startDate, endDate, refreshKey]);
@@ -101,7 +101,7 @@ export default function Riwayat() {
       result = result.filter(tx => {
         if (tx.categoryId === selectedCategory) return true;
         if (!targetCat) return false;
-        
+
         // Lenient name matching for legacy data (ignore spaces, underscores, dashes and case)
         const norm = (s: string) => (s || "").toLowerCase().replace(/[\s_-]/g, "");
         const txCatClean = norm(tx.category);
@@ -213,7 +213,7 @@ export default function Riwayat() {
 
       <div className="bg-white rounded-[14px] overflow-hidden shadow-sm mb-3.5">
         <div className="grid gap-0.5 px-1.5 py-1.5 border-b-2 border-gray-200 text-[9px] font-bold text-gray-500" style={{ gridTemplateColumns: '20px 36px 48px 1fr 52px 1fr 18px' }}>
-          <span>#</span><span>Jam</span><span>Tipe</span><span>Nominal</span><span className="flex items-center gap-0.5"><span className="text-amber-600">Rp</span> Admin</span><span>Ket</span><span></span>
+          <span>#</span><span>Jam</span><span>Tipe</span><span>Nominal</span><span className="flex items-center gap-0.5">ADMIN</span><span>Ket</span><span></span>
         </div>
 
         {filteredTx.length === 0 ? (
@@ -305,7 +305,7 @@ export default function Riwayat() {
               <input value={editNominal} onChange={e => setEditNominal(formatThousands(e.target.value))} inputMode="numeric" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none" />
             </div>
             <div className="mb-2">
-              <label className="text-[11px] font-semibold text-gray-500 block mb-1">Admin (Rp)</label>
+              <label className="text-[11px] font-semibold text-gray-500 block mb-1">ADMIN</label>
               <input value={editAdmin} onChange={e => setEditAdmin(formatThousands(e.target.value))} inputMode="numeric" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none" />
             </div>
             <div className="mb-3.5">

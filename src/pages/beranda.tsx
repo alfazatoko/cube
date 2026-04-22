@@ -36,7 +36,7 @@ export default function Beranda() {
     try {
       const bal = await getBalance(user.name);
       setBalance(bal);
-    } catch {}
+    } catch { }
   }, [user?.name]);
 
   // Reset saldo saat UID berubah (akun berbeda login)
@@ -48,7 +48,7 @@ export default function Beranda() {
     loadBalance();
     getSettings().then((s) => {
       setShopSettings(s);
-    }).catch(() => {});
+    }).catch(() => { });
     const interval = setInterval(loadBalance, 5000);
     return () => clearInterval(interval);
   }, [loadBalance]);
@@ -69,12 +69,12 @@ export default function Beranda() {
     const timeStr = now.toTimeString().substring(0, 5);
     const n = parseInt(parseThousands(nominalDisplay));
     const a = parseInt(parseThousands(adminDisplay)) || 0;
-    
+
     if (!category || category === "") {
       toast({ title: "Pilih kategori terlebih dahulu", variant: "destructive" });
       return;
     }
-    
+
     if (!n || n <= 0) {
       toast({ title: "Nominal harus diisi", variant: "destructive" });
       return;
@@ -83,7 +83,7 @@ export default function Beranda() {
     setSaving(true);
     try {
       const selectedCat = shopSettings?.customCategories?.find(c => c.id === category);
-      
+
       await createTransaction({
         kasirName: user.name,
         category: selectedCat ? selectedCat.name : category,
@@ -154,7 +154,7 @@ export default function Beranda() {
         </div>
         <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
           <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-            <span className="text-amber-600 font-black">Rp</span> Admin
+            <span className="text-amber-600 font-black text-[10px]">♻️</span> ADMIN
           </span>
           <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.adminTotal || 0)}</span>
         </div>
