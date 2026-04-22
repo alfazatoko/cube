@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { validateLicense } from "@/lib/firestore";
-import { Loader2, KeyRound, Clock, CheckCircle2, Infinity, ShieldCheck, Download, RotateCw, Gift } from "lucide-react";
+import { validateLicense, getSystemConfig } from "@/lib/firestore";
+import { Loader2, KeyRound, Clock, CheckCircle2, Infinity, ShieldCheck, Download, RotateCw } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa";
 
 export default function License() {
   const [, setLocation] = useLocation();
@@ -9,6 +10,13 @@ export default function License() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [waNumber, setWaNumber] = useState("6287824889706");
+
+  useEffect(() => {
+    getSystemConfig().then(config => {
+      if (config.waNumber) setWaNumber(config.waNumber);
+    }).catch(() => {});
+  }, []);
 
   const handleDownloadGuide = () => {
     const link = document.createElement('a');
@@ -63,6 +71,11 @@ export default function License() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleContactAdmin = () => {
+    const text = encodeURIComponent("Halo Admin, saya ingin membeli lisensi KASIR CUBE.");
+    window.open(`https://wa.me/${waNumber}?text=${text}`, "_blank");
   };
 
   return (
@@ -176,11 +189,11 @@ export default function License() {
 
         <button
           type="button"
-          onClick={() => setLocation("/gratis")}
-          className="w-full h-14 rounded-2xl font-bold text-base bg-amber-500 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center gap-2 active:scale-[0.98] transition mb-6"
+          onClick={handleContactAdmin}
+          className="w-full h-14 rounded-2xl font-black text-base bg-orange-500 text-white shadow-lg shadow-orange-500/30 flex items-center justify-center gap-3 active:scale-[0.98] transition mb-6"
         >
-          <Gift className="w-5 h-5" />
-          Coba Versi Gratis (1 Bulan)
+          <FaWhatsapp className="w-6 h-6" />
+          HUBUNGI ADMIN
         </button>
 
         <p className="text-center text-muted-foreground text-xs">
