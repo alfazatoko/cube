@@ -8,7 +8,7 @@ import {
 } from "@/lib/firestore";
 import { formatRupiah, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Download, Share2, Loader2, RotateCcw } from "lucide-react";
+import { Lock, Download, Share2, Loader2, RotateCcw, RefreshCcw } from "lucide-react";
 
 export default function Laporan() {
   const { user, shift } = useAuth();
@@ -464,8 +464,8 @@ export default function Laporan() {
             <span className="text-sm font-bold text-emerald-700">{formatRupiah(sisaCashPenjualan)}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-gray-200">
-            <span className="text-sm text-gray-700 flex items-center gap-1">♻️ <strong className="text-amber-600">ADMIN</strong></span>
-            <span className="text-sm font-bold text-amber-600">{formatRupiah(totalAdmin)}</span>
+            <span className="text-sm text-gray-700 flex items-center gap-1"><RefreshCcw className="w-4 h-4 text-black" /> <strong className="text-gray-800">ADMIN</strong></span>
+            <span className="text-sm font-bold text-gray-800">{formatRupiah(totalAdmin)}</span>
           </div>
           {aksTx.length > 0 && (
             <div className="flex justify-between items-center py-2 border-b border-gray-200">

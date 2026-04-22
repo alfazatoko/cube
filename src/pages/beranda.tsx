@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 import { getBalance, createTransaction, getSettings, type BalanceRecord, type SettingsRecord } from "@/lib/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
-import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown } from "lucide-react";
+import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, RefreshCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const DEFAULT_QUOTES = [
@@ -154,7 +154,7 @@ export default function Beranda() {
         </div>
         <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
           <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-            <span className="text-amber-600 font-black text-[10px]">♻️</span> ADMIN
+            <RefreshCcw className="w-2.5 h-2.5 text-gray-900" /> ADMIN
           </span>
           <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.adminTotal || 0)}</span>
         </div>
