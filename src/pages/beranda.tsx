@@ -217,7 +217,7 @@ export default function Beranda() {
                 ref={nominalRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Nominal (Rp)"
+                placeholder="Nominal"
                 value={nominalDisplay}
                 onChange={(e) => setNominalDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); adminRef.current?.focus(); } }}
@@ -230,7 +230,7 @@ export default function Beranda() {
                 ref={adminRef}
                 type="text"
                 inputMode="numeric"
-                placeholder="Admin (Rp)"
+                placeholder="Admin"
                 value={adminDisplay}
                 onChange={(e) => setAdminDisplay(formatThousands(e.target.value))}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); ketRef.current?.focus(); } }}
