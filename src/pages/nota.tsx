@@ -141,10 +141,10 @@ export default function Nota() {
       </div>
 
       {/* Nota Container */}
-      <div className="px-4 py-6">
+      <div className="px-4 py-6 nota-container">
         <div 
           ref={printRef}
-          className="bg-white rounded-2xl shadow-lg p-6 max-w-2xl mx-auto"
+          className="nota-print-area bg-white rounded-2xl shadow-lg p-6 max-w-2xl mx-auto"
         >
           {/* Header Nota */}
           <div className="text-center mb-6 pb-6 border-b-2 border-gray-300">
@@ -320,8 +320,9 @@ export default function Nota() {
       <style>{`
         @media print {
           @page {
-            margin: 0;
-            size: 57mm auto;
+            margin: 0 !important;
+            padding: 0 !important;
+            size: auto;
           }
           
           /* AGGRESSIVE: Hide anything with dark background */
@@ -428,11 +429,19 @@ export default function Nota() {
             display: none !important;
           }
           
-          /* Layout adjustments untuk thermal paper 57mm */
+          /* Layout adjustments untuk thermal paper - FULL WIDTH */
+          html, body {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow-x: hidden !important;
+          }
+          
           .min-h-screen {
             min-height: auto !important;
             width: 100% !important;
-            max-width: 57mm !important;
+            max-width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
           }
@@ -449,15 +458,33 @@ export default function Nota() {
             border-radius: 0 !important;
           }
           
-          /* Full width untuk thermal paper */
-          .px-4, .py-6 {
-            padding-left: 2mm !important;
-            padding-right: 2mm !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
+          /* NOTA CONTAINER - Full width no padding */
+          .nota-container {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           
-          .max-w-2xl, .max-w-xl, .max-w-lg {
+          .px-4, .py-6, .p-4, .p-6 {
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          /* NOTA PRINT AREA - Full width */
+          .nota-print-area,
+          .nota-print-area.bg-white,
+          .nota-print-area.rounded-2xl,
+          .nota-print-area.shadow-lg {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 2mm !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+          }
+          
+          .max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm {
             max-width: 100% !important;
             width: 100% !important;
           }
