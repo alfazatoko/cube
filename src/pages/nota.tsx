@@ -320,8 +320,8 @@ export default function Nota() {
       <style>{`
         @media print {
           @page {
-            margin: 10mm;
-            size: A4;
+            margin: 0;
+            size: 57mm auto;
           }
           
           /* AGGRESSIVE: Hide anything with dark background */
@@ -428,9 +428,13 @@ export default function Nota() {
             display: none !important;
           }
           
-          /* Layout adjustments */
+          /* Layout adjustments untuk thermal paper 57mm */
           .min-h-screen {
             min-height: auto !important;
+            width: 100% !important;
+            max-width: 57mm !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
           .pb-24 {
             padding-bottom: 0 !important;
@@ -445,10 +449,53 @@ export default function Nota() {
             border-radius: 0 !important;
           }
           
-          /* Rincian barang styles */
-          .bg-white {
+          /* Full width untuk thermal paper */
+          .px-4, .py-6 {
+            padding-left: 2mm !important;
+            padding-right: 2mm !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          
+          .max-w-2xl, .max-w-xl, .max-w-lg {
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+          
+          .mx-auto {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+          }
+          
+          /* Rincian barang full width */
+          .rincian-barang {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding: 2mm !important;
+          }
+          
+          /* Rincian barang styles untuk thermal */
+          .rincian-barang,
+          .rincian-barang.bg-white,
+          .rincian-barang .bg-white {
             background: white !important;
-            border: 2px solid #000 !important;
+            border: 1px solid #000 !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Container utama nota */
+          .bg-white.rounded-2xl,
+          [class*="rounded-2xl"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 2mm !important;
+            border-radius: 0 !important;
           }
           
           .text-black {
@@ -468,6 +515,23 @@ export default function Nota() {
           .border-gray-500,
           .border-gray-300 {
             border-color: #000 !important;
+          }
+          
+          /* Font size untuk thermal paper */
+          body {
+            font-size: 10pt !important;
+          }
+          
+          h1, h2 {
+            font-size: 12pt !important;
+          }
+          
+          h3 {
+            font-size: 11pt !important;
+          }
+          
+          p, span, div {
+            font-size: 9pt !important;
           }
           
           /* Pastikan semua teks hitam */
