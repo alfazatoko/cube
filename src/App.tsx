@@ -176,7 +176,7 @@ function Router() {
       )}
 
       {/* Floating Debug Button - Only in localhost */}
-      {import.meta.env.DEV && (
+      {window.location.hostname === 'localhost' && (
         <button
           onClick={toggleDebugMode}
           className={`fixed bottom-6 right-6 z-[9999] p-3 rounded-full shadow-lg transition-all hover:scale-110 ${debugMode ? "bg-red-500 text-white" : "bg-blue-600 text-white"}`}
