@@ -116,7 +116,7 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/10 rounded-full p-1 border border-white/5 relative">
+          <div className="flex items-center gap-1.5 bg-white/10 rounded-full p-1 border border-white/5 relative z-50">
             {/* 1. ICON TEMA MATAHARI */}
             <button
               onClick={() => {
@@ -150,7 +150,7 @@ export function Header() {
             </button>
 
             {/* 4. MENU TITIK 3 */}
-            <div className="relative">
+            <div className="relative z-[10000]">
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 className="p-1.5 rounded-full transition-all bg-red-500 hover:bg-red-600 shadow-sm"
@@ -161,7 +161,7 @@ export function Header() {
 
               {/* Dropdown Menu */}
               {showMenu && (
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[150px] z-[9999]">
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[150px] z-[10000]">
                   <button
                     onClick={() => {
                       setLocation("/beranda");

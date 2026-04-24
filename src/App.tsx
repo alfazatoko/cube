@@ -175,14 +175,16 @@ function Router() {
         </div>
       )}
 
-      {/* Floating Debug Button - Always visible */}
-      <button
-        onClick={toggleDebugMode}
-        className={`fixed bottom-6 right-6 z-[9999] p-3 rounded-full shadow-lg transition-all hover:scale-110 ${debugMode ? "bg-red-500 text-white" : "bg-blue-600 text-white"}`}
-        title="Mode Debug - Hover elemen untuk melihat nama komponen"
-      >
-        <Bug className="w-6 h-6" />
-      </button>
+      {/* Floating Debug Button - Only in localhost */}
+      {import.meta.env.DEV && (
+        <button
+          onClick={toggleDebugMode}
+          className={`fixed bottom-6 right-6 z-[9999] p-3 rounded-full shadow-lg transition-all hover:scale-110 ${debugMode ? "bg-red-500 text-white" : "bg-blue-600 text-white"}`}
+          title="Mode Debug - Hover elemen untuk melihat nama komponen"
+        >
+          <Bug className="w-6 h-6" />
+        </button>
+      )}
 
       <div className={`pt-0 ${showSimulator ? "md:pt-14" : ""}`}>
         <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
