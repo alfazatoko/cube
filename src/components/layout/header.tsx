@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { getSettings, type SettingsRecord } from "@/lib/firestore";
-import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone, RotateCw } from "lucide-react";
+import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone, RotateCw, MoreVertical } from "lucide-react";
 import { useDisplayMode } from "@/hooks/use-display-mode";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
@@ -14,6 +14,7 @@ export function Header() {
   const { mode, setMode, theme, setTheme, isLandscape, setIsLandscape, showSimulator, setShowSimulator } = useDisplayMode();
   const [settings, setSettings] = useState<SettingsRecord | null>(null);
   const [, setLocation] = useLocation();
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     getSettings().then(setSettings).catch(() => {});
@@ -54,7 +55,7 @@ export function Header() {
 
   return (
     <div className={cn(
-      "bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 rounded-3xl text-white relative overflow-hidden shadow-lg transition-all duration-300",
+      "bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 rounded-3xl text-white relative shadow-lg transition-all duration-300",
       isLandscape ? "p-2 px-4 mb-2" : "p-4 mb-4"
     )}>
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full" />
@@ -115,7 +116,7 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/10 rounded-full p-1 border border-white/5">
+          <div className="flex items-center gap-1.5 bg-white/10 rounded-full p-1 border border-white/5 relative">
             {/* 1. ICON TEMA MATAHARI */}
             <button
               onClick={() => {
@@ -147,6 +148,50 @@ export function Header() {
                 </span>
               </div>
             </button>
+
+            {/* 4. MENU TITIK 3 */}
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="p-1.5 rounded-full transition-all bg-red-500 hover:bg-red-600 shadow-sm"
+                title="Menu"
+              >
+                <MoreVertical className="w-3.5 h-3.5 text-white" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showMenu && (
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[150px] z-[9999]">
+                  <button
+                    onClick={() => {
+                      setLocation("/beranda");
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm font-bold text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition"
+                  >
+                    BERANDA
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocation("/nota");
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm font-bold text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition"
+                  >
+                    NOTA
+                  </button>
+                  <button
+                    onClick={() => {
+                      setLocation("/stok-barang");
+                      setShowMenu(false);
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm font-bold text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition"
+                  >
+                    STOK BARANG
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

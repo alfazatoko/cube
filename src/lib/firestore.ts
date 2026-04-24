@@ -90,6 +90,7 @@ export interface SettingsRecord {
   shopName: string;
   logoUrl: string;
   profilePhotoUrl: string;
+  address?: string;
   autoLockHour: number;
   autoLockMinute: number;
   autoResetHour: number;

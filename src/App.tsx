@@ -19,6 +19,7 @@ import Owner from "@/pages/owner";
 import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
 import Kalender from "@/pages/kalender";
+import Nota from "@/pages/nota";
 import { useEffect, useState } from "react";
 import { getSystemConfig } from "@/lib/firestore";
 import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon, Bug } from "lucide-react";
@@ -197,6 +198,7 @@ function Router() {
         <Route path="/admin" component={AdminPanel} />
         <Route path="/license" component={License} />
         <Route path="/kalender" component={() => <ProtectedRoute component={Kalender} />} />
+        <Route path="/nota" component={() => <ProtectedRoute component={Nota} />} />
         <Route component={NotFound} />
       </Switch>
         <BottomNav />
