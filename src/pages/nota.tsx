@@ -3,6 +3,8 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Printer, Share2, Plus, Trash2, Edit2, Save } from "lucide-react";
 import { getSettings, type SettingsRecord } from "@/lib/firestore";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 interface NotaItem {
   nama: string;
@@ -87,6 +89,15 @@ export default function Nota() {
     }, 0);
   };
 
+  const getDayName = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return format(date, "EEEE", { locale: id });
+    } catch {
+      return "";
+    }
+  };
+
   const handleAddressEdit = () => {
     if (editingAddress) {
       setSettings(prev => prev ? { ...prev, address: tempAddress } : null);
@@ -99,8 +110,8 @@ export default function Nota() {
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-500 text-white p-4 shadow-lg">
+      {/* Header - Hidden saat print */}
+      <div className="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-500 text-white p-4 shadow-lg no-print">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => setLocation("/beranda")}
@@ -181,8 +192,8 @@ export default function Nota() {
             </div>
           </div>
 
-          {/* Form Input */}
-          <div className="mb-6 space-y-4">
+          {/* Form Input - Hidden saat print */}
+          <div className="mb-6 space-y-4 no-print">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">Tanggal</label>
               <input
@@ -191,40 +202,24 @@ export default function Nota() {
                 onChange={(e) => setTanggal(e.target.value)}
                 className="w-full text-lg font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
               />
+              <p className="mt-1 text-sm font-bold text-blue-600">
+                {getDayName(tanggal)}
+              </p>
             </div>
 
             {/* Items */}
             <div className="space-y-3">
               {items.map((item, index) => (
-                <div key={index} className="grid grid-cols-12 gap-2 items-center">
-                  <div className="col-span-5">
+                <div key={index} className="space-y-2">
+                  {/* Baris 1: Nama Barang */}
+                  <div className="flex gap-2 items-center">
                     <input
                       type="text"
                       placeholder="Nama Barang"
                       value={item.nama}
                       onChange={(e) => updateItem(index, 'nama', e.target.value)}
-                      className="w-full text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                      className="flex-1 text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
                     />
-                  </div>
-                  <div className="col-span-3">
-                    <input
-                      type="number"
-                      placeholder="Harga"
-                      value={item.harga}
-                      onChange={(e) => updateItem(index, 'harga', e.target.value)}
-                      className="w-full text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <input
-                      type="number"
-                      placeholder="Jml"
-                      value={item.jumlah}
-                      onChange={(e) => updateItem(index, 'jumlah', e.target.value)}
-                      className="w-full text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-end">
                     {items.length > 1 && (
                       <button
                         onClick={() => removeItem(index)}
@@ -233,6 +228,23 @@ export default function Nota() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
+                  </div>
+                  {/* Baris 2: Harga dan Jumlah (sama panjang) */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Harga"
+                      value={item.harga}
+                      onChange={(e) => updateItem(index, 'harga', e.target.value)}
+                      className="w-full text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Jumlah"
+                      value={item.jumlah}
+                      onChange={(e) => updateItem(index, 'jumlah', e.target.value)}
+                      className="w-full text-base font-bold border-2 border-gray-300 rounded-lg px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    />
                   </div>
                 </div>
               ))}
@@ -247,13 +259,38 @@ export default function Nota() {
             </button>
           </div>
 
-          {/* Total */}
-          <div className="border-t-2 border-gray-300 pt-4 mb-6">
-            <div className="flex justify-between items-center">
-              <span className="text-xl font-bold text-gray-700">TOTAL</span>
-              <span className="text-2xl font-black text-blue-600">
-                Rp {calculateTotal().toLocaleString('id-ID')}
-              </span>
+          {/* Rincian Barang - Outside no-print untuk tampil saat print */}
+          <div className="rincian-barang mt-4 border-2 border-gray-300 rounded-xl p-4 bg-white">
+            <h3 className="text-lg font-black text-black mb-3 text-center">RINCIAN BARANG</h3>
+            
+            {/* Info Tanggal dan Hari */}
+            <div className="mb-3 text-sm">
+              <p className="font-bold text-black">
+                Hari: <span className="text-blue-700">{getDayName(tanggal)}</span>
+              </p>
+              <p className="font-bold text-black">
+                Tanggal: <span className="text-blue-700">{tanggal}</span>
+              </p>
+            </div>
+
+            {/* Tabel Rincian */}
+            <div className="space-y-2">
+              {items.map((item, index) => (
+                <div key={index} className="border-b border-gray-400 pb-2">
+                  <p className="font-bold text-black">{index + 1}. {item.nama || '-'}</p>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-800">Harga: Rp {item.harga || '0'}</span>
+                    <span className="text-gray-800">Jumlah: {item.jumlah || '0'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Total */}
+            <div className="mt-3 pt-2 border-t-2 border-gray-500">
+              <p className="text-lg font-black text-blue-700 text-center">
+                TOTAL: Rp {calculateTotal().toLocaleString('id-ID')}
+              </p>
             </div>
           </div>
 
@@ -282,25 +319,116 @@ export default function Nota() {
       {/* Print Styles */}
       <style>{`
         @media print {
+          @page {
+            margin: 10mm;
+            size: A4;
+          }
+          
+          /* AGGRESSIVE: Hide anything with dark background */
+          * {
+            background-color: white !important;
+            background: white !important;
+          }
+          
+          /* Except the nota content */
+          .rincian-barang, .rincian-barang *,
+          .bg-white, .bg-white *,
+          [class*="nota"], [class*="nota"] * {
+            background-color: white !important;
+          }
+          
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
           body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
           }
-          .bg-gradient-to-r {
+          
+          /* Hide semua yang tidak perlu */
+          .no-print,
+          .bg-gradient-to-r,
+          nav,
+          .bottom-nav,
+          [role="navigation"],
+          nav *,
+          .bottom-nav *,
+          [role="navigation"] *,
+          .fixed,
+          .sticky,
+          header:not(.nota-header),
+          footer,
+          .timestamp,
+          .debug-btn,
+          .react-devtools-backdrop,
+          .react-devtools-profiler,
+          script,
+          style {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            background: none !important;
+            background-color: transparent !important;
+          }
+          
+          /* Hide all buttons except print (tapi button juga di hide) */
+          button,
+          .btn,
+          [type="button"],
+          [type="submit"] {
             display: none !important;
           }
-          button {
+          
+          /* Hide any element with dark blue/navy background */
+          [style*="background: blue"],
+          [style*="background-color: blue"],
+          [style*="background: #00008B"],
+          [style*="background-color: #00008B"],
+          [style*="background: navy"],
+          [style*="background-color: navy"],
+          [style*="background: #1e3a"],
+          [style*="background-color: #1e3a"],
+          [class*="bg-[#1e3a"],
+          .bg-blue-900,
+          .bg-blue-950,
+          .bg-indigo-900,
+          .bg-indigo-950 {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          
+          /* SPECIFIC: Hide bottom fixed elements */
+          [style*="position: fixed"],
+          [style*="position:fixed"],
+          .fixed.bottom-0,
+          .fixed[class*="bottom"],
+          div[class*="bottom-0"],
+          div[style*="bottom: 0"],
+          div[style*="bottom:0"] {
             display: none !important;
           }
-          input {
+          
+          /* Hide anything with dark background at bottom */
+          div[style*="background-color: rgb(30"],
+          div[style*="background-color: rgb(15"],
+          div[style*="background-color: #0f172a"],
+          div[style*="background-color: #1e293b"] {
+            display: none !important;
+          }
+          
+          /* Hide input fields */
+          input,
+          select,
+          textarea {
             border: none !important;
             background: transparent !important;
+            display: none !important;
           }
-          @page {
-            margin: 10mm;
-            size: A4;
-          }
+          
+          /* Layout adjustments */
           .min-h-screen {
             min-height: auto !important;
           }
@@ -315,6 +443,43 @@ export default function Nota() {
           }
           .rounded-2xl {
             border-radius: 0 !important;
+          }
+          
+          /* Rincian barang styles */
+          .bg-white {
+            background: white !important;
+            border: 2px solid #000 !important;
+          }
+          
+          .text-black {
+            color: #000 !important;
+          }
+          
+          .text-blue-700 {
+            color: #000 !important;
+            font-weight: bold !important;
+          }
+          
+          .text-gray-800 {
+            color: #000 !important;
+          }
+          
+          .border-gray-400,
+          .border-gray-500,
+          .border-gray-300 {
+            border-color: #000 !important;
+          }
+          
+          /* Pastikan semua teks hitam */
+          p, span, h1, h2, h3, h4, h5, h6, div {
+            color: #000 !important;
+          }
+          
+          /* Force show rincian barang */
+          .rincian-barang,
+          [class*="rincian"] {
+            display: block !important;
+            visibility: visible !important;
           }
         }
       `}</style>
