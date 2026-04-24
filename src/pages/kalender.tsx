@@ -9,24 +9,34 @@ import { cn } from "@/lib/utils";
 // Javanese calendar days (Weton)
 const JAVANESE_DAYS = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"];
 
-// Indonesian holidays 2025-2026
-const HOLIDAYS: Record<string, { name: string; type: string }> = {
-  "2025-01-01": { name: "Tahun Baru Masehi", type: "national" },
-  "2025-03-31": { name: "Hari Raya Idul Fitri", type: "religious" },
-  "2025-04-01": { name: "Hari Raya Idul Fitri", type: "religious" },
-  "2025-05-01": { name: "Hari Buruh Internasional", type: "national" },
-  "2025-06-01": { name: "Hari Lahir Pancasila", type: "national" },
-  "2025-06-07": { name: "Hari Raya Waisak", type: "religious" },
-  "2025-06-08": { name: "Hari Raya Waisak", type: "religious" },
-  "2025-08-17": { name: "Hari Kemerdekaan RI", type: "national" },
-  "2025-12-25": { name: "Hari Raya Natal", type: "religious" },
-  "2026-01-01": { name: "Tahun Baru Masehi", type: "national" },
-  "2026-03-20": { name: "Hari Raya Idul Fitri", type: "religious" },
-  "2026-03-21": { name: "Hari Raya Idul Fitri", type: "religious" },
-  "2026-05-01": { name: "Hari Buruh Internasional", type: "national" },
-  "2026-06-01": { name: "Hari Lahir Pancasila", type: "national" },
-  "2026-08-17": { name: "Hari Kemerdekaan RI", type: "national" },
-  "2026-12-25": { name: "Hari Raya Natal", type: "religious" },
+// Indonesian holidays 2025-2026 (Complete)
+const HOLIDAYS: Record<string, { name: string; type: string; color: string }> = {
+  // 2025
+  "2025-01-01": { name: "Tahun Baru Masehi", type: "national", color: "red" },
+  "2025-01-28": { name: "Isra Mi'raj Nabi Muhammad SAW", type: "religious", color: "orange" },
+  "2025-03-31": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2025-04-01": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2025-05-01": { name: "Hari Buruh Internasional", type: "national", color: "red" },
+  "2025-06-01": { name: "Hari Lahir Pancasila", type: "national", color: "red" },
+  "2025-06-06": { name: "Hari Raya Waisak", type: "religious", color: "red" },
+  "2025-06-07": { name: "Hari Raya Idul Adha", type: "religious", color: "red" },
+  "2025-06-17": { name: "Tahun Baru Islam 1447 H", type: "religious", color: "orange" },
+  "2025-08-17": { name: "Hari Kemerdekaan RI", type: "national", color: "red" },
+  "2025-09-04": { name: "Maulid Nabi Muhammad SAW", type: "religious", color: "orange" },
+  "2025-12-25": { name: "Hari Raya Natal", type: "religious", color: "red" },
+  
+  // 2026
+  "2026-01-01": { name: "Tahun Baru Masehi", type: "national", color: "red" },
+  "2026-02-17": { name: "Isra Mi'raj Nabi Muhammad SAW", type: "religious", color: "orange" },
+  "2026-03-20": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2026-03-21": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2026-05-01": { name: "Hari Buruh Internasional", type: "national", color: "red" },
+  "2026-06-01": { name: "Hari Lahir Pancasila", type: "national", color: "red" },
+  "2026-06-26": { name: "Hari Raya Waisak", type: "religious", color: "red" },
+  "2026-06-27": { name: "Hari Raya Idul Adha", type: "religious", color: "red" },
+  "2026-08-17": { name: "Hari Kemerdekaan RI", type: "national", color: "red" },
+  "2026-08-24": { name: "Tahun Baru Islam 1448 H", type: "religious", color: "orange" },
+  "2026-12-25": { name: "Hari Raya Natal", type: "religious", color: "red" },
 };
 
 export default function Kalender() {
@@ -205,7 +215,8 @@ export default function Kalender() {
                     "min-h-[80px] p-1 border-b border-r border-gray-100 flex flex-col items-center justify-start pt-1 transition relative",
                     !isCurrentMonth && "bg-gray-50 text-gray-400",
                     isSelected && "bg-blue-100",
-                    holiday && !isSelected && "bg-red-50",
+                    holiday && !isSelected && holiday?.color === "red" && "bg-red-50",
+                    holiday && !isSelected && holiday?.color === "orange" && "bg-orange-50",
                     !isSelected && !holiday && isFriday && "bg-emerald-50",
                     (idx + 1) % 7 === 0 && "border-r-0"
                   )}
@@ -214,7 +225,8 @@ export default function Kalender() {
                   <span className={cn(
                     "text-lg font-bold leading-none",
                     isSelected && "text-blue-600",
-                    !isSelected && holiday && "text-red-600",
+                    !isSelected && holiday && holiday?.color === "red" && "text-red-600",
+                    !isSelected && holiday && holiday?.color === "orange" && "text-orange-600",
                     !isSelected && !holiday && isSunday && "text-red-500",
                     !isSelected && !holiday && isFriday && "text-emerald-600",
                     !isSelected && !holiday && !isSunday && !isFriday && "text-gray-800",
@@ -244,7 +256,11 @@ export default function Kalender() {
                   
                   {/* Holiday Indicator */}
                   {holiday && (
-                    <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-red-500" />
+                    <div className={cn(
+                      "absolute bottom-1 w-1.5 h-1.5 rounded-full",
+                      holiday?.color === "red" && "bg-red-500",
+                      holiday?.color === "orange" && "bg-orange-500"
+                    )} />
                   )}
                   
                   {/* Today Indicator */}
@@ -327,7 +343,11 @@ export default function Kalender() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-red-50 border border-red-200" />
-              <span className="text-gray-600">Hari Libur</span>
+              <span className="text-gray-600">Libur Nasional</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-orange-50 border border-orange-200" />
+              <span className="text-gray-600">Libur Agama</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-blue-100 border border-blue-200" />
