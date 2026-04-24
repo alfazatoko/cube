@@ -320,7 +320,7 @@ export default function Nota() {
       <style>{`
         @media print {
           @page {
-            margin: 0 !important;
+            margin: 5mm !important;
             padding: 0 !important;
             size: auto;
           }
@@ -347,6 +347,8 @@ export default function Nota() {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            text-align: center !important;
           }
           
           /* Hide semua yang tidak perlu */
@@ -371,11 +373,9 @@ export default function Nota() {
             display: none !important;
             visibility: hidden !important;
             opacity: 0 !important;
-            background: none !important;
-            background-color: transparent !important;
           }
           
-          /* Hide all buttons except print (tapi button juga di hide) */
+          /* Hide all buttons */
           button,
           .btn,
           [type="button"],
@@ -383,82 +383,22 @@ export default function Nota() {
             display: none !important;
           }
           
-          /* Hide any element with dark blue/navy background */
-          [style*="background: blue"],
-          [style*="background-color: blue"],
-          [style*="background: #00008B"],
-          [style*="background-color: #00008B"],
-          [style*="background: navy"],
-          [style*="background-color: navy"],
-          [style*="background: #1e3a"],
-          [style*="background-color: #1e3a"],
-          [class*="bg-[#1e3a"],
-          .bg-blue-900,
-          .bg-blue-950,
-          .bg-indigo-900,
-          .bg-indigo-950 {
-            display: none !important;
-            visibility: hidden !important;
-          }
-          
-          /* SPECIFIC: Hide bottom fixed elements */
-          [style*="position: fixed"],
-          [style*="position:fixed"],
-          .fixed.bottom-0,
-          .fixed[class*="bottom"],
-          div[class*="bottom-0"],
-          div[style*="bottom: 0"],
-          div[style*="bottom:0"] {
-            display: none !important;
-          }
-          
-          /* Hide anything with dark background at bottom */
-          div[style*="background-color: rgb(30"],
-          div[style*="background-color: rgb(15"],
-          div[style*="background-color: #0f172a"],
-          div[style*="background-color: #1e293b"] {
-            display: none !important;
-          }
-          
           /* Hide input fields */
           input,
           select,
           textarea {
-            border: none !important;
-            background: transparent !important;
             display: none !important;
           }
           
-          /* Layout adjustments untuk thermal paper - FULL WIDTH */
+          /* Layout adjustments untuk FULL WIDTH */
           html, body {
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-            overflow-x: hidden !important;
+            overflow: visible !important;
           }
           
-          .min-h-screen {
-            min-height: auto !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          .pb-24 {
-            padding-bottom: 0 !important;
-          }
-          .bg-gray-100 {
-            background: white !important;
-          }
-          .shadow-lg {
-            box-shadow: none !important;
-          }
-          .rounded-2xl {
-            border-radius: 0 !important;
-          }
-          
-          /* NOTA CONTAINER - Full width no padding */
           .nota-container {
             width: 100% !important;
             max-width: 100% !important;
@@ -466,76 +406,44 @@ export default function Nota() {
             margin: 0 !important;
           }
           
-          .px-4, .py-6, .p-4, .p-6 {
-            padding: 0 !important;
-            margin: 0 !important;
-          }
-          
-          /* NOTA PRINT AREA - Full width */
-          .nota-print-area,
-          .nota-print-area.bg-white,
-          .nota-print-area.rounded-2xl,
-          .nota-print-area.shadow-lg {
+          /* NOTA PRINT AREA - Full width and Centered */
+          .nota-print-area {
             width: 100% !important;
             max-width: 100% !important;
-            margin: 0 !important;
-            padding: 2mm !important;
+            margin: 0 auto !important;
+            padding: 5mm !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important; /* Stretch to full width */
+            background: white !important;
           }
           
-          .max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm {
-            max-width: 100% !important;
-            width: 100% !important;
-          }
-          
-          .mx-auto {
-            margin-left: 0 !important;
-            margin-right: 0 !important;
+          /* Headers centering */
+          .text-center {
+            text-align: center !important;
           }
           
           /* Rincian barang full width */
           .rincian-barang {
             width: 100% !important;
             max-width: 100% !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding: 2mm !important;
-          }
-          
-          /* Rincian barang styles untuk thermal */
-          .rincian-barang,
-          .rincian-barang.bg-white,
-          .rincian-barang .bg-white {
-            background: white !important;
-            border: 1px solid #000 !important;
-            border-radius: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
+            margin: 10px 0 !important;
+            padding: 5mm !important;
+            border: 2px solid #000 !important;
+            border-radius: 8px !important;
             box-sizing: border-box !important;
           }
           
-          /* Container utama nota */
-          .bg-white.rounded-2xl,
-          [class*="rounded-2xl"] {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 2mm !important;
-            border-radius: 0 !important;
-          }
-          
-          .text-black {
+          /* Text colors and fonts */
+          .text-black, .text-gray-800, .text-gray-600, .text-gray-500 {
             color: #000 !important;
           }
           
           .text-blue-700 {
             color: #000 !important;
-            font-weight: bold !important;
-          }
-          
-          .text-gray-800 {
-            color: #000 !important;
+            font-weight: 900 !important;
           }
           
           .border-gray-400,
@@ -544,33 +452,57 @@ export default function Nota() {
             border-color: #000 !important;
           }
           
-          /* Font size untuk thermal paper */
-          body {
-            font-size: 10pt !important;
+          /* Logo centering */
+          img {
+            margin: 0 auto 15px auto !important;
+            display: block !important;
+            width: 120px !important; /* Larger logo */
+            height: auto !important;
           }
           
-          h1, h2 {
+          /* FONT SIZES - ENLARGED as requested */
+          body {
             font-size: 12pt !important;
           }
           
+          h2 {
+            font-size: 24pt !important; /* Shop Name */
+            margin-bottom: 10px !important;
+          }
+          
           h3 {
-            font-size: 11pt !important;
+            font-size: 20pt !important; /* RINCIAN BARANG */
+            margin-bottom: 15px !important;
           }
           
-          p, span, div {
-            font-size: 9pt !important;
+          .text-2xl { font-size: 24pt !important; }
+          .text-xl { font-size: 20pt !important; }
+          .text-lg { font-size: 18pt !important; }
+          .text-base { font-size: 14pt !important; }
+          .text-sm { font-size: 12pt !important; }
+          
+          /* Total text */
+          .text-lg.font-black.text-blue-700 {
+            font-size: 22pt !important;
+            margin-top: 10px !important;
           }
           
-          /* Pastikan semua teks hitam */
-          p, span, h1, h2, h3, h4, h5, h6, div {
-            color: #000 !important;
+          /* Tertanda and Terima Kasih */
+          .text-xl.font-black {
+            font-size: 20pt !important;
           }
           
-          /* Force show rincian barang */
-          .rincian-barang,
-          [class*="rincian"] {
-            display: block !important;
-            visibility: visible !important;
+          /* Ensure flex spacing is preserved */
+          .flex.justify-between {
+            display: flex !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+          }
+          
+          .flex.justify-end {
+            display: flex !important;
+            justify-content: flex-end !important;
+            width: 100% !important;
           }
         }
       `}</style>
