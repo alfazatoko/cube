@@ -7,6 +7,7 @@ import { DisplayModeProvider, useDisplayMode, getMaxWidth } from "@/hooks/use-di
 import { useAutoScheduler } from "@/hooks/use-auto-scheduler";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import NotFound from "@/pages/not-found";
+import { DebugProvider, useDebug } from "@/lib/debug-context";
 
 import Login from "@/pages/login";
 import Beranda from "@/pages/beranda";
@@ -17,9 +18,10 @@ import Laporan from "@/pages/laporan";
 import Owner from "@/pages/owner";
 import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
+import Kalender from "@/pages/kalender";
 import { useEffect, useState } from "react";
 import { getSystemConfig } from "@/lib/firestore";
-import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon } from "lucide-react";
+import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon, Bug } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +53,7 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
 function Router() {
   const { mode, setMode, isLandscape, setIsLandscape, theme, setTheme, showSimulator } = useDisplayMode();
   const { user } = useAuth();
+  const { debugMode, toggleDebugMode } = useDebug();
   const maxW = getMaxWidth(mode, isLandscape);
   useAutoScheduler(!!user);
   const [location, setLocation] = useLocation();
@@ -144,6 +147,15 @@ function Router() {
               <span>Tema: {theme === "light" ? "TERANG" : theme === "blue" ? "BIRU" : "GELAP"}</span>
             </button>
 
+            {/* 2. Debug Mode Toggle */}
+            <button 
+              onClick={toggleDebugMode}
+              className={`p-2 rounded-xl shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold ${debugMode ? "bg-red-500 text-white" : "bg-card"}`}
+              title="Mode Debug - Hover elemen untuk melihat nama komponen"
+            >
+              <Bug className="w-4 h-4" />
+              <span>Debug: {debugMode ? "AKTIF" : "MATI"}</span>
+            </button>
 
             {/* 3. Scale Cycler */}
             <button 
@@ -162,6 +174,15 @@ function Router() {
         </div>
       )}
 
+      {/* Floating Debug Button - Always visible */}
+      <button
+        onClick={toggleDebugMode}
+        className={`fixed bottom-6 right-6 z-[9999] p-3 rounded-full shadow-lg transition-all hover:scale-110 ${debugMode ? "bg-red-500 text-white" : "bg-blue-600 text-white"}`}
+        title="Mode Debug - Hover elemen untuk melihat nama komponen"
+      >
+        <Bug className="w-6 h-6" />
+      </button>
+
       <div className={`pt-0 ${showSimulator ? "md:pt-14" : ""}`}>
         <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
 
@@ -175,6 +196,7 @@ function Router() {
         <Route path="/owner" component={() => <ProtectedRoute component={Owner} allowedRoles={["owner"]} />} />
         <Route path="/admin" component={AdminPanel} />
         <Route path="/license" component={License} />
+        <Route path="/kalender" component={() => <ProtectedRoute component={Kalender} />} />
         <Route component={NotFound} />
       </Switch>
         <BottomNav />
@@ -188,14 +210,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <DisplayModeProvider>
-          <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Router />
-            </WouterRouter>
-            <Toaster />
-          </TooltipProvider>
-        </DisplayModeProvider>
+        <DebugProvider>
+          <DisplayModeProvider>
+            <TooltipProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <Router />
+              </WouterRouter>
+              <Toaster />
+            </TooltipProvider>
+          </DisplayModeProvider>
+        </DebugProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

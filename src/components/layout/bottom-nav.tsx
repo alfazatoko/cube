@@ -4,7 +4,16 @@ import { Home, Clock, PlusCircle, BarChart3, Settings, LogOut, History, ArrowLef
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useDisplayMode } from "@/hooks/use-display-mode";
 
 export function BottomNav() {
@@ -13,6 +22,7 @@ export function BottomNav() {
   const { isLandscape } = useDisplayMode();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"isi-saldo" | "penyesuaian">("isi-saldo");
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   useEffect(() => {
     const openIsiSaldo = () => {
@@ -63,12 +73,23 @@ export function BottomNav() {
 
   const navItems = isOwnerMode ? ownerNav : kasirNav.filter(item => {
     if (item.ownerOnly && user?.role !== "owner") return false;
+    // Hide "Isi Saldo" button for owner role
+    if (item.label === "Isi Saldo" && user?.role === "owner") return false;
     return true;
   });
 
   const handleLogout = () => {
     logout();
     window.location.href = "/";
+  };
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutDialog(false);
+    handleLogout();
   };
 
   return (
@@ -107,7 +128,7 @@ export function BottomNav() {
           return (
             <div key={idx} className="flex-1">
               {isLogout ? (
-                <button onClick={handleLogout} className="w-full flex flex-col items-center justify-center py-1 gap-0.5">
+                <button onClick={handleLogoutClick} className="w-full flex flex-col items-center justify-center py-1 gap-0.5">
                   <div className="p-1 rounded-xl"><item.icon className="w-5 h-5 text-red-500" /></div>
                   <span className="text-[10px] font-bold text-red-500">{item.label}</span>
                 </button>
@@ -127,6 +148,23 @@ export function BottomNav() {
         kasirName={user?.name || ""}
         mode={modalMode}
       />
+
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Keluar</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin keluar dari aplikasi?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout} className="bg-red-600 hover:bg-red-700">
+              Ya, Keluar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

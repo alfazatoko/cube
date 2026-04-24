@@ -6,12 +6,14 @@ import { getSettings, type SettingsRecord } from "@/lib/firestore";
 import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone, RotateCw } from "lucide-react";
 import { useDisplayMode } from "@/hooks/use-display-mode";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
 
 export function Header() {
   const { user, shift, loginTime, absenTime } = useAuth();
   const [clock, setClock] = useState("");
   const { mode, setMode, theme, setTheme, isLandscape, setIsLandscape, showSimulator, setShowSimulator } = useDisplayMode();
   const [settings, setSettings] = useState<SettingsRecord | null>(null);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     getSettings().then(setSettings).catch(() => {});
@@ -99,10 +101,14 @@ export function Header() {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[11px] text-blue-100">
-            <div className="flex items-center gap-1">
+            <button
+              onClick={() => setLocation("/kalender")}
+              className="flex items-center gap-1 hover:text-white transition cursor-pointer"
+              title="Klik untuk lihat kalender"
+            >
               <CalendarDays className="w-3.5 h-3.5" />
               <span>{dayName}, {dateStr}</span>
-            </div>
+            </button>
             <div className="flex items-center gap-1">
               {shiftLabel === "Pagi" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
               <span>{shiftLabel}</span>
