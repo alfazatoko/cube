@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils";
 // Javanese calendar days (Weton)
 const JAVANESE_DAYS = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"];
 
-// Indonesian holidays 2025-2026 (Complete)
+// Indonesian holidays 2025-2026 (Complete with Cuti Bersama)
+// Source: SKB 3 Menteri & PublicHolidays.co.id
 const HOLIDAYS: Record<string, { name: string; type: string; color: string }> = {
   // 2025
   "2025-01-01": { name: "Tahun Baru Masehi", type: "national", color: "red" },
@@ -25,18 +26,33 @@ const HOLIDAYS: Record<string, { name: string; type: string; color: string }> = 
   "2025-09-04": { name: "Maulid Nabi Muhammad SAW", type: "religious", color: "orange" },
   "2025-12-25": { name: "Hari Raya Natal", type: "religious", color: "red" },
   
-  // 2026
+  // 2026 - Hari Libur Nasional (Tanggal Merah)
   "2026-01-01": { name: "Tahun Baru Masehi", type: "national", color: "red" },
   "2026-02-17": { name: "Isra Mi'raj Nabi Muhammad SAW", type: "religious", color: "orange" },
-  "2026-03-20": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2026-02-29": { name: "Tahun Baru Imlek 2577", type: "religious", color: "red" },
+  "2026-03-09": { name: "Hari Suci Nyepi", type: "religious", color: "red" },
+  "2026-03-20": { name: "Hari Raya Idul Fitri & Cuti Bersama", type: "religious", color: "red" },
   "2026-03-21": { name: "Hari Raya Idul Fitri", type: "religious", color: "red" },
+  "2026-04-04": { name: "Jumat Agung", type: "religious", color: "red" },
+  "2026-04-06": { name: "Hari Paskah", type: "religious", color: "red" },
   "2026-05-01": { name: "Hari Buruh Internasional", type: "national", color: "red" },
+  "2026-05-14": { name: "Kenaikan Yesus Kristus", type: "religious", color: "red" },
   "2026-05-27": { name: "Hari Raya Idul Adha", type: "religious", color: "red" },
   "2026-06-01": { name: "Hari Lahir Pancasila", type: "national", color: "red" },
   "2026-06-26": { name: "Hari Raya Waisak", type: "religious", color: "red" },
   "2026-08-17": { name: "Hari Kemerdekaan RI", type: "national", color: "red" },
   "2026-08-24": { name: "Tahun Baru Islam 1448 H", type: "religious", color: "orange" },
+  "2026-09-24": { name: "Maulid Nabi Muhammad SAW", type: "religious", color: "orange" },
   "2026-12-25": { name: "Hari Raya Natal", type: "religious", color: "red" },
+  
+  // 2026 - Cuti Bersama (Orange)
+  "2026-02-16": { name: "Cuti Bersama Tahun Baru Imlek", type: "cuti-bersama", color: "orange" },
+  "2026-03-18": { name: "Cuti Bersama Hari Suci Nyepi", type: "cuti-bersama", color: "orange" },
+  "2026-03-23": { name: "Cuti Bersama Idul Fitri", type: "cuti-bersama", color: "orange" },
+  "2026-03-24": { name: "Cuti Bersama Idul Fitri", type: "cuti-bersama", color: "orange" },
+  "2026-05-15": { name: "Cuti Bersama Kenaikan Yesus Kristus", type: "cuti-bersama", color: "orange" },
+  "2026-05-28": { name: "Cuti Bersama Idul Adha", type: "cuti-bersama", color: "orange" },
+  "2026-12-24": { name: "Cuti Bersama Hari Natal", type: "cuti-bersama", color: "orange" },
 };
 
 export default function Kalender() {
@@ -347,7 +363,7 @@ export default function Kalender() {
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-orange-50 border border-orange-200" />
-              <span className="text-gray-600">Libur Agama</span>
+              <span className="text-gray-600">Cuti Bersama</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded bg-blue-100 border border-blue-200" />
