@@ -3,50 +3,31 @@ import { useLocation } from "wouter";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, getDay } from "date-fns";
 import { id } from "date-fns/locale";
 import moment from "moment-hijri";
-import { ChevronLeft, ChevronRight, Calendar, Moon, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Moon, Star, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Indonesian holidays 2025-2026 (can be expanded)
-const INDONESIAN_HOLIDAYS: Record<string, string> = {
-  "2025-01-01": "Tahun Baru Masehi",
-  "2025-03-31": "Hari Raya Idul Fitri",
-  "2025-04-01": "Hari Raya Idul Fitri",
-  "2025-05-01": "Hari Buruh Internasional",
-  "2025-06-01": "Hari Lahir Pancasila",
-  "2025-06-07": "Hari Raya Waisak",
-  "2025-06-08": "Hari Raya Waisak",
-  "2025-08-17": "Hari Kemerdekaan RI",
-  "2025-12-25": "Hari Raya Natal",
-  "2026-01-01": "Tahun Baru Masehi",
-  "2026-03-20": "Hari Raya Idul Fitri",
-  "2026-03-21": "Hari Raya Idul Fitri",
-  "2026-05-01": "Hari Buruh Internasional",
-  "2026-06-01": "Hari Lahir Pancasila",
-  "2026-08-17": "Hari Kemerdekaan RI",
-  "2026-12-25": "Hari Raya Natal",
+// Javanese calendar days (Weton)
+const JAVANESE_DAYS = ["Pahing", "Pon", "Wage", "Kliwon", "Legi"];
+
+// Indonesian holidays 2025-2026
+const HOLIDAYS: Record<string, { name: string; type: string }> = {
+  "2025-01-01": { name: "Tahun Baru Masehi", type: "national" },
+  "2025-03-31": { name: "Hari Raya Idul Fitri", type: "religious" },
+  "2025-04-01": { name: "Hari Raya Idul Fitri", type: "religious" },
+  "2025-05-01": { name: "Hari Buruh Internasional", type: "national" },
+  "2025-06-01": { name: "Hari Lahir Pancasila", type: "national" },
+  "2025-06-07": { name: "Hari Raya Waisak", type: "religious" },
+  "2025-06-08": { name: "Hari Raya Waisak", type: "religious" },
+  "2025-08-17": { name: "Hari Kemerdekaan RI", type: "national" },
+  "2025-12-25": { name: "Hari Raya Natal", type: "religious" },
+  "2026-01-01": { name: "Tahun Baru Masehi", type: "national" },
+  "2026-03-20": { name: "Hari Raya Idul Fitri", type: "religious" },
+  "2026-03-21": { name: "Hari Raya Idul Fitri", type: "religious" },
+  "2026-05-01": { name: "Hari Buruh Internasional", type: "national" },
+  "2026-06-01": { name: "Hari Lahir Pancasila", type: "national" },
+  "2026-08-17": { name: "Hari Kemerdekaan RI", type: "national" },
+  "2026-12-25": { name: "Hari Raya Natal", type: "religious" },
 };
-
-const HOLIDAYS_2025 = [
-  { date: "2025-01-01", name: "Tahun Baru Masehi", type: "national" },
-  { date: "2025-03-31", name: "Hari Raya Idul Fitri", type: "religious" },
-  { date: "2025-04-01", name: "Hari Raya Idul Fitri", type: "religious" },
-  { date: "2025-05-01", name: "Hari Buruh Internasional", type: "national" },
-  { date: "2025-06-01", name: "Hari Lahir Pancasila", type: "national" },
-  { date: "2025-06-07", name: "Hari Raya Waisak", type: "religious" },
-  { date: "2025-06-08", name: "Hari Raya Waisak", type: "religious" },
-  { date: "2025-08-17", name: "Hari Kemerdekaan RI", type: "national" },
-  { date: "2025-12-25", name: "Hari Raya Natal", type: "religious" },
-];
-
-const HOLIDAYS_2026 = [
-  { date: "2026-01-01", name: "Tahun Baru Masehi", type: "national" },
-  { date: "2026-03-20", name: "Hari Raya Idul Fitri", type: "religious" },
-  { date: "2026-03-21", name: "Hari Raya Idul Fitri", type: "religious" },
-  { date: "2026-05-01", name: "Hari Buruh Internasional", type: "national" },
-  { date: "2026-06-01", name: "Hari Lahir Pancasila", type: "national" },
-  { date: "2026-08-17", name: "Hari Kemerdekaan RI", type: "national" },
-  { date: "2026-12-25", name: "Hari Raya Natal", type: "religious" },
-];
 
 export default function Kalender() {
   const [, setLocation] = useLocation();
@@ -86,14 +67,29 @@ export default function Kalender() {
     }
   };
 
-  const getHoliday = (date: Date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
-    const year = date.getFullYear();
-    const holidays = year === 2025 ? HOLIDAYS_2025 : year === 2026 ? HOLIDAYS_2026 : [];
-    return holidays.find(h => h.date === dateStr);
+  const getJavaneseDay = (date: Date) => {
+    // Calculate Javanese day based on a reference date
+    const refDate = new Date("2000-01-01"); // Saturday, Legi
+    const diffTime = date.getTime() - refDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const index = ((diffDays % 5) + 5) % 5;
+    return JAVANESE_DAYS[index];
   };
 
-  const weekDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
+  const getHoliday = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return HOLIDAYS[dateStr];
+  };
+
+  const weekDays = [
+    { short: "Ahad", color: "bg-red-600", textColor: "text-white" },
+    { short: "Sen", color: "bg-yellow-400", textColor: "text-black" },
+    { short: "Sel", color: "bg-yellow-400", textColor: "text-black" },
+    { short: "Rab", color: "bg-yellow-400", textColor: "text-black" },
+    { short: "Kam", color: "bg-yellow-400", textColor: "text-black" },
+    { short: "Jum", color: "bg-emerald-500", textColor: "text-white" },
+    { short: "Sab", color: "bg-yellow-400", textColor: "text-black" },
+  ];
 
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
@@ -105,163 +101,238 @@ export default function Kalender() {
   const selectedHijri = getHijriDate(selectedDate);
   const selectedHoliday = getHoliday(selectedDate);
 
+  // Get Hijri month range for header
+  const firstDayHijri = getHijriDate(days[0]);
+  const lastDayHijri = getHijriDate(days[days.length - 1]);
+  
+  const hijriHeader = useMemo(() => {
+    if (!firstDayHijri || !lastDayHijri) return "";
+    if (firstDayHijri.monthName === lastDayHijri.monthName) {
+      return `${firstDayHijri.monthName} ${firstDayHijri.year} H`;
+    }
+    return `${firstDayHijri.monthName} - ${lastDayHijri.monthName} ${firstDayHijri.year} H`;
+  }, [firstDayHijri, lastDayHijri]);
+
   return (
-    <div className="px-3 pt-3 pb-24 min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 rounded-3xl text-white p-4 mb-4 shadow-lg">
-        <div className="flex items-center justify-between mb-3">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white pb-24">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg">
+        <div className="px-4 py-3 flex items-center justify-between">
           <button
             onClick={() => setLocation("/beranda")}
-            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition flex items-center gap-1"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">Kembali</span>
           </button>
-          <h1 className="text-lg font-black tracking-tight">KALENDER</h1>
-          <div className="w-9" />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <button onClick={goToPreviousMonth} className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <div className="text-center">
-            <h2 className="text-xl font-extrabold">
-              {format(currentDate, "MMMM yyyy", { locale: id })}
-            </h2>
-            <p className="text-sm text-blue-200 mt-0.5">
-              {selectedHijri && `${selectedHijri.monthName} ${selectedHijri.year} H`}
-            </p>
-          </div>
-          <button onClick={goToNextMonth} className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition">
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      <button
-        onClick={goToToday}
-        className="w-full bg-white border-2 border-blue-500 text-blue-600 py-2 rounded-xl font-bold text-sm mb-4 shadow-sm hover:bg-blue-50 transition"
-      >
-        Kembali ke Hari Ini
-      </button>
-
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
-        <div className="grid grid-cols-7 bg-blue-600 text-white">
-          {weekDays.map((day) => (
-            <div key={day} className="py-2 text-center text-xs font-bold">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7">
-          {days.map((day) => {
-            const isCurrentMonth = isSameMonth(day, currentDate);
-            const isSelected = isSameDay(day, selectedDate);
-            const isTodayDate = isToday(day);
-            const hijri = getHijriDate(day);
-            const holiday = getHoliday(day);
-
-            return (
-              <button
-                key={day.toISOString()}
-                onClick={() => setSelectedDate(day)}
-                className={cn(
-                  "min-h-[70px] p-1 border border-gray-100 flex flex-col items-center justify-center transition hover:bg-blue-50",
-                  !isCurrentMonth && "bg-gray-50 text-gray-400",
-                  isSelected && "bg-blue-600 text-white hover:bg-blue-700",
-                  isTodayDate && !isSelected && "bg-blue-100",
-                  holiday && !isSelected && "bg-red-50"
-                )}
-              >
-                <span className={cn(
-                  "text-sm font-bold",
-                  isSelected && "text-white",
-                  isTodayDate && !isSelected && "text-blue-600"
-                )}>
-                  {format(day, "d")}
-                </span>
-                {hijri && (
-                  <span className={cn(
-                    "text-[9px] mt-0.5",
-                    isSelected ? "text-blue-200" : "text-gray-500"
-                  )}>
-                    {hijri.day}
-                  </span>
-                )}
-                {holiday && (
-                  <div className={cn(
-                    "w-1.5 h-1.5 rounded-full mt-0.5",
-                    isSelected ? "bg-yellow-300" : "bg-red-500"
-                  )} />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-lg p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="w-5 h-5 text-blue-600" />
-          <h3 className="font-bold text-gray-800">Detail Tanggal</h3>
+          <h1 className="text-lg font-black tracking-tight">KALENDER INDONESIA</h1>
+          <div className="w-20" />
         </div>
         
-        <div className="space-y-2">
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-600">Tanggal Masehi</span>
-            <span className="font-bold text-gray-800">
-              {format(selectedDate, "EEEE, d MMMM yyyy", { locale: id })}
-            </span>
+        {/* Month Navigation */}
+        <div className="px-4 pb-4">
+          <div className="bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-2">
+              <button 
+                onClick={goToPreviousMonth}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="text-center">
+                <h2 className="text-2xl font-black uppercase tracking-wide">
+                  {format(currentDate, "MMMM yyyy", { locale: id })}
+                </h2>
+                <p className="text-sm text-emerald-100 mt-0.5 font-medium">
+                  {hijriHeader}
+                </p>
+              </div>
+              <button 
+                onClick={goToNextMonth}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <button
+              onClick={goToToday}
+              className="w-full bg-white/20 hover:bg-white/30 py-2 rounded-xl text-sm font-bold transition"
+            >
+              Hari Ini
+            </button>
           </div>
-          
-          {selectedHijri && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <Moon className="w-4 h-4 text-amber-600" />
-                <span className="text-sm text-gray-600">Tanggal Hijriyah</span>
-              </div>
-              <span className="font-bold text-gray-800">
-                {selectedHijri.day} {selectedHijri.monthName} {selectedHijri.year} H
-              </span>
-            </div>
-          )}
-          
-          {selectedHoliday && (
-            <div className="flex justify-between items-center py-2 bg-red-50 rounded-lg px-3">
-              <div className="flex items-center gap-2">
-                <Star className="w-4 h-4 text-red-600" />
-                <span className="text-sm text-gray-600">Hari Libur</span>
-              </div>
-              <span className="font-bold text-red-600">{selectedHoliday.name}</span>
-            </div>
-          )}
-          
-          {!selectedHoliday && (
-            <div className="flex justify-between items-center py-2">
-              <span className="text-sm text-gray-600">Status</span>
-              <span className="font-bold text-green-600">Hari Kerja</span>
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="mt-4 bg-white rounded-2xl shadow-lg p-4">
-        <h3 className="font-bold text-gray-800 mb-3">Keterangan</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-gray-600">Hari Libur Nasional/Agama</span>
+      {/* Calendar Grid */}
+      <div className="px-3 mt-4">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200">
+          {/* Week Headers */}
+          <div className="grid grid-cols-7">
+            {weekDays.map((day, idx) => (
+              <div 
+                key={idx} 
+                className={cn(
+                  "py-2 text-center text-xs font-bold border-b border-r border-gray-100 last:border-r-0",
+                  day.color,
+                  day.textColor
+                )}
+              >
+                {day.short}
+              </div>
+            ))}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-600" />
-            <span className="text-gray-600">Tanggal Terpilih</span>
+          
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7">
+            {days.map((day, idx) => {
+              const isCurrentMonth = isSameMonth(day, currentDate);
+              const isSelected = isSameDay(day, selectedDate);
+              const isTodayDate = isToday(day);
+              const dayOfWeek = getDay(day);
+              const hijri = getHijriDate(day);
+              const javanese = getJavaneseDay(day);
+              const holiday = getHoliday(day);
+              const isFriday = dayOfWeek === 5;
+              const isSunday = dayOfWeek === 0;
+              
+              return (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedDate(day)}
+                  className={cn(
+                    "min-h-[80px] p-1 border-b border-r border-gray-100 flex flex-col items-center justify-start pt-1 transition relative",
+                    !isCurrentMonth && "bg-gray-50 text-gray-400",
+                    isSelected && "bg-blue-100",
+                    holiday && !isSelected && "bg-red-50",
+                    !isSelected && !holiday && isFriday && "bg-emerald-50",
+                    (idx + 1) % 7 === 0 && "border-r-0"
+                  )}
+                >
+                  {/* Gregorian Date */}
+                  <span className={cn(
+                    "text-lg font-bold leading-none",
+                    isSelected && "text-blue-600",
+                    !isSelected && holiday && "text-red-600",
+                    !isSelected && !holiday && isSunday && "text-red-500",
+                    !isSelected && !holiday && isFriday && "text-emerald-600",
+                    !isSelected && !holiday && !isSunday && !isFriday && "text-gray-800",
+                    !isCurrentMonth && "text-gray-400"
+                  )}>
+                    {format(day, "d")}
+                  </span>
+                  
+                  {/* Hijri Date */}
+                  {hijri && (
+                    <span className={cn(
+                      "text-[10px] mt-0.5 font-medium",
+                      isSelected ? "text-blue-500" : "text-gray-500",
+                      !isCurrentMonth && "text-gray-400"
+                    )}>
+                      {hijri.day}
+                    </span>
+                  )}
+                  
+                  {/* Javanese Day */}
+                  <span className={cn(
+                    "text-[8px] mt-0.5 font-medium uppercase",
+                    isSelected ? "text-blue-400" : "text-gray-400"
+                  )}>
+                    {javanese}
+                  </span>
+                  
+                  {/* Holiday Indicator */}
+                  {holiday && (
+                    <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-red-500" />
+                  )}
+                  
+                  {/* Today Indicator */}
+                  {isTodayDate && !isSelected && (
+                    <div className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-100" />
-            <span className="text-gray-600">Hari Ini</span>
+        </div>
+      </div>
+
+      {/* Selected Date Detail */}
+      <div className="px-3 mt-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+            <Calendar className="w-5 h-5 text-emerald-600" />
+            <h3 className="font-bold text-gray-800">Detail Tanggal</h3>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gray-100" />
-            <span className="text-gray-600">Tanggal di luar bulan</span>
+          
+          <div className="space-y-3">
+            {/* Masehi Date */}
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Masehi</span>
+              <span className="font-bold text-gray-800 text-right">
+                {format(selectedDate, "EEEE, d MMMM yyyy", { locale: id })}
+              </span>
+            </div>
+            
+            {/* Hijri Date */}
+            {selectedHijri && (
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-emerald-600" />
+                  <span className="text-sm text-gray-600">Hijriyah</span>
+                </div>
+                <span className="font-bold text-emerald-700">
+                  {selectedHijri.day} {selectedHijri.monthName} {selectedHijri.year} H
+                </span>
+              </div>
+            )}
+            
+            {/* Javanese Date */}
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Weton</span>
+              <span className="font-bold text-amber-700">
+                {getJavaneseDay(selectedDate)}
+              </span>
+            </div>
+            
+            {/* Holiday */}
+            {selectedHoliday && (
+              <div className="mt-2 p-3 bg-red-50 rounded-xl border border-red-200">
+                <div className="flex items-center gap-2">
+                  <Star className="w-4 h-4 text-red-600" />
+                  <span className="text-sm font-bold text-red-700">{selectedHoliday.name}</span>
+                </div>
+                <span className="text-xs text-red-500 ml-6">
+                  {selectedHoliday.type === "national" ? "Libur Nasional" : "Libur Keagamaan"}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="px-3 mt-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200">
+          <h3 className="font-bold text-gray-800 mb-3">Keterangan</h3>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-red-600" />
+              <span className="text-gray-600">Ahad (Minggu)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-emerald-500" />
+              <span className="text-gray-600">Jumat</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-red-50 border border-red-200" />
+              <span className="text-gray-600">Hari Libur</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded bg-blue-100 border border-blue-200" />
+              <span className="text-gray-600">Terpilih</span>
+            </div>
           </div>
         </div>
       </div>
