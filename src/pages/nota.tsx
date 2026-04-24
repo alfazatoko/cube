@@ -434,6 +434,12 @@ export default function Nota() {
             border: 2px solid #000 !important;
             border-radius: 8px !important;
             box-sizing: border-box !important;
+            text-align: left !important; /* Allow internal items to align left */
+          }
+          
+          .rincian-barang p {
+            text-align: left !important;
+            width: 100% !important;
           }
           
           /* Text colors and fonts */
