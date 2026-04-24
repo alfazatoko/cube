@@ -210,6 +210,8 @@ function Router() {
   );
 }
 
+import { GlobalInspector } from "@/components/debug/global-inspector";
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -217,6 +219,7 @@ function App() {
         <DebugProvider>
           <DisplayModeProvider>
             <TooltipProvider>
+              <GlobalInspector />
               <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
                 <Router />
               </WouterRouter>
