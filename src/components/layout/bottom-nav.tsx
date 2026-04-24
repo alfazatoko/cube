@@ -5,9 +5,12 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 
+import { useDisplayMode } from "@/hooks/use-display-mode";
+
 export function BottomNav() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
+  const { isLandscape } = useDisplayMode();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"isi-saldo" | "penyesuaian">("isi-saldo");
 
@@ -70,7 +73,10 @@ export function BottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around px-1 py-1.5 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-50">
+      <div className={cn(
+        "fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around px-1 z-50 transition-all duration-300",
+        isLandscape ? "py-1 pb-[env(safe-area-inset-bottom,4px)] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" : "py-1.5 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
+      )}>
         {navItems.map((item, idx) => {
           const isActive = item.href !== "logout" && item.href !== "#" && location === item.href;
           const isLogout = (item as any).isLogout;
@@ -79,7 +85,8 @@ export function BottomNav() {
           const content = (
             <div
               className={cn(
-                "flex flex-col items-center justify-center py-1 gap-0.5 rounded-2xl transition-all",
+                "flex flex-col items-center justify-center transition-all",
+                isLandscape ? "py-0.5 gap-0" : "py-1 gap-0.5",
                 isActive ? "text-blue-600" : "text-gray-900"
               )}
             >

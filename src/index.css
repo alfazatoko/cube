@@ -197,15 +197,26 @@
   }
 
   .landscape-scroll {
-    height: calc(100dvh - 52px);
+    height: calc(100dvh - 64px); /* Menyesuaikan dengan BottomNav yang lebih pendek */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
   }
 
+  /* Menghapus max-width !important agar class dari hook (App.tsx) bisa bekerja */
   #root > div {
-    max-width: 100% !important;
-    padding-bottom: 52px !important;
+    padding-bottom: env(safe-area-inset-bottom, 52px) !important;
+  }
+}
+
+/* Dukungan PWA untuk area layar penuh */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 }
 

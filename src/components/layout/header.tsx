@@ -5,6 +5,7 @@ import { id } from "date-fns/locale";
 import { getSettings, type SettingsRecord } from "@/lib/firestore";
 import { User, Clock, CalendarDays, Sun, Moon, Fingerprint, Monitor, Tablet, Smartphone, RotateCw } from "lucide-react";
 import { useDisplayMode } from "@/hooks/use-display-mode";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { user, shift, loginTime, absenTime } = useAuth();
@@ -50,12 +51,15 @@ export function Header() {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 rounded-3xl p-4 mb-4 text-white relative overflow-hidden shadow-lg">
+    <div className={cn(
+      "bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 rounded-3xl text-white relative overflow-hidden shadow-lg transition-all duration-300",
+      isLandscape ? "p-2 px-4 mb-2" : "p-4 mb-4"
+    )}>
       <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full" />
       <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-white/5 rounded-full" />
 
       <div className="relative z-10">
-        <div className="flex justify-between items-start mb-2">
+        <div className={cn("flex justify-between items-start", isLandscape ? "mb-1" : "mb-2")}>
           <div className="flex items-center gap-2.5">
             <div 
               onClick={() => setShowSimulator(!showSimulator)}
@@ -78,7 +82,7 @@ export function Header() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mb-2">
+        <div className={cn("flex items-center gap-2", isLandscape ? "mb-1" : "mb-2")}>
           <div className="flex items-center gap-1.5">
             <User className="w-3.5 h-3.5" />
             <span className="font-bold text-sm">{user.name}</span>

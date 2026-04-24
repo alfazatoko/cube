@@ -65,17 +65,37 @@ export function DisplayModeProvider({ children }: { children: React.ReactNode })
     }
   }, [theme]);
 
-  // Otomatis deteksi landscape berdasarkan rasio layar
+  // Otomatis deteksi landscape berdasarkan rasio layar & orientasi perangkat
   useEffect(() => {
     const checkOrientation = () => {
+      // Cek berdasarkan rasio window (lebih reliable untuk PC/Resize)
       const isWindowLandscape = window.innerWidth > window.innerHeight;
-      setIsLandscape(isWindowLandscape);
+      
+      // Cek berdasarkan API orientasi layar jika tersedia
+      const isScreenLandscape = window.screen?.orientation 
+        ? window.screen.orientation.type.startsWith("landscape")
+        : false;
+
+      setIsLandscape(isWindowLandscape || isScreenLandscape);
     };
 
     checkOrientation();
     window.addEventListener("resize", checkOrientation);
-    return () => window.removeEventListener("resize", checkOrientation);
-  }, []);
+    window.addEventListener("orientationchange", checkOrientation);
+    
+    // Tambahan untuk modern API
+    if (window.screen?.orientation) {
+      window.screen.orientation.addEventListener("change", checkOrientation);
+    }
+
+    return () => {
+      window.removeEventListener("resize", checkOrientation);
+      window.removeEventListener("orientationchange", checkOrientation);
+      if (window.screen?.orientation) {
+        window.screen.orientation.removeEventListener("change", checkOrientation);
+      }
+    };
+  }, [setIsLandscape]);
 
   return (
     <DisplayModeContext.Provider value={{ mode, setMode, isLandscape, setIsLandscape, theme, setTheme, showSimulator, setShowSimulator }}>
