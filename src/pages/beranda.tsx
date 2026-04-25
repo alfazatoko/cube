@@ -25,6 +25,7 @@ export default function Beranda() {
   const [balance, setBalance] = useState<BalanceRecord | null>(null);
   const [shopSettings, setShopSettings] = useState<SettingsRecord | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showLainnyaMenu, setShowLainnyaMenu] = useState(false);
 
   const nominalRef = useRef<HTMLInputElement>(null);
   const adminRef = useRef<HTMLInputElement>(null);
@@ -178,58 +179,103 @@ export default function Beranda() {
             useMap="#menuGridMap"
           />
           <map name="menuGridMap">
-            {/* Penyesuaian - 25% width from left */}
+            {/* Penyesuaian - 20% width from left */}
             <area 
               shape="rect" 
-              coords="0,0,25%,100%" 
+              coords="0,0,20%,100%" 
               alt="Penyesuaian" 
               onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
               className="cursor-pointer"
             />
-            {/* Non Tunai - 25% to 50% */}
+            {/* Non Tunai - 20% to 40% */}
             <area 
               shape="rect" 
-              coords="25%,0,50%,100%" 
+              coords="20%,0,40%,100%" 
               alt="Non Tunai" 
               onClick={() => setLocation("/non-tunai")}
               className="cursor-pointer"
             />
-            {/* Catatan - 50% to 75% */}
+            {/* Catatan - 40% to 60% */}
             <area 
               shape="rect" 
-              coords="50%,0,75%,100%" 
+              coords="40%,0,60%,100%" 
               alt="Catatan" 
               onClick={() => setLocation("/catatan")}
               className="cursor-pointer"
             />
-            {/* Lain Nya - 75% to 100% */}
+            {/* Nota - 60% to 80% */}
             <area 
               shape="rect" 
-              coords="75%,0,100%,100%" 
+              coords="60%,0,80%,100%" 
+              alt="Nota" 
+              onClick={() => setLocation("/nota")}
+              className="cursor-pointer"
+            />
+            {/* Lain Nya - 80% to 100% */}
+            <area 
+              shape="rect" 
+              coords="80%,0,100%,100%" 
               alt="Lain Nya" 
-              onClick={() => {}}
+              onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
               className="cursor-pointer"
             />
           </map>
-          {/* Clickable overlay divs for better mobile support */}
-          <div className="absolute inset-0 flex">
+          {/* Clickable overlay divs for better mobile support - 5 columns */}
+          <div className="absolute inset-0 flex items-center justify-center">
             <div 
-              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
               onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
             />
             <div 
-              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
               onClick={() => setLocation("/non-tunai")}
             />
             <div 
-              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
               onClick={() => setLocation("/catatan")}
             />
             <div 
-              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
-              onClick={() => {}}
+              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
+              onClick={() => setLocation("/nota")}
+            />
+            <div 
+              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition relative"
+              onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
             />
           </div>
+          
+          {/* Lainnya Dropdown Menu */}
+          {showLainnyaMenu && (
+            <div className="absolute right-0 top-full mt-2 bg-transparent py-2 min-w-[150px] z-[10000]">
+              <button
+                onClick={() => {
+                  setLocation("/beranda");
+                  setShowLainnyaMenu(false);
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg mb-1 shadow-sm"
+              >
+                BERANDA
+              </button>
+              <button
+                onClick={() => {
+                  setLocation("/nota");
+                  setShowLainnyaMenu(false);
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg mb-1 shadow-sm"
+              >
+                NOTA
+              </button>
+              <button
+                onClick={() => {
+                  setLocation("/stok-barang");
+                  setShowLainnyaMenu(false);
+                }}
+                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg shadow-sm"
+              >
+                STOK BARANG
+              </button>
+            </div>
+          )}
         </div>
       </DebugWrapper>
 
