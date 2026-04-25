@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 import { getBalance, createTransaction, getSettings, type BalanceRecord, type SettingsRecord } from "@/lib/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
-import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, RefreshCcw, Sliders, CreditCard, Clipboard } from "lucide-react";
+import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, RefreshCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DebugWrapper } from "@/components/debug/debug-wrapper";
 
@@ -170,19 +170,66 @@ export default function Beranda() {
       </DebugWrapper>
 
       <DebugWrapper componentName="ActionButtons">
-        <div className="flex gap-2 mb-3">
-          <button onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))} className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2.5 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/30 active:scale-95 transition hover:shadow-emerald-500/40">
-            <Sliders className="w-4 h-4" />
-            <span>Penyesuaian</span>
-          </button>
-          <button onClick={() => setLocation("/non-tunai")} className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2.5 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-blue-500/30 active:scale-95 transition hover:shadow-blue-500/40">
-            <CreditCard className="w-4 h-4" />
-            <span>Nontunai</span>
-          </button>
-          <button onClick={() => setLocation("/catatan")} className="flex-1 bg-gradient-to-r from-teal-500 to-cyan-500 text-white py-2.5 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-teal-500/30 active:scale-95 transition hover:shadow-teal-500/40">
-            <Clipboard className="w-4 h-4" />
-            <span>Catatan</span>
-          </button>
+        <div className="relative w-full mb-3">
+          <img 
+            src="/menu-grid.svg" 
+            alt="Menu Grid" 
+            className="w-full h-auto rounded-2xl"
+            useMap="#menuGridMap"
+          />
+          <map name="menuGridMap">
+            {/* Penyesuaian - 25% width from left */}
+            <area 
+              shape="rect" 
+              coords="0,0,25%,100%" 
+              alt="Penyesuaian" 
+              onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
+              className="cursor-pointer"
+            />
+            {/* Non Tunai - 25% to 50% */}
+            <area 
+              shape="rect" 
+              coords="25%,0,50%,100%" 
+              alt="Non Tunai" 
+              onClick={() => setLocation("/non-tunai")}
+              className="cursor-pointer"
+            />
+            {/* Catatan - 50% to 75% */}
+            <area 
+              shape="rect" 
+              coords="50%,0,75%,100%" 
+              alt="Catatan" 
+              onClick={() => setLocation("/catatan")}
+              className="cursor-pointer"
+            />
+            {/* Lain Nya - 75% to 100% */}
+            <area 
+              shape="rect" 
+              coords="75%,0,100%,100%" 
+              alt="Lain Nya" 
+              onClick={() => {}}
+              className="cursor-pointer"
+            />
+          </map>
+          {/* Clickable overlay divs for better mobile support */}
+          <div className="absolute inset-0 flex">
+            <div 
+              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
+            />
+            <div 
+              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              onClick={() => setLocation("/non-tunai")}
+            />
+            <div 
+              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              onClick={() => setLocation("/catatan")}
+            />
+            <div 
+              className="w-1/4 h-full cursor-pointer active:scale-95 transition"
+              onClick={() => {}}
+            />
+          </div>
         </div>
       </DebugWrapper>
 
