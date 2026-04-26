@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, Printer, Share2, Plus, Trash2, Edit2, Save } from "lucide-react";
+import { ArrowLeft, Printer, Share2, Plus, Trash2, Edit2, Save, X, Check } from "lucide-react";
 import { getSettings, type SettingsRecord } from "@/lib/firestore";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { printer } from "@/lib/printer-utils";
 
 interface NotaItem {
   nama: string;
@@ -24,6 +25,8 @@ export default function Nota() {
     { nama: "", harga: "", jumlah: "" }
   ]);
   const [tanggal, setTanggal] = useState(new Date().toISOString().split('T')[0]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   useEffect(() => {
     // Load settings saat mount
@@ -71,12 +74,35 @@ export default function Nota() {
   };
 
   const handlePrint = () => {
-    window.print();
+    setShowPreview(true);
+  };
+
+  const handleBluetoothPrint = async () => {
+    setIsPrinting(true);
+    try {
+      const data = {
+        shopName: settings?.shopName || "KASIR CUBE",
+        items: items.map(i => ({
+          nama: i.nama,
+          harga: parseFloat(i.harga.replace(/\./g, '')) || 0,
+          jumlah: parseFloat(i.jumlah) || 0
+        })),
+        total: calculateTotal(),
+        tertanda: settings?.shopName || "KASIR CUBE",
+        thanksMessage: "TERIMA KASIH ATAS KEPERCAYAAN ANDA"
+      };
+      const success = await printer.printReceipt(data);
+      if (success) {
+        setShowPreview(false);
+      }
+    } catch (error) {
+      console.error("Print failed:", error);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   const handleShare = async () => {
-    // Sederhana: gunakan print dialog untuk save as PDF
-    // User bisa pilih "Save as PDF" lalu share manual
     window.print();
   };
 
@@ -316,199 +342,188 @@ export default function Nota() {
         </div>
       </div>
 
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in duration-200">
+            {/* Header Modal */}
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h3 className="font-bold text-gray-800">Preview Struk</h3>
+              <button onClick={() => setShowPreview(false)} className="p-1 hover:bg-gray-200 rounded-full transition">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Receipt Content (Simulated Thermal) */}
+            <div className="flex-1 overflow-y-auto p-6 bg-gray-100">
+              <div className="bg-white p-4 shadow-sm font-mono text-[11px] leading-tight text-black max-w-[220px] mx-auto border-dashed border-2 border-gray-300">
+                <div className="text-center mb-2">
+                  <p className="font-bold text-sm uppercase">{settings?.shopName || "KASIR CUBE"}</p>
+                  <p>--------------------------------</p>
+                </div>
+
+                <div className="space-y-1 mb-2">
+                  {items.map((item, i) => (
+                    <div key={i}>
+                      <p>{i + 1}. {item.nama || '-'}</p>
+                      <div className="flex justify-between pl-3">
+                        <span>{item.jumlah || '0'} x {item.harga || '0'}</span>
+                        <span>{((parseFloat(item.harga.replace(/\./g, '')) || 0) * (parseFloat(item.jumlah) || 0)).toLocaleString('id-ID')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <p>--------------------------------</p>
+                <div className="flex justify-between font-bold text-xs mb-4">
+                  <span>TOTAL:</span>
+                  <span>Rp {calculateTotal().toLocaleString('id-ID')}</span>
+                </div>
+
+                <div className="text-center mb-4">
+                  <p>Tertanda:</p>
+                  <br />
+                  <p className="font-bold uppercase">{settings?.shopName || "KASIR CUBE"}</p>
+                </div>
+
+                <div className="text-center">
+                  <p className="font-bold">TERIMA KASIH</p>
+                  <p>Atas Kepercayaan Anda</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 bg-white border-t flex gap-3">
+              <button
+                onClick={() => setShowPreview(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleBluetoothPrint}
+                disabled={isPrinting}
+                className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg shadow-blue-200"
+              >
+                {isPrinting ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Printer className="w-4 h-4" />
+                    Cetak
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Print Styles */}
       <style>{`
         @media print {
           @page {
-            margin: 5mm !important;
+            margin: 0 !important;
             padding: 0 !important;
-            size: auto;
-          }
-          
-          /* AGGRESSIVE: Hide anything with dark background */
-          * {
-            background-color: white !important;
-            background: white !important;
-          }
-          
-          /* Except the nota content */
-          .rincian-barang, .rincian-barang *,
-          .bg-white, .bg-white *,
-          [class*="nota"], [class*="nota"] * {
-            background-color: white !important;
-          }
-          
-          * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+            size: 58mm auto; /* Thermal paper size */
           }
           
           body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
-            width: 100% !important;
-            text-align: center !important;
+            width: 58mm !important;
           }
-          
-          /* Hide semua yang tidak perlu */
-          .no-print,
-          .bg-gradient-to-r,
-          nav,
-          .bottom-nav,
-          [role="navigation"],
-          nav *,
-          .bottom-nav *,
-          [role="navigation"] *,
-          .fixed,
-          .sticky,
-          header:not(.nota-header),
-          footer,
-          .timestamp,
-          .debug-btn,
-          .react-devtools-backdrop,
-          .react-devtools-profiler,
-          script,
-          style {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-          }
-          
-          /* Hide all buttons */
-          button,
-          .btn,
-          [type="button"],
-          [type="submit"] {
+
+          .no-print {
             display: none !important;
           }
-          
-          /* Hide input fields */
-          input,
-          select,
-          textarea {
-            display: none !important;
-          }
-          
-          /* Layout adjustments untuk FULL WIDTH */
-          html, body {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-          }
-          
+
           .nota-container {
-            width: 100% !important;
-            max-width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
           }
-          
-          /* NOTA PRINT AREA - Full width and Centered */
+
           .nota-print-area {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 auto !important;
-            padding: 5mm !important;
-            border-radius: 0 !important;
+            width: 58mm !important;
+            padding: 2mm !important;
             box-shadow: none !important;
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important; /* Stretch to full width */
-            background: white !important;
+            border-radius: 0 !important;
           }
-          
-          /* Headers centering */
-          .text-center {
-            text-align: center !important;
+
+          /* Hanya tampilkan elemen yang diminta user: Nama Toko, Rincian, TTD, Thanks */
+          .nota-print-area > div:not(.rincian-barang):not(.text-center):not(.flex) {
+             display: none !important;
           }
-          
-          /* Rincian barang full width */
-          .rincian-barang {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 10px 0 !important;
-            padding: 5mm !important;
-            border: 2px solid #000 !important;
-            border-radius: 8px !important;
-            box-sizing: border-box !important;
-            text-align: left !important; /* Allow internal items to align left */
-          }
-          
-          .rincian-barang p {
-            text-align: left !important;
-            width: 100% !important;
-          }
-          
-          /* Text colors and fonts */
-          .text-black, .text-gray-800, .text-gray-600, .text-gray-500 {
-            color: #000 !important;
-          }
-          
-          .text-blue-700 {
-            color: #000 !important;
-            font-weight: 900 !important;
-          }
-          
-          .border-gray-400,
-          .border-gray-500,
-          .border-gray-300 {
-            border-color: #000 !important;
-          }
-          
-          /* Logo centering */
-          img {
-            margin: 0 auto 15px auto !important;
+
+          /* Khusus untuk header toko */
+          .text-center.mb-6 {
             display: block !important;
-            width: 120px !important; /* Larger logo */
-            height: auto !important;
+            margin-bottom: 5mm !important;
           }
           
-          /* FONT SIZES - ENLARGED as requested */
-          body {
+          .text-center.mb-6 img {
+            display: none !important; /* Sesuai permintaan: hanya nama toko */
+          }
+
+          .text-center.mb-6 h2 {
+            font-size: 14pt !important;
+            margin: 0 !important;
+          }
+
+          .text-center.mb-6 p {
+            display: none !important; /* Sembunyikan alamat */
+          }
+
+          .rincian-barang {
+            border: none !important;
+            padding: 0 !important;
+            margin: 2mm 0 !important;
+          }
+
+          .rincian-barang h3 {
+            font-size: 10pt !important;
+            border-bottom: 1px dashed black;
+            padding-bottom: 1mm;
+          }
+
+          .rincian-barang .text-sm {
+            display: none !important; /* Sembunyikan hari/tanggal detail */
+          }
+
+          .rincian-barang .space-y-2 {
+            margin: 2mm 0 !important;
+          }
+
+          .rincian-barang .border-b {
+            border-bottom: 1px dashed #ccc !important;
+            padding-bottom: 1mm !important;
+            margin-bottom: 1mm !important;
+          }
+
+          .rincian-barang .text-lg.font-black {
             font-size: 12pt !important;
+            margin-top: 2mm !important;
           }
-          
-          h2 {
-            font-size: 24pt !important; /* Shop Name */
-            margin-bottom: 10px !important;
-          }
-          
-          h3 {
-            font-size: 20pt !important; /* RINCIAN BARANG */
-            margin-bottom: 15px !important;
-          }
-          
-          .text-2xl { font-size: 24pt !important; }
-          .text-xl { font-size: 20pt !important; }
-          .text-lg { font-size: 18pt !important; }
-          .text-base { font-size: 14pt !important; }
-          .text-sm { font-size: 12pt !important; }
-          
-          /* Total text */
-          .text-lg.font-black.text-blue-700 {
-            font-size: 22pt !important;
-            margin-top: 10px !important;
-          }
-          
-          /* Tertanda and Terima Kasih */
-          .text-xl.font-black {
-            font-size: 20pt !important;
-          }
-          
-          /* Ensure flex spacing is preserved */
-          .flex.justify-between {
+
+          .flex.justify-end.mb-6 {
             display: flex !important;
-            justify-content: space-between !important;
-            width: 100% !important;
+            margin-top: 5mm !important;
           }
-          
-          .flex.justify-end {
-            display: flex !important;
-            justify-content: flex-end !important;
-            width: 100% !important;
+
+          .text-center.border-t-2 {
+            display: block !important;
+            border-top: 1px dashed black !important;
+            margin-top: 5mm !important;
+            padding-top: 2mm !important;
+          }
+
+          /* Reset all backgrounds to white */
+          * {
+            background: white !important;
+            color: black !important;
+            font-family: 'Courier New', Courier, monospace !important;
           }
         }
       `}</style>
