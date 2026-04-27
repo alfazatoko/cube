@@ -1,11 +1,11 @@
-const CACHE_NAME = "kasir-cube-v16";
+const CACHE_NAME = "kasir-cube-v1.1.0";
 const PRECACHE_URLS = ["/", "/index.html", "/manifest.json", "/logo.png"];
 
+// 1. Install: langsung skipWaiting agar SW baru segera aktif
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Cache each URL individually so one failure won't block install
       for (const url of PRECACHE_URLS) {
         try {
           await cache.add(url);
@@ -17,6 +17,7 @@ self.addEventListener("install", (event) => {
   );
 });
 
+// 2. Activate: hapus cache lama, langsung claim semua tab
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -28,9 +29,12 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// 3. Fetch: Network-first strategy, fallback ke cache
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   if (event.request.url.includes("/api/")) return;
+  if (event.request.url.includes("firestore.googleapis.com")) return;
+  if (event.request.url.includes("firebaseio.com")) return;
 
   event.respondWith(
     fetch(event.request)
@@ -41,4 +45,11 @@ self.addEventListener("fetch", (event) => {
       })
       .catch(() => caches.match(event.request))
   );
+});
+
+// 4. Message: terima perintah SKIP_WAITING dari halaman utama
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
