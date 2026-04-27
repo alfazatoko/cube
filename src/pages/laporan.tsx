@@ -3,8 +3,8 @@ import { useAuth } from "@/lib/auth";
 import { Header } from "@/components/layout/header";
 import {
   getTransactions, getSaldoHistory, getDailySnapshot, getDailyNotes,
-  lockReport, resetBalance, getUsers, getSettings,
-  type TransactionRecord, type SaldoHistoryRecord, type DailyNoteRecord, type UserRecord, type SettingsRecord
+  lockReport, resetBalance, getUsers, getSettings, getStokVoucherByRange,
+  type TransactionRecord, type SaldoHistoryRecord, type DailyNoteRecord, type UserRecord, type SettingsRecord, type StokVoucherRecord
 } from "@/lib/firestore";
 import { formatRupiah, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ export default function Laporan() {
   const [kasirList, setKasirList] = useState<UserRecord[]>([]);
 
   const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
+  const [voucherData, setVoucherData] = useState<StokVoucherRecord[]>([]);
   const [saldoHistory, setSaldoHistory] = useState<SaldoHistoryRecord[]>([]);
   const [isLocked, setIsLocked] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -62,14 +63,45 @@ export default function Laporan() {
       } else if (kasirFilter !== "Semua") {
         kasirName = kasirFilter;
       }
-      const [txs, saldo, snap, notes, settings] = await Promise.all([
+      const [txs, saldo, snap, notes, settings, vData] = await Promise.all([
         getTransactions({ kasirName, startDate, endDate }),
         getSaldoHistory({ kasirName, startDate, endDate }),
         isOwner ? Promise.resolve(null) : getDailySnapshot(user.name, startDate),
         isOwner ? Promise.resolve({ sisaSaldoBank: 0, saldoRealApp: 0 }) : getDailyNotes(user.name, startDate),
         getSettings(),
+        getStokVoucherByRange(kasirName, startDate, endDate)
       ]);
+      
+      let finalVData = [...vData];
+      
+      // Auto-fallback to local storage for current user if looking at today's exact date
+      if (startDate === endDate && (!kasirName || kasirName === user.name)) {
+        const localVoucher = localStorage.getItem(`cube_stok_voucher_${user.name}_${startDate}`);
+        const localQris = localStorage.getItem(`cube_stok_qris_${user.name}_${startDate}`);
+        
+        if (localVoucher) {
+          try {
+            const parsedVoucher = JSON.parse(localVoucher);
+            const parsedQris = localQris ? JSON.parse(localQris) : [];
+            
+            // Remove existing from vData if any
+            finalVData = finalVData.filter(v => v.kasirName !== user.name || v.date !== startDate);
+            
+            finalVData.push({
+              kasirName: user.name,
+              date: startDate,
+              dataVoucher: parsedVoucher,
+              dataQris: parsedQris,
+              updatedAt: new Date().toISOString()
+            });
+          } catch (e) {
+             console.error("Failed to parse local voucher data", e);
+          }
+        }
+      }
+
       setTransactions(txs);
+      setVoucherData(finalVData);
       setSaldoHistory(saldo);
       setIsLocked((snap as any)?.locked || false);
       setDailyNotes(notes as DailyNoteRecord);
@@ -112,9 +144,37 @@ export default function Laporan() {
   const totalAdmin = sumAdmin(transactions);
   const totalNonTunai = sumNominal(nonTunaiTx);
 
-  const totalPenjualan = totalBank;
+  // Voucher Calculations
+  let totalVoucherQty = 0;
+  let totalVoucherUang = 0;
+  let totalVoucherNonTunaiQty = 0;
+  let totalVoucherNonTunaiUang = 0;
+
+  voucherData.forEach(v => {
+    if (v.dataQris) {
+      v.dataQris.forEach((q: any) => {
+        totalVoucherNonTunaiQty += (q.qty || 0);
+        totalVoucherNonTunaiUang += ((q.harga || 0) * (q.qty || 0));
+      });
+    }
+    if (v.dataVoucher) {
+      Object.values(v.dataVoucher).forEach((items: any) => {
+        items.forEach((i: any) => {
+          const laku = Math.max(0, (i.awal || 0) - (i.akhir || 0));
+          totalVoucherQty += laku;
+          totalVoucherUang += (laku * (i.price || 0));
+        });
+      });
+    }
+  });
+
+  const totalVoucherTunaiQty = Math.max(0, totalVoucherQty - totalVoucherNonTunaiQty);
+  const totalVoucherTunaiUang = Math.max(0, totalVoucherUang - totalVoucherNonTunaiUang);
+
+  const totalPenjualan = totalBank + totalVoucherTunaiUang;
   const sisaCashPenjualan = totalPenjualan - totalTarik;
   const sisaCashTotal = sisaCashPenjualan + totalAdmin + totalAks;
+  const totalNonTunaiDisplay = totalNonTunai + totalVoucherNonTunaiUang;
 
   const saldoBankHistory = saldoHistory.filter(s => s.jenis === "Bank");
   const totalIsiSaldoBank = saldoBankHistory.reduce((s, h) => s + h.nominal, 0);
@@ -186,7 +246,9 @@ export default function Laporan() {
       wsData.push(["Sisa Cash Penjualan", sisaCashPenjualan]);
       wsData.push(["Admin", totalAdmin]);
       wsData.push(["Aksesoris", totalAks]);
+      wsData.push(["Total Voucher", totalVoucherTunaiUang]);
       wsData.push(["Non Tunai", totalNonTunai]);
+      wsData.push(["Non Tunai Voucher", totalVoucherNonTunaiUang]);
       wsData.push(["Sisa Cash Total", sisaCashTotal]);
       wsData.push([]);
       wsData.push(["Saldo & Selisih"]);
@@ -284,7 +346,9 @@ export default function Laporan() {
     row("Sisa Cash Penjualan", formatRupiah(sisaCashPenjualan), { leftColor: [16, 130, 90], rightColor: [16, 130, 90] });
     row("Admin", formatRupiah(totalAdmin), { leftColor: [180, 130, 20], rightColor: [180, 130, 20] });
     if (aksTx.length > 0) row(`Aksesoris (${aksTx.length}x)`, formatRupiah(totalAks), { leftColor: [200, 50, 100], rightColor: [200, 50, 100] });
+    if (totalVoucherTunaiQty > 0) row(`Total Voucher (${totalVoucherTunaiQty}x)`, formatRupiah(totalVoucherTunaiUang), { leftColor: [16, 100, 200], rightColor: [16, 100, 200] });
     row("Non Tunai", formatRupiah(totalNonTunai), { leftColor: [100, 50, 200], rightColor: [100, 50, 200] });
+    if (totalVoucherNonTunaiQty > 0) row(`Non Tunai Voucher (${totalVoucherNonTunaiQty}x)`, formatRupiah(totalVoucherNonTunaiUang), { leftColor: [100, 50, 200], rightColor: [100, 50, 200] });
     y += 2;
 
     sectionHeaderRight("SISA CASH TOTAL", formatRupiah(sisaCashTotal), 230, 160, 20, 12);
@@ -473,10 +537,22 @@ export default function Laporan() {
               <span className="text-sm font-bold text-rose-500">{formatRupiah(totalAks)}</span>
             </div>
           )}
-          <div className="flex justify-between items-center py-2">
+          {totalVoucherTunaiQty > 0 && (
+            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+              <span className="text-sm text-gray-700 flex items-center gap-1">🎟️ <strong className="text-blue-600">TOTAL VOUCHER</strong><span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-bold ml-1">{totalVoucherTunaiQty}x</span></span>
+              <span className="text-sm font-bold text-blue-600">{formatRupiah(totalVoucherTunaiUang)}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center py-2 border-b border-gray-200">
             <span className="text-sm text-gray-700 flex items-center gap-1">🏷️ <strong className="text-purple-600">Non Tunai</strong></span>
             <span className="text-sm font-bold text-purple-600">{formatRupiah(totalNonTunai)}</span>
           </div>
+          {totalVoucherNonTunaiQty > 0 && (
+            <div className="flex justify-between items-center py-2">
+              <span className="text-sm text-gray-700 flex items-center gap-1">💳 <strong className="text-purple-700">NON TUNAI VOUCHER</strong><span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-bold ml-1">{totalVoucherNonTunaiQty}x</span></span>
+              <span className="text-sm font-bold text-purple-700">{formatRupiah(totalVoucherNonTunaiUang)}</span>
+            </div>
+          )}
         </div>
 
         <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-3">

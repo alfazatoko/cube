@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Clock, PlusCircle, BarChart3, Settings, LogOut, History, ArrowLeft } from "lucide-react";
+import { Home, Clock, PlusCircle, BarChart3, Settings, LogOut, History, ArrowLeft, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
+
+type NavItem =
+  | { icon: LucideIcon; label: string; href: string; isLogout?: false; ownerOnly?: boolean; onClick?: (e: React.MouseEvent) => void }
+  | { icon: LucideIcon; label: string; href: string; isLogout: true; ownerOnly?: boolean; onClick?: never };
 import {
   AlertDialog,
   AlertDialogAction,
@@ -98,10 +102,10 @@ export function BottomNav() {
         "fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around px-1 z-50 transition-all duration-300",
         isLandscape ? "py-1 pb-[env(safe-area-inset-bottom,4px)] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]" : "py-1.5 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
       )}>
-        {navItems.map((item, idx) => {
+        {(navItems as NavItem[]).map((item, idx) => {
           const isActive = item.href !== "logout" && item.href !== "#" && location === item.href;
-          const isLogout = (item as any).isLogout;
-          const isButton = !!item.onClick;
+          const isLogout = item.isLogout;
+          const isButton = !item.isLogout && !!item.onClick;
 
           const content = (
             <div
@@ -133,7 +137,7 @@ export function BottomNav() {
                   <span className="text-[10px] font-bold text-red-500">{item.label}</span>
                 </button>
               ) : isButton ? (
-                <button onClick={item.onClick} className="w-full">{content}</button>
+                <button onClick={(item as { icon: LucideIcon; label: string; href: string; onClick?: (e: React.MouseEvent) => void }).onClick} className="w-full">{content}</button>
               ) : (
                 <Link href={item.href} className="block">{content}</Link>
               )}

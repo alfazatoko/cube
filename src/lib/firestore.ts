@@ -18,8 +18,9 @@ export function getCurrentUid(): string | null {
 
 /** UID user aktif, atau throw error jika belum login */
 function requireUid(): string {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Autentikasi diperlukan. Silakan login terlebih dahulu.");
+  // Prioritaskan auth.currentUser (SDK), fallback ke localStorage jika ada race condition
+  const uid = auth.currentUser?.uid ?? localStorage.getItem("kasir_tenant_id");
+  if (!uid) throw new Error("Sesi Anda telah habis. Silakan login ulang.");
   return uid;
 }
 
@@ -900,3 +901,48 @@ export async function validateLicense(code: string, email: string, deviceId: str
   
   return { valid: true, message: "Lisensi valid.", license };
 }
+
+// ═══════════════════════════════════════════════════════════
+// STOK VOUCHER
+// ═══════════════════════════════════════════════════════════
+
+export interface StokVoucherRecord {
+  kasirName: string;
+  date?: string;
+  dataVoucher: Record<string, any>;
+  dataQris: any[];
+  updatedAt: string;
+}
+
+export async function getStokVoucher(kasirName: string, date: string): Promise<StokVoucherRecord | null> {
+  const docId = `${kasirName}_${date}`;
+  const ref = doc(db, "stok_voucher", docId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return null;
+  return snap.data() as StokVoucherRecord;
+}
+
+export async function syncStokVoucher(kasirName: string, date: string, dataVoucher: any, dataQris: any): Promise<void> {
+  const docId = `${kasirName}_${date}`;
+  const ref = doc(db, "stok_voucher", docId);
+  await setDoc(ref, {
+    kasirName,
+    date,
+    dataVoucher,
+    dataQris,
+    updatedAt: new Date().toISOString()
+  });
+}
+
+export async function getStokVoucherByRange(kasirName: string | undefined, startDate: string, endDate: string): Promise<StokVoucherRecord[]> {
+  const colRef = fbCollection(db, "stok_voucher");
+  let q;
+  if (kasirName) {
+    q = query(colRef, where("kasirName", "==", kasirName), where("date", ">=", startDate), where("date", "<=", endDate));
+  } else {
+    q = query(colRef, where("date", ">=", startDate), where("date", "<=", endDate));
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data() as StokVoucherRecord);
+}
+

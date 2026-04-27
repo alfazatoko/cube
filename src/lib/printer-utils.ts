@@ -1,3 +1,44 @@
+// Web Bluetooth API type declarations (not included in TS default lib)
+declare global {
+  interface BluetoothCharacteristicProperties {
+    write: boolean;
+    read: boolean;
+    notify: boolean;
+  }
+
+  interface BluetoothRemoteGATTCharacteristic {
+    properties: BluetoothCharacteristicProperties;
+    writeValue(value: BufferSource): Promise<void>;
+  }
+
+  interface BluetoothRemoteGATTService {
+    getCharacteristics(uuid?: string): Promise<BluetoothRemoteGATTCharacteristic[]>;
+    getPrimaryService(uuid: string): Promise<BluetoothRemoteGATTService>;
+  }
+
+  interface BluetoothRemoteGATTServer {
+    connect(): Promise<BluetoothRemoteGATTServer>;
+    getPrimaryService(uuid: string): Promise<BluetoothRemoteGATTService>;
+  }
+
+  interface BluetoothDevice {
+    gatt?: BluetoothRemoteGATTServer;
+  }
+
+  interface RequestDeviceOptions {
+    filters?: Array<{ services?: string[]; namePrefix?: string; name?: string }>;
+    optionalServices?: string[];
+    acceptAllDevices?: boolean;
+  }
+
+  interface Bluetooth {
+    requestDevice(options: RequestDeviceOptions): Promise<BluetoothDevice>;
+  }
+
+  interface Navigator {
+    bluetooth: Bluetooth;
+  }
+}
 
 /**
  * Utility for Bluetooth Thermal Printers (ESC/POS)
@@ -38,7 +79,7 @@ export class BluetoothPrinter {
       const characteristics = await service?.getCharacteristics();
       
       // Usually the first characteristic that supports "write"
-      this.characteristic = characteristics?.find(c => c.properties.write) || null;
+      this.characteristic = characteristics?.find((c: BluetoothRemoteGATTCharacteristic) => c.properties.write) || null;
 
       if (!this.characteristic) {
         throw new Error("Karakteristik printer tidak ditemukan.");

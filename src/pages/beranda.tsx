@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/header";
 import { AddSaldoModal } from "@/components/modals/add-saldo-modal";
 import { getBalance, createTransaction, getSettings, type BalanceRecord, type SettingsRecord } from "@/lib/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
-import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, RefreshCcw } from "lucide-react";
+import { Landmark, Wallet, ArrowDownToLine, Gem, Lock, Settings, ChevronDown, RefreshCcw, SlidersHorizontal, SmartphoneNfc, NotebookPen, Receipt, ListPlus, Home, FileText, Ticket, X, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DebugWrapper } from "@/components/debug/debug-wrapper";
 
@@ -108,11 +108,13 @@ export default function Beranda() {
       nominalRef.current?.focus();
       await loadBalance();
     } catch (err: any) {
-      toast({ title: err.message || "Gagal menyimpan", variant: "destructive" });
+      const msg = err?.message || err?.toString?.() || "Gagal menyimpan transaksi";
+      toast({ title: msg, variant: "destructive" });
     } finally {
       setSaving(false);
     }
   }, [user, category, nominalDisplay, adminDisplay, keterangan, shopSettings, toast, loadBalance]);
+
 
   return (
     <div className="px-3 pt-3 pb-24 landscape-scroll">
@@ -128,156 +130,144 @@ export default function Beranda() {
         </div>
       </DebugWrapper>
 
-      <DebugWrapper componentName="SaldoCards">
-        <div className="grid grid-cols-2 gap-2.5 mb-3">
-          <div className="bg-gradient-to-br from-blue-900 to-blue-600 rounded-2xl p-3 text-white shadow-md relative overflow-hidden">
-            <div className="absolute -right-3 -top-3 w-12 h-12 bg-card/10 rounded-full" />
-            <p className="text-[10px] font-semibold opacity-90 mb-0.5 flex items-center gap-1">
-              <Landmark className="w-3 h-3" /> SALDO BANK
-            </p>
-            <h3 className="text-xl font-extrabold">{formatRupiah(balance?.bank || 0)}</h3>
+      <DebugWrapper componentName="SaldoCardsGroup">
+        <div className="bg-gradient-to-br from-[#118EEA] to-blue-700 rounded-3xl p-4 text-white shadow-lg relative overflow-hidden mb-4 border border-blue-400/30">
+          {/* Decorative shapes */}
+          <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -left-8 -bottom-8 w-32 h-32 bg-black/10 rounded-full blur-2xl pointer-events-none" />
+          
+          {/* Top 2 Main Balances */}
+          <div className="grid grid-cols-2 gap-4 mb-4 relative z-10">
+            <div>
+              <p className="text-[10px] font-medium text-blue-100 mb-1 flex items-center gap-1.5 uppercase tracking-wide">
+                <Landmark className="w-3.5 h-3.5" /> Saldo Bank
+              </p>
+              <h3 className="text-2xl font-black tracking-tight drop-shadow-sm">{formatRupiah(balance?.bank || 0)}</h3>
+            </div>
+            <div className="pl-4 border-l border-blue-400/40">
+              <p className="text-[10px] font-medium text-blue-100 mb-1 flex items-center gap-1.5 uppercase tracking-wide">
+                <Wallet className="w-3.5 h-3.5" /> Saldo Cash
+              </p>
+              <h3 className="text-2xl font-black tracking-tight drop-shadow-sm">{formatRupiah(balance?.cash || 0)}</h3>
+            </div>
           </div>
-          <div className="bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl p-3 text-white shadow-md relative overflow-hidden">
-            <div className="absolute -right-3 -bottom-3 w-12 h-12 bg-card/10 rounded-full" />
-            <p className="text-[10px] font-semibold opacity-90 mb-0.5 flex items-center gap-1">
-              <Wallet className="w-3 h-3" /> SALDO CASH
-            </p>
-            <h3 className="text-xl font-extrabold">{formatRupiah(balance?.cash || 0)}</h3>
-          </div>
-        </div>
-      </DebugWrapper>
 
-      <DebugWrapper componentName="StatsRow">
-        <div className="flex gap-2 mb-3">
-          <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
-            <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-              <ArrowDownToLine className="w-2.5 h-2.5" /> Tarik Tunai
-            </span>
-            <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.tarik || 0)}</span>
-          </div>
-          <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
-            <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-              <Gem className="w-2.5 h-2.5" /> Aksesoris
-            </span>
-            <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.aks || 0)}</span>
-          </div>
-          <div className="flex-1 bg-card border border-border rounded-xl py-2 px-2 text-center shadow-sm">
-            <span className="text-[8px] font-bold text-muted-foreground block uppercase flex items-center justify-center gap-0.5">
-              <RefreshCcw className="w-2.5 h-2.5 text-gray-900" /> ADMIN
-            </span>
-            <span className="text-xs font-extrabold text-foreground block">{formatRupiah(balance?.adminTotal || 0)}</span>
+          {/* Bottom 3 Secondary Balances */}
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-blue-400/40 relative z-10">
+            <div>
+              <span className="text-[8px] font-bold text-blue-100 uppercase flex items-center gap-1 mb-1">
+                <ArrowDownToLine className="w-2.5 h-2.5" /> Tarik Tunai
+              </span>
+              <span className="text-xs font-extrabold">{formatRupiah(balance?.tarik || 0)}</span>
+            </div>
+            <div className="pl-2 border-l border-blue-400/40">
+              <span className="text-[8px] font-bold text-blue-100 uppercase flex items-center gap-1 mb-1">
+                <Gem className="w-2.5 h-2.5" /> Aksesoris
+              </span>
+              <span className="text-xs font-extrabold">{formatRupiah(balance?.aks || 0)}</span>
+            </div>
+            <div className="pl-2 border-l border-blue-400/40">
+              <span className="text-[8px] font-bold text-blue-100 uppercase flex items-center gap-1 mb-1">
+                <RefreshCcw className="w-2.5 h-2.5" /> Admin
+              </span>
+              <span className="text-xs font-extrabold">{formatRupiah(balance?.adminTotal || 0)}</span>
+            </div>
           </div>
         </div>
       </DebugWrapper>
 
       <DebugWrapper componentName="ActionButtons">
-        <div className="relative w-full mb-3">
-          <img 
-            src="/menu-grid.svg" 
-            alt="Menu Grid" 
-            className="w-full h-auto rounded-2xl"
-            useMap="#menuGridMap"
-          />
-          <map name="menuGridMap">
-            {/* Penyesuaian - 20% width from left */}
-            <area 
-              shape="rect" 
-              coords="0,0,20%,100%" 
-              alt="Penyesuaian" 
-              onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
-              className="cursor-pointer"
-            />
-            {/* Non Tunai - 20% to 40% */}
-            <area 
-              shape="rect" 
-              coords="20%,0,40%,100%" 
-              alt="Non Tunai" 
-              onClick={() => setLocation("/non-tunai")}
-              className="cursor-pointer"
-            />
-            {/* Catatan - 40% to 60% */}
-            <area 
-              shape="rect" 
-              coords="40%,0,60%,100%" 
-              alt="Catatan" 
-              onClick={() => setLocation("/catatan")}
-              className="cursor-pointer"
-            />
-            {/* Nota - 60% to 80% */}
-            <area 
-              shape="rect" 
-              coords="60%,0,80%,100%" 
-              alt="Nota" 
-              onClick={() => setLocation("/nota")}
-              className="cursor-pointer"
-            />
-            {/* Lain Nya - 80% to 100% */}
-            <area 
-              shape="rect" 
-              coords="80%,0,100%,100%" 
-              alt="Lain Nya" 
-              onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
-              className="cursor-pointer"
-            />
-          </map>
-          {/* Clickable overlay divs for better mobile support - 5 columns */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div 
-              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
-              onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
-            />
-            <div 
-              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
-              onClick={() => setLocation("/non-tunai")}
-            />
-            <div 
-              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
-              onClick={() => setLocation("/catatan")}
-            />
-            <div 
-              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition"
-              onClick={() => setLocation("/nota")}
-            />
-            <div 
-              className="w-[19%] h-[85%] cursor-pointer active:scale-95 transition relative"
-              onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
-            />
-          </div>
-          
-          {/* Lainnya Dropdown Menu */}
-          {showLainnyaMenu && (
-            <div className="absolute right-0 top-full mt-2 bg-transparent py-2 min-w-[150px] z-[10000]">
-              <button
-                onClick={() => {
-                  setLocation("/beranda");
-                  setShowLainnyaMenu(false);
-                }}
-                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg mb-1 shadow-sm"
-              >
-                BERANDA
-              </button>
-              <button
-                onClick={() => {
-                  setLocation("/nota");
-                  setShowLainnyaMenu(false);
-                }}
-                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg mb-1 shadow-sm"
-              >
-                NOTA
-              </button>
-              <button
-                onClick={() => {
-                  setLocation("/stok-barang");
-                  setShowLainnyaMenu(false);
-                }}
-                className="w-full px-4 py-2.5 text-left text-sm font-bold text-white bg-blue-600/90 hover:bg-blue-700 transition rounded-lg shadow-sm"
-              >
-                STOK BARANG
+        <div className="grid grid-cols-5 gap-2 mb-4">
+          {/* 1. Penyesuaian - ring biru */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1a5276]/20 ring-offset-1"
+          >
+            <SlidersHorizontal className="w-5 h-5 text-[#1a5276] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+            <span className="text-[8px] font-bold text-[#1a5276] uppercase tracking-wide">Penyesuaian</span>
+          </button>
+          {/* 2. Non Tunai - ring hijau */}
+          <button
+            onClick={() => setLocation("/non-tunai")}
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1e8449]/20 ring-offset-1"
+          >
+            <SmartphoneNfc className="w-5 h-5 text-[#1e8449] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+            <span className="text-[8px] font-bold text-[#1e8449] uppercase tracking-wide">Non Tunai</span>
+          </button>
+          {/* 3. Catatan - ring oranye */}
+          <button
+            onClick={() => setLocation("/catatan")}
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#d35400]/20 ring-offset-1"
+          >
+            <NotebookPen className="w-5 h-5 text-[#d35400] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+            <span className="text-[8px] font-bold text-[#d35400] uppercase tracking-wide">Catatan</span>
+          </button>
+          {/* 4. Nota - ring merah */}
+          <button
+            onClick={() => setLocation("/nota")}
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1"
+          >
+            <Receipt className="w-5 h-5 text-[#b71c1c] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+            <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide">Nota</span>
+          </button>
+          {/* 5. Lain Nya - ring ungu (aktif saat menu terbuka) */}
+          <button
+            onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
+            className={`flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-offset-1 ${showLainnyaMenu ? 'ring-[#7d3c98]/60 bg-purple-50' : 'ring-[#7d3c98]/20'}`}
+          >
+            <ListPlus className="w-5 h-5 text-[#7d3c98] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+            <span className="text-[8px] font-bold text-[#7d3c98] uppercase tracking-wide">Lain Nya</span>
+          </button>
+        </div>
+
+        {/* Lainnya Expanded - grid icon cards seperti tombol utama */}
+        {showLainnyaMenu && (
+          <div className="mb-3 p-2 bg-purple-50/80 backdrop-blur-sm rounded-2xl border-2 border-[#7d3c98]/15 shadow-inner">
+            <div className="flex items-center justify-between mb-2 px-1">
+              <span className="text-[9px] font-black text-[#7d3c98] uppercase tracking-widest">Menu Lainnya</span>
+              <button onClick={() => setShowLainnyaMenu(false)} className="p-0.5 rounded-full hover:bg-purple-200/60 transition">
+                <X className="w-3.5 h-3.5 text-[#7d3c98]" />
               </button>
             </div>
-          )}
-        </div>
+          <div className="grid grid-cols-5 gap-2">
+              {/* Beranda */}
+              <button
+                onClick={() => { setLocation("/beranda"); setShowLainnyaMenu(false); }}
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-blue-200 ring-offset-1"
+              >
+                <Home className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+                <span className="text-[8px] font-bold text-blue-600 uppercase tracking-wide">Beranda</span>
+              </button>
+              {/* Nota */}
+              <button
+                onClick={() => { setLocation("/nota"); setShowLainnyaMenu(false); }}
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1"
+              >
+                <FileText className="w-5 h-5 text-[#b71c1c] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+                <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide">Nota</span>
+              </button>
+              {/* Stok Voucher */}
+              <button
+                onClick={() => { setLocation("/stok-voucher"); setShowLainnyaMenu(false); }}
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-emerald-200 ring-offset-1"
+              >
+                <Ticket className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+                <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide">Stok Voucher</span>
+              </button>
+              {/* Kalender */}
+              <button
+                onClick={() => { setLocation("/kalender"); setShowLainnyaMenu(false); }}
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-orange-200 ring-offset-1"
+              >
+                <CalendarDays className="w-5 h-5 text-orange-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
+                <span className="text-[8px] font-bold text-orange-600 uppercase tracking-wide">Kalender</span>
+              </button>
+            </div>
+          </div>
+        )}
       </DebugWrapper>
+
+
 
       <DebugWrapper componentName="QuoteBanner">
         <div className="bg-gradient-to-r from-orange-500 to-amber-400 text-white text-center py-2 rounded-xl mb-3 text-[11px] font-bold">
@@ -295,11 +285,18 @@ export default function Beranda() {
                 className="w-full bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm font-extrabold text-gray-800 outline-none appearance-none focus:border-blue-500 transition-all shadow-sm cursor-pointer relative z-10"
               >
                 <option value="" disabled>-- PILIH KATEGORI --</option>
-                {shopSettings?.customCategories?.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
+                {shopSettings?.customCategories?.flatMap((cat, index, arr) => {
+                  const options = [
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ];
+                  // Tambahkan garis pemisah setelah setiap item kecuali yang terakhir
+                  if (index < arr.length - 1) {
+                    options.push(<option key={`sep-${cat.id}`} disabled>───────────────</option>);
+                  }
+                  return options;
+                })}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
             </div>

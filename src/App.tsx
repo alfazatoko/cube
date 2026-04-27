@@ -20,6 +20,7 @@ import AdminPanel from "@/pages/admin";
 import License from "@/pages/license";
 import Kalender from "@/pages/kalender";
 import Nota from "@/pages/nota";
+import StokVoucher from "@/pages/stok-voucher";
 import { useEffect, useState } from "react";
 import { getSystemConfig } from "@/lib/firestore";
 import { Monitor, Tablet, Smartphone, RotateCw, Download, Sun, Moon, Bug } from "lucide-react";
@@ -148,15 +149,6 @@ function Router() {
               <span>Tema: {theme === "light" ? "TERANG" : theme === "blue" ? "BIRU" : "GELAP"}</span>
             </button>
 
-            {/* 2. Debug Mode Toggle */}
-            <button 
-              onClick={toggleDebugMode}
-              className={`p-2 rounded-xl shadow-sm hover:bg-muted transition-all flex items-center gap-2 text-xs font-bold ${debugMode ? "bg-red-500 text-white" : "bg-card"}`}
-              title="Mode Debug - Hover elemen untuk melihat nama komponen"
-            >
-              <Bug className="w-4 h-4" />
-              <span>Debug: {debugMode ? "AKTIF" : "MATI"}</span>
-            </button>
 
             {/* 3. Scale Cycler */}
             <button 
@@ -201,6 +193,7 @@ function Router() {
         <Route path="/license" component={License} />
         <Route path="/kalender" component={() => <ProtectedRoute component={Kalender} />} />
         <Route path="/nota" component={() => <ProtectedRoute component={Nota} />} />
+        <Route path="/stok-voucher" component={() => <ProtectedRoute component={StokVoucher} />} />
         <Route component={NotFound} />
       </Switch>
         <BottomNav />

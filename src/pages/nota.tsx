@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { printer } from "@/lib/printer-utils";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 
 interface NotaItem {
   nama: string;
@@ -103,7 +105,56 @@ export default function Nota() {
   };
 
   const handleShare = async () => {
-    window.print();
+    if (!printRef.current) return;
+    
+    try {
+      // Temporarily hide elements that shouldn't be in the PDF
+      const originalTitle = document.title;
+      document.title = `Nota_${settings?.shopName || 'KASIR_CUBE'}_${tanggal}`;
+      
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
+      
+      document.title = originalTitle;
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: [canvas.width * 0.264583, canvas.height * 0.264583]
+      });
+      
+      pdf.addImage(imgData, "PNG", 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+      const pdfBlob = pdf.output("blob");
+      
+      const file = new File([pdfBlob], `Nota_${settings?.shopName || 'KASIR_CUBE'}_${tanggal}.pdf`, {
+        type: "application/pdf"
+      });
+      
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `Nota ${settings?.shopName || 'KASIR_CUBE'}`,
+          text: `Berikut adalah nota transaksi dari ${settings?.shopName || 'KASIR_CUBE'}`,
+          files: [file]
+        });
+      } else {
+        // Fallback if sharing is not supported
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Error sharing PDF:", error);
+      alert("Gagal membagikan nota");
+    }
   };
 
   const calculateTotal = () => {
