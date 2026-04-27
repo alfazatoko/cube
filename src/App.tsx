@@ -178,8 +178,8 @@ function Router() {
         </button>
       )}
 
-      <div className={`pt-0 ${showSimulator ? "md:pt-14" : ""}`}>
-        <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300`}>
+      <div className={`pt-0 ${showSimulator ? "md:pt-14" : ""} overflow-x-hidden w-full`}>
+        <div className={`pb-20 ${maxW} mx-auto min-h-[100dvh] bg-card lg:shadow-[0_0_60px_rgba(0,0,0,0.1)] relative transition-all duration-300 overflow-x-hidden`}>
 
       <Switch>
         <Route path="/" component={Login} />

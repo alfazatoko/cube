@@ -133,7 +133,7 @@ export default function StokVoucher() {
   const formattedDate = new Intl.DateTimeFormat('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(selectedDate));
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24" onClick={(e) => { if (!(e.target as HTMLElement).closest('.editable-cell')) setActiveEditingCell(null); }}>
+    <div className="min-h-screen bg-gray-50 pb-24 overflow-x-hidden w-full" onClick={(e) => { if (!(e.target as HTMLElement).closest('.editable-cell')) setActiveEditingCell(null); }}>
       <div className="bg-gradient-to-r from-blue-800 to-blue-500 text-white shadow-lg sticky top-0 z-10">
         <div className="p-4 flex flex-col gap-3">
           <div className="flex justify-between items-start">
@@ -162,7 +162,7 @@ export default function StokVoucher() {
         </div>
       </div>
 
-      <div className="p-3 space-y-3">
+      <div className="p-3 space-y-3 max-w-full overflow-x-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 text-blue-500 animate-spin" /></div>
         ) : (

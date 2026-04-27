@@ -139,11 +139,11 @@ export default function Riwayat() {
     return tx.category;
   };
 
-  const getShortCategory = (catName: string) => {
-    if (catName === "TARIK TUNAI") return "TARIK";
-    if (catName === "APP PULSA") return "APP";
-    if (catName === "AKSESORIS") return "AKS";
-    return catName;
+  const getShortCategory = (tx: TransactionRecord) => {
+    if (tx.categoryId === "tarik") return "TARIK";
+    if (tx.categoryId === "app") return "APP";
+    if (tx.categoryId === "aks") return "AKS";
+    return getCategoryDisplayName(tx);
   };
 
   const isNonTunai = (tx: TransactionRecord) => tx.paymentMethod && tx.paymentMethod.toLowerCase().includes("non-tunai");
@@ -231,7 +231,7 @@ export default function Riwayat() {
                 <div onClick={() => setExpandedTx(isExpanded ? null : tx.id)} className="grid gap-0.5 px-1.5 py-1.5 border-b border-gray-100 text-[9px] items-center cursor-pointer" style={{ gridTemplateColumns: '20px 36px 48px 1fr 52px 1fr 18px' }}>
                   <span className="text-gray-400">{i + 1}</span>
                   <span>{(tx.transTime || "").slice(0, 5)}</span>
-                  <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-900'}`}>{getShortCategory(getCategoryDisplayName(tx))}</span>
+                  <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-900'}`}>{getShortCategory(tx)}</span>
                   <span className={`font-bold truncate ${nt ? 'text-purple-600' : 'text-blue-600'}`}>{formatRupiah(tx.nominal)}</span>
                   <span className="truncate">{formatRupiah(tx.admin || 0)}</span>
                   <span className="text-gray-500 truncate">{nt ? "💳 " : ""}{ketText}</span>

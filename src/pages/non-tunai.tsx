@@ -34,6 +34,8 @@ export default function NonTunai() {
       await createTransaction({
         kasirName: user.name,
         category: "NON TUNAI",
+        categoryId: "non_tunai",
+        categoryType: "non-tunai",
         nominal: n,
         nominalTunai: 0,
         nominalNonTunai: n,

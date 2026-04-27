@@ -74,8 +74,9 @@ export interface LicenseRecord {
 export interface CustomCategory {
   id: string;
   name: string;
-  type: "bank" | "tarik" | "aks";
+  type: "bank" | "tarik" | "aks" | "admin";
   color: string;
+  visible?: boolean;
 }
 
 export interface CategoryLabels {
@@ -262,18 +263,52 @@ export async function getSettings(): Promise<SettingsRecord> {
         TARIK: { name: "TARIK", visible: true },
       },
       customCategories: [
-        { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground" },
-        { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground" },
-        { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground" },
-        { id: "dana", name: "Dana", type: "bank", color: "text-foreground" },
-        { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600" },
-        { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500" },
+        { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground", visible: true },
+        { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground", visible: true },
+        { id: "bni", name: "BANK BNI", type: "bank", color: "text-foreground", visible: true },
+        { id: "bca", name: "BANK BCA", type: "bank", color: "text-foreground", visible: true },
+        { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground", visible: true },
+        { id: "gopay", name: "APLIKASI GOPAY", type: "bank", color: "text-foreground", visible: true },
+        { id: "ppob", name: "APLIKASI PPOB", type: "bank", color: "text-foreground", visible: true },
+        { id: "dana", name: "Dana", type: "bank", color: "text-foreground", visible: true },
+        { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600", visible: true },
+        { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500", visible: true },
       ],
     };
     await setDoc(ref, defaults);
     return defaults;
   }
-  return snap.data() as SettingsRecord;
+  
+  const data = snap.data() as SettingsRecord;
+  const defaultCats = [
+    { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground", visible: true },
+    { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground", visible: true },
+    { id: "bni", name: "BANK BNI", type: "bank", color: "text-foreground", visible: true },
+    { id: "bca", name: "BANK BCA", type: "bank", color: "text-foreground", visible: true },
+    { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground", visible: true },
+    { id: "gopay", name: "APLIKASI GOPAY", type: "bank", color: "text-foreground", visible: true },
+    { id: "ppob", name: "APLIKASI PPOB", type: "bank", color: "text-foreground", visible: true },
+    { id: "dana", name: "Dana", type: "bank", color: "text-foreground", visible: true },
+    { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600", visible: true },
+    { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500", visible: true },
+  ] as CustomCategory[];
+
+  if (!data.customCategories) {
+    data.customCategories = defaultCats;
+  } else {
+    // Append missing default categories
+    defaultCats.forEach(defCat => {
+      if (!data.customCategories!.some(c => c.id === defCat.id)) {
+        data.customCategories!.push(defCat);
+      }
+    });
+    // Ensure existing categories have visible property set to true if undefined
+    data.customCategories.forEach(c => {
+      if (c.visible === undefined) c.visible = true;
+    });
+  }
+  
+  return data;
 }
 
 export async function updateSettings(data: Partial<SettingsRecord>): Promise<void> {
@@ -385,13 +420,13 @@ export async function updateBalance(kasirName: string, tx: Omit<TransactionRecor
 
   if (tx.category === "NON TUNAI" || isNonTunai) {
     bal.bankNonTunai += nominal;
-  } else if (catType === "bank" || ["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
+  } else if (catType === "bank") {
     bal.cash += nominal;
     bal.bank -= nominal;
-  } else if (catType === "tarik" || tx.category === "TARIK TUNAI") {
+  } else if (catType === "tarik") {
     bal.tarik += nominal;
     bal.cash -= nominal;
-  } else if (catType === "aks" || tx.category === "AKSESORIS") {
+  } else if (catType === "aks") {
     bal.aks += nominal;
     bal.cash += nominal;
   }
@@ -421,13 +456,13 @@ async function reverseBalance(kasirName: string, tx: TransactionRecord) {
 
   if (tx.category === "NON TUNAI" || isNonTunai) {
     bal.bankNonTunai -= nominal;
-  } else if (catType === "bank" || ["BANK", "FLIP", "APP PULSA", "DANA"].includes(tx.category)) {
+  } else if (catType === "bank") {
     bal.cash -= nominal;
     bal.bank += nominal;
-  } else if (catType === "tarik" || tx.category === "TARIK TUNAI") {
+  } else if (catType === "tarik") {
     bal.tarik -= nominal;
     bal.cash += nominal;
-  } else if (catType === "aks" || tx.category === "AKSESORIS") {
+  } else if (catType === "aks") {
     bal.aks -= nominal;
     bal.cash -= nominal;
   }

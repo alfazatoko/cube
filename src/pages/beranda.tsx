@@ -117,14 +117,14 @@ export default function Beranda() {
 
 
   return (
-    <div className="px-3 pt-3 pb-24 landscape-scroll">
+    <div className="px-3 pt-3 pb-24 landscape-scroll overflow-x-hidden">
       <DebugWrapper componentName="Header">
         <Header />
       </DebugWrapper>
 
       <DebugWrapper componentName="RunningText">
-        <div className="overflow-hidden mb-3">
-          <div className="running-text text-red-600 text-sm font-bold text-center">
+        <div className="overflow-hidden w-full mb-3 max-w-full" style={{overflowX: 'hidden'}}>
+          <div className="running-text text-red-600 text-sm font-bold">
             {shopSettings?.runningText || "GRATIS BULAN INI CATAT PEMBUKUAN DI KASIR CUBE"}
           </div>
         </div>
@@ -181,42 +181,42 @@ export default function Beranda() {
           {/* 1. Penyesuaian - ring biru */}
           <button
             onClick={() => window.dispatchEvent(new Event('open-penyesuaian'))}
-            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1a5276]/20 ring-offset-1"
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1a5276]/20 ring-offset-1 min-w-0"
           >
             <SlidersHorizontal className="w-5 h-5 text-[#1a5276] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-            <span className="text-[8px] font-bold text-[#1a5276] uppercase tracking-wide">Penyesuaian</span>
+            <span className="text-[8px] font-bold text-[#1a5276] uppercase tracking-wide w-full truncate text-center px-0.5">Penyesuaian</span>
           </button>
           {/* 2. Non Tunai - ring hijau */}
           <button
             onClick={() => setLocation("/non-tunai")}
-            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1e8449]/20 ring-offset-1"
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#1e8449]/20 ring-offset-1 min-w-0"
           >
             <SmartphoneNfc className="w-5 h-5 text-[#1e8449] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-            <span className="text-[8px] font-bold text-[#1e8449] uppercase tracking-wide">Non Tunai</span>
+            <span className="text-[8px] font-bold text-[#1e8449] uppercase tracking-wide w-full truncate text-center px-0.5">Non Tunai</span>
           </button>
           {/* 3. Catatan - ring oranye */}
           <button
             onClick={() => setLocation("/catatan")}
-            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#d35400]/20 ring-offset-1"
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#d35400]/20 ring-offset-1 min-w-0"
           >
             <NotebookPen className="w-5 h-5 text-[#d35400] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-            <span className="text-[8px] font-bold text-[#d35400] uppercase tracking-wide">Catatan</span>
+            <span className="text-[8px] font-bold text-[#d35400] uppercase tracking-wide w-full truncate text-center px-0.5">Catatan</span>
           </button>
           {/* 4. Nota - ring merah */}
           <button
             onClick={() => setLocation("/nota")}
-            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1"
+            className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1 min-w-0"
           >
             <Receipt className="w-5 h-5 text-[#b71c1c] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-            <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide">Nota</span>
+            <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide w-full truncate text-center px-0.5">Nota</span>
           </button>
           {/* 5. Lain Nya - ring ungu (aktif saat menu terbuka) */}
           <button
             onClick={() => setShowLainnyaMenu(!showLainnyaMenu)}
-            className={`flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-offset-1 ${showLainnyaMenu ? 'ring-[#7d3c98]/60 bg-purple-50' : 'ring-[#7d3c98]/20'}`}
+            className={`flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-offset-1 min-w-0 ${showLainnyaMenu ? 'ring-[#7d3c98]/60 bg-purple-50' : 'ring-[#7d3c98]/20'}`}
           >
             <ListPlus className="w-5 h-5 text-[#7d3c98] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-            <span className="text-[8px] font-bold text-[#7d3c98] uppercase tracking-wide">Lain Nya</span>
+            <span className="text-[8px] font-bold text-[#7d3c98] uppercase tracking-wide w-full truncate text-center px-0.5">Lain Nya</span>
           </button>
         </div>
 
@@ -233,34 +233,34 @@ export default function Beranda() {
               {/* Beranda */}
               <button
                 onClick={() => { setLocation("/beranda"); setShowLainnyaMenu(false); }}
-                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-blue-200 ring-offset-1"
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-blue-200 ring-offset-1 min-w-0"
               >
                 <Home className="w-5 h-5 text-blue-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-                <span className="text-[8px] font-bold text-blue-600 uppercase tracking-wide">Beranda</span>
+                <span className="text-[8px] font-bold text-blue-600 uppercase tracking-wide w-full truncate text-center px-0.5">Beranda</span>
               </button>
               {/* Nota */}
               <button
                 onClick={() => { setLocation("/nota"); setShowLainnyaMenu(false); }}
-                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1"
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-[#b71c1c]/20 ring-offset-1 min-w-0"
               >
                 <FileText className="w-5 h-5 text-[#b71c1c] group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-                <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide">Nota</span>
+                <span className="text-[8px] font-bold text-[#b71c1c] uppercase tracking-wide w-full truncate text-center px-0.5">Nota</span>
               </button>
               {/* Stok Voucher */}
               <button
                 onClick={() => { setLocation("/stok-voucher"); setShowLainnyaMenu(false); }}
-                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-emerald-200 ring-offset-1"
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-emerald-200 ring-offset-1 min-w-0"
               >
                 <Ticket className="w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-                <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide">Stok Voucher</span>
+                <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-wide w-full truncate text-center px-0.5">Voucher</span>
               </button>
               {/* Kalender */}
               <button
                 onClick={() => { setLocation("/kalender"); setShowLainnyaMenu(false); }}
-                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-orange-200 ring-offset-1"
+                className="flex flex-col items-center justify-center gap-1.5 h-[65px] rounded-2xl bg-white shadow-sm active:scale-95 transition-all group hover:shadow-md ring-2 ring-orange-200 ring-offset-1 min-w-0"
               >
                 <CalendarDays className="w-5 h-5 text-orange-600 group-hover:scale-110 transition-transform" strokeWidth={1.8} />
-                <span className="text-[8px] font-bold text-orange-600 uppercase tracking-wide">Kalender</span>
+                <span className="text-[8px] font-bold text-orange-600 uppercase tracking-wide w-full truncate text-center px-0.5">Kalender</span>
               </button>
             </div>
           </div>
@@ -285,17 +285,16 @@ export default function Beranda() {
                 className="w-full bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 text-sm font-extrabold text-gray-800 outline-none appearance-none focus:border-blue-500 transition-all shadow-sm cursor-pointer relative z-10"
               >
                 <option value="" disabled>-- PILIH KATEGORI --</option>
-                {shopSettings?.customCategories?.flatMap((cat, index, arr) => {
-                  const options = [
-                    <option key={cat.id} value={cat.id}>
+                {shopSettings?.customCategories?.filter(c => c.visible ?? true).map((cat) => {
+                  let colorClass = "bg-purple-100 text-purple-700"; // Ungu muda untuk lainnya (Bank)
+                  if (cat.type === "tarik") colorClass = "bg-red-100 text-red-700"; // Merah
+                  if (cat.type === "aks") colorClass = "bg-orange-100 text-orange-700"; // Orange
+
+                  return (
+                    <option key={cat.id} value={cat.id} className={colorClass + " font-bold"}>
                       {cat.name}
                     </option>
-                  ];
-                  // Tambahkan garis pemisah setelah setiap item kecuali yang terakhir
-                  if (index < arr.length - 1) {
-                    options.push(<option key={`sep-${cat.id}`} disabled>───────────────</option>);
-                  }
-                  return options;
+                  );
                 })}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />

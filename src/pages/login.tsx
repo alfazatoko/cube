@@ -139,11 +139,21 @@ function FirebaseAuthScreen() {
   }, []);
 
   const handleInstall = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA install: ${outcome}`);
-      setDeferredPrompt(null);
+    // Try to get from local state, App.tsx global state, or window
+    const promptEvent = deferredPrompt || (window as any).deferredPrompt;
+    
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        console.log(`PWA install: ${outcome}`);
+        setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
+      } catch (err) {
+        console.error("Install failed", err);
+      }
+    } else {
+      alert("Aplikasi sudah terinstal di perangkat Anda, ATAU browser Anda tidak mendukung instalasi otomatis.\n\nTips: Jika menggunakan Chrome/Safari, Anda bisa install manual lewat menu (titik tiga) lalu pilih 'Tambahkan ke Layar Utama' atau 'Install App'.");
     }
   };
 
@@ -315,6 +325,16 @@ function FirebaseAuthScreen() {
           {isResetting ? "KIRIM LINK RESET" : (isRegister ? "DAFTAR" : "LOGIN")}
         </button>
 
+          <div className="flex justify-center -mt-1 mb-4">
+            <button
+              type="button"
+              onClick={handleInstall}
+              className="bg-emerald-500 text-white px-6 py-2.5 rounded-full font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all animate-bounce"
+            >
+              <Download className="w-4 h-4" /> INSTALL APLIKASI
+            </button>
+          </div>
+
         {!isResetting && (
           <div className="relative mb-4">
             <div className="absolute inset-0 flex items-center">
@@ -354,15 +374,7 @@ function FirebaseAuthScreen() {
           {isResetting ? "Kembali ke Masuk" : (isRegister ? "Sudah punya akun? Masuk" : "Belum punya akun? Daftar")}
         </button>
 
-        {deferredPrompt && (
-          <button
-            type="button"
-            onClick={handleInstall}
-            className="w-full h-12 rounded-2xl bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 mb-4 animate-bounce shadow-lg shadow-emerald-500/20"
-          >
-            <Download className="w-4 h-4" /> INSTALL APLIKASI KASIR
-          </button>
-        )}
+
 
         <div className="mt-4 bg-blue-50 rounded-xl p-3 border border-blue-200">
           <p className="text-[10px] text-blue-600 text-center">
@@ -402,11 +414,21 @@ function KasirSelectionScreen() {
   }, []);
 
   const handleInstall = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      console.log(`PWA install: ${outcome}`);
-      setDeferredPrompt(null);
+    // Try to get from local state, App.tsx global state, or window
+    const promptEvent = deferredPrompt || (window as any).deferredPrompt;
+    
+    if (promptEvent) {
+      try {
+        await promptEvent.prompt();
+        const { outcome } = await promptEvent.userChoice;
+        console.log(`PWA install: ${outcome}`);
+        setDeferredPrompt(null);
+        (window as any).deferredPrompt = null;
+      } catch (err) {
+        console.error("Install failed", err);
+      }
+    } else {
+      alert("Aplikasi sudah terinstal di perangkat Anda, ATAU browser Anda tidak mendukung instalasi otomatis.\n\nTips: Jika menggunakan Chrome/Safari, Anda bisa install manual lewat menu (titik tiga) lalu pilih 'Tambahkan ke Layar Utama' atau 'Install App'.");
     }
   };
 
@@ -643,6 +665,16 @@ function KasirSelectionScreen() {
               MASUK
             </button>
 
+              <div className="flex justify-center mt-1 mb-4">
+                <button
+                  type="button"
+                  onClick={handleInstall}
+                  className="bg-emerald-500 text-white px-6 py-2.5 rounded-full font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all animate-bounce"
+                >
+                  <Download className="w-4 h-4" /> INSTALL APLIKASI
+                </button>
+              </div>
+
             <button
               type="button"
               onClick={() => setIsGuideOpen(true)}
@@ -659,15 +691,7 @@ function KasirSelectionScreen() {
               <LogOut className="w-4 h-4" /> Logout Firebase
             </button>
 
-            {deferredPrompt && (
-              <button
-                type="button"
-                onClick={handleInstall}
-                className="w-full h-12 rounded-2xl bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 mt-4 animate-bounce shadow-lg shadow-emerald-500/20"
-              >
-                <Download className="w-4 h-4" /> INSTALL APLIKASI KASIR
-              </button>
-            )}
+
 
             <GuideModal open={isGuideOpen} onOpenChange={setIsGuideOpen} />
           </>

@@ -130,18 +130,15 @@ export default function Laporan() {
   };
 
   const bankTx = transactions.filter(t => {
-    // Standard exclusions
-    if (t.categoryType === "tarik" || t.category === "TARIK TUNAI") return false;
-    if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
-    if (t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
-    if (t.categoryType === "admin" || t.category === "ADMIN") return false;
-
-    // Everything else is considered "Penjualan/Bank"
-    return true;
+    if (t.categoryType === "tarik") return false;
+    if (t.categoryType === "aks") return false;
+    if (t.categoryType === "non-tunai" || t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
+    if (t.categoryType === "admin") return false;
+    return t.categoryType === "bank";
   });
-  const tarikTx = transactions.filter(t => t.categoryType === "tarik" || t.category === "TARIK TUNAI");
-  const aksTx = transactions.filter(t => t.categoryType === "aks" || t.category === "AKSESORIS");
-  const nonTunaiTx = transactions.filter(t => (t.paymentMethod || "").toLowerCase().includes("non-tunai") || t.category === "NON TUNAI");
+  const tarikTx = transactions.filter(t => t.categoryType === "tarik");
+  const aksTx = transactions.filter(t => t.categoryType === "aks");
+  const nonTunaiTx = transactions.filter(t => t.categoryType === "non-tunai" || (t.paymentMethod || "").toLowerCase().includes("non-tunai") || t.category === "NON TUNAI");
 
   const sumNominal = (list: TransactionRecord[]) => list.reduce((s, t) => s + (t.nominal || 0), 0);
   const sumAdmin = (list: TransactionRecord[]) => list.reduce((s, t) => s + (t.admin || 0), 0);
@@ -194,8 +191,7 @@ export default function Laporan() {
   // Group by category name for "Rincian Kategori"
   const categoryGroups = transactions.reduce((acc, tx) => {
     // Standard exclusions (must match bankTx logic)
-    if (tx.categoryType === "tarik" || tx.category === "TARIK TUNAI") return acc;
-    if (tx.categoryType === "aks" || tx.category === "AKSESORIS") return acc;
+    if (tx.categoryType !== "bank") return acc;
     if (tx.category === "NON TUNAI" || (tx.paymentMethod || "").toLowerCase().includes("non-tunai")) return acc;
 
     const name = getCategoryName(tx);

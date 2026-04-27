@@ -4,7 +4,7 @@ import { Header } from "@/components/layout/header";
 import {
   getUsers, createUser, updateUser, deleteUser,
   getSettings, updateSettings,
-  getTransactions, getSaldoHistory, getBalance, resetBalance,
+  getTransactions, updateTransaction, getSaldoHistory, getBalance, resetBalance,
   getAttendance, getIzinList, createIzin, updateIzin,
   resetAllData, getDailyNotes, ownerAddSaldo, getTenantCollection,
   type UserRecord, type SettingsRecord, type TransactionRecord, type AttendanceRecord, type IzinRecord, type SaldoHistoryRecord, type CategoryLabels,
@@ -326,12 +326,18 @@ function GrafikPage({ goBack }: { goBack: () => void }) {
       const d = tx.transDate;
       if (!map.has(d)) map.set(d, { bank: 0, flip: 0, app: 0, dana: 0, tarik: 0, aks: 0, admin: 0 });
       const entry = map.get(d)!;
-      if (tx.category === "BANK") entry.bank += tx.nominal || 0;
-      else if (tx.category === "FLIP") entry.flip += tx.nominal || 0;
-      else if (tx.category === "APP PULSA") entry.app += tx.nominal || 0;
-      else if (tx.category === "DANA") entry.dana += tx.nominal || 0;
-      else if (tx.category === "TARIK TUNAI") entry.tarik += tx.nominal || 0;
-      else if (tx.category === "AKSESORIS") entry.aks += tx.nominal || 0;
+      
+      // Use categoryType for grouping in chart
+      if (tx.categoryType === "bank") {
+        // We can still try to separate if categoryId is known
+        if (tx.categoryId === "flip") entry.flip += tx.nominal || 0;
+        else if (tx.categoryId === "app") entry.app += tx.nominal || 0;
+        else if (tx.categoryId === "dana") entry.dana += tx.nominal || 0;
+        else entry.bank += tx.nominal || 0;
+      }
+      else if (tx.categoryType === "tarik") entry.tarik += tx.nominal || 0;
+      else if (tx.categoryType === "aks") entry.aks += tx.nominal || 0;
+      
       entry.admin += tx.admin || 0;
     });
     return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([date, data]) => ({ date: date.slice(5), ...data }));
@@ -1327,12 +1333,16 @@ function SettingPage({ goBack }: { goBack: () => void }) {
         setCustomCategories(s.customCategories);
       } else {
         const defaults = [
-          { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground" },
-          { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground" },
-          { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground" },
-          { id: "dana", name: "Dana", type: "bank", color: "text-foreground" },
-          { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600" },
-          { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500" },
+          { id: "sea_bank", name: "Sea Bank", type: "bank", color: "text-foreground", visible: true },
+          { id: "bri", name: "Bank BRI", type: "bank", color: "text-foreground", visible: true },
+          { id: "bni", name: "BANK BNI", type: "bank", color: "text-foreground", visible: true },
+          { id: "bca", name: "BANK BCA", type: "bank", color: "text-foreground", visible: true },
+          { id: "app", name: "Aplikasi Pulsa", type: "bank", color: "text-foreground", visible: true },
+          { id: "gopay", name: "APLIKASI GOPAY", type: "bank", color: "text-foreground", visible: true },
+          { id: "ppob", name: "APLIKASI PPOB", type: "bank", color: "text-foreground", visible: true },
+          { id: "dana", name: "Dana", type: "bank", color: "text-foreground", visible: true },
+          { id: "tarik", name: "Tarik Tunai", type: "tarik", color: "text-red-600", visible: true },
+          { id: "aks", name: "Aksesoris", type: "aks", color: "text-orange-500", visible: true },
         ];
         setCustomCategories(defaults);
       }
@@ -1539,7 +1549,16 @@ function SettingPage({ goBack }: { goBack: () => void }) {
                     const newCats = [...customCategories];
                     newCats[index].name = e.target.value;
                     setCustomCategories(newCats);
-                  }} className="flex-1 border border-border rounded-lg px-2 py-1.5 text-xs outline-none font-bold text-gray-700" placeholder="Nama Kategori" />
+                  }} className={`flex-1 border border-border rounded-lg px-2 py-1.5 text-xs outline-none font-bold ${(cat.visible ?? true) ? 'text-gray-700' : 'text-gray-400 line-through'}`} placeholder="Nama Kategori" />
+                  <button onClick={() => {
+                    const newCats = [...customCategories];
+                    newCats[index].visible = !(newCats[index].visible ?? true);
+                    setCustomCategories(newCats);
+                  }} className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors ${
+                    (cat.visible ?? true) ? 'bg-green-50 border-green-200 text-green-600' : 'bg-gray-100 border-gray-200 text-gray-400'
+                  }`}>
+                    {(cat.visible ?? true) ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
                   <button onClick={() => {
                     if (confirm("Hapus kategori ini?")) {
                       setCustomCategories(customCategories.filter(c => c.id !== cat.id));
@@ -1653,14 +1672,14 @@ function RingkasanPage({ goBack }: { goBack: () => void }) {
     const tx = isAdmin ? allTransactions : allTransactions.filter(t => t.kasirName === kasirName);
 
     const bank = tx.filter(t => {
-      if (t.categoryType === "tarik" || t.category === "TARIK TUNAI") return false;
-      if (t.categoryType === "aks" || t.category === "AKSESORIS") return false;
+      if (t.categoryType === "tarik") return false;
+      if (t.categoryType === "aks") return false;
       if (t.category === "NON TUNAI" || (t.paymentMethod || "").toLowerCase().includes("non-tunai")) return false;
-      if (t.categoryType === "admin" || t.category === "ADMIN") return false;
-      return true;
+      if (t.categoryType === "admin") return false;
+      return t.categoryType === "bank";
     }).reduce((s, t) => s + (t.nominal || 0), 0);
-    const tarik = tx.filter(t => t.categoryType === "tarik" || t.category === "TARIK TUNAI").reduce((s, t) => s + (t.nominal || 0), 0);
-    const aks = tx.filter(t => t.categoryType === "aks" || t.category === "AKSESORIS").reduce((s, t) => s + (t.nominal || 0), 0);
+    const tarik = tx.filter(t => t.categoryType === "tarik").reduce((s, t) => s + (t.nominal || 0), 0);
+    const aks = tx.filter(t => t.categoryType === "aks").reduce((s, t) => s + (t.nominal || 0), 0);
 
     const totalAdmin = tx.reduce((s, t) => s + (t.admin || 0), 0);
     const totalPenjualan = bank;
@@ -1819,7 +1838,12 @@ function AkunPage({ goBack }: { goBack: () => void }) {
 
   useEffect(() => {
     getUsers().then(setUsers).catch(() => { });
+    getSettings().then(s => {
+      if (s.customCategories) setCustomCategories(s.customCategories);
+    }).catch(() => { });
   }, []);
+
+  const [customCategories, setCustomCategories] = useState<{ id: string; name: string; type: string; color: string; visible?: boolean }[]>([]);
 
   const ownerData = users.find(u => u.role === "owner");
 
@@ -1864,6 +1888,43 @@ function AkunPage({ goBack }: { goBack: () => void }) {
         }
         await updateUser(ownerData.id, { pin: ownerPin });
         updated = true;
+      }
+
+      // Save custom categories
+      const currentSettings = await getSettings();
+      const oldCategories = currentSettings.customCategories || [];
+      const hasCatChanges = JSON.stringify(oldCategories) !== JSON.stringify(customCategories);
+
+      if (hasCatChanges) {
+        await updateSettings({ customCategories });
+        updated = true;
+
+        // Sync legacy transactions if names changed
+        const allTx = await getTransactions({});
+        let updateCount = 0;
+        const nameToIdMap: Record<string, string> = {};
+        const idToNewNameMap: Record<string, string> = {};
+        
+        customCategories.forEach(c => {
+          nameToIdMap[c.name] = c.id;
+          idToNewNameMap[c.id] = c.name;
+        });
+
+        for (const tx of allTx) {
+          const targetId = tx.categoryId || nameToIdMap[tx.category];
+          const newName = targetId ? idToNewNameMap[targetId] : null;
+
+          if (targetId && (tx.categoryId !== targetId || (newName && tx.category !== newName))) {
+            await updateTransaction(tx.id, {
+              categoryId: targetId,
+              category: newName || tx.category
+            });
+            updateCount++;
+          }
+        }
+        if (updateCount > 0) {
+          toast({ title: `${updateCount} transaksi disinkronkan` });
+        }
       }
 
       if (updated) {
@@ -1960,6 +2021,59 @@ function AkunPage({ goBack }: { goBack: () => void }) {
               <p className="text-[10px] text-gray-400 mt-1">*PIN untuk masuk ke Mode Owner jika fitur PIN diaktifkan</p>
             </div>
           )}
+
+          <div className="pt-4 border-t border-gray-100">
+            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <SlidersHorizontal className="w-5 h-5 text-purple-600" />
+              Nama Kategori Dinamis
+            </h3>
+            <p className="text-[10px] text-gray-400 mb-4">Ubah nama tampilan kategori tanpa mengubah logika perhitungan.</p>
+            
+            <div className="space-y-3">
+              {customCategories.map((cat, idx) => (
+                <div key={cat.id} className="flex flex-col gap-1.5 p-3 rounded-xl bg-gray-50 border border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">ID: {cat.id}</span>
+                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                        cat.type === 'bank' ? 'bg-blue-100 text-blue-600' : 
+                        cat.type === 'tarik' ? 'bg-red-100 text-red-600' : 
+                        cat.type === 'admin' ? 'bg-gray-100 text-gray-600' :
+                        'bg-orange-100 text-orange-600'
+                      }`}>
+                        {cat.type.toUpperCase()}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newCats = [...customCategories];
+                        newCats[idx].visible = !(newCats[idx].visible ?? true);
+                        setCustomCategories(newCats);
+                      }}
+                      className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors ${
+                        (cat.visible ?? true) ? 'bg-green-50 border-green-200 text-green-600' : 'bg-gray-100 border-gray-200 text-gray-400'
+                      }`}
+                    >
+                      {(cat.visible ?? true) ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      value={cat.name}
+                      onChange={e => {
+                        const newCats = [...customCategories];
+                        newCats[idx].name = e.target.value;
+                        setCustomCategories(newCats);
+                      }}
+                      className={`flex-1 bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-bold outline-none focus:border-purple-500 transition-all ${(cat.visible ?? true) ? 'text-gray-700' : 'text-gray-400 line-through'}`}
+                      placeholder="Nama Tampilan"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <button
             onClick={handleUpdateAuth}
