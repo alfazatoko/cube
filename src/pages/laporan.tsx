@@ -63,16 +63,27 @@ export default function Laporan() {
       } else if (kasirFilter !== "Semua") {
         kasirName = kasirFilter;
       }
-      const [txs, saldo, snap, notes, settings, vData] = await Promise.all([
+      const [txs, saldo, snap, notes, settings] = await Promise.all([
         getTransactions({ kasirName, startDate, endDate }),
         getSaldoHistory({ kasirName, startDate, endDate }),
         isOwner ? Promise.resolve(null) : getDailySnapshot(user.name, startDate),
         isOwner ? Promise.resolve({ sisaSaldoBank: 0, saldoRealApp: 0 }) : getDailyNotes(user.name, startDate),
         getSettings(),
-        getStokVoucherByRange(kasirName, startDate, endDate)
       ]);
-      
-      let finalVData = [...vData];
+
+      setTransactions(txs);
+      setSaldoHistory(saldo);
+      setIsLocked((snap as any)?.locked || false);
+      setDailyNotes(notes as DailyNoteRecord);
+      setShopSettings(settings);
+
+      // Voucher data — terpisah agar tidak merusak data utama jika gagal
+      let finalVData: StokVoucherRecord[] = [];
+      try {
+        finalVData = await getStokVoucherByRange(kasirName, startDate, endDate);
+      } catch (e) {
+        console.warn("Gagal ambil data voucher dari cloud:", e);
+      }
       
       // Auto-fallback to local storage for current user if looking at today's exact date
       if (startDate === endDate && (!kasirName || kasirName === user.name)) {
@@ -100,13 +111,10 @@ export default function Laporan() {
         }
       }
 
-      setTransactions(txs);
       setVoucherData(finalVData);
-      setSaldoHistory(saldo);
-      setIsLocked((snap as any)?.locked || false);
-      setDailyNotes(notes as DailyNoteRecord);
-      setShopSettings(settings);
-    } catch { } finally {
+    } catch (e) {
+      console.error("Gagal memuat laporan:", e);
+    } finally {
       setLoading(false);
     }
   }, [user, isOwner, kasirFilter, getDateRange]);
