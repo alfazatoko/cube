@@ -18,7 +18,7 @@ import {
   Database, Settings, ArrowLeft, Plus, Trash2, Edit, Eye, EyeOff,
   Shield, Check, X, CalendarDays, Download, RefreshCw,
   BookOpen, AlertTriangle, Star, Activity, Loader2, Lock,
-  Share2, ImageIcon, PlusCircle, UserCog, Mail, KeyRound
+  Share2, ImageIcon, PlusCircle, UserCog, Mail, KeyRound, SlidersHorizontal
 } from "lucide-react";
 import { format } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
