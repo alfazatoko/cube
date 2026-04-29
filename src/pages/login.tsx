@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { getUsers, getSettings, loginUser, getSystemConfig, type UserRecord } from "@/lib/firestore";
-import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle, Download } from "lucide-react";
+import { ChevronDown, Loader2, Lock, SunMedium, SunMoon, Eye, EyeOff, Mail, KeyRound, LogOut, Store, BookOpen, ChevronLeft, ChevronRight, HelpCircle, Download, AlertCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const logoUrl = "/logo.png";
@@ -324,6 +324,18 @@ function FirebaseAuthScreen() {
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
           {isResetting ? "KIRIM LINK RESET" : (isRegister ? "DAFTAR" : "LOGIN")}
         </button>
+
+        {!isResetting && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex gap-3 items-start">
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-amber-800">PERHATIAN</p>
+              <p className="text-[11px] leading-relaxed text-amber-700 font-medium">
+                Untuk USER diharapkan buka lewat Browser Google CHROME, lalu klik tombol INSTALL.
+              </p>
+            </div>
+          </div>
+        )}
 
           <div className="flex justify-center -mt-1 mb-4">
             <button
@@ -664,6 +676,16 @@ function KasirSelectionScreen() {
               {loggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
               MASUK
             </button>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex gap-3 items-start">
+              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-amber-800">PERHATIAN</p>
+                <p className="text-[11px] leading-relaxed text-amber-700 font-medium">
+                  Untuk USER diharapkan buka lewat Browser Google CHROME, lalu klik tombol INSTALL.
+                </p>
+              </div>
+            </div>
 
               <div className="flex justify-center mt-1 mb-4">
                 <button
