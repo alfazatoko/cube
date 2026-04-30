@@ -201,7 +201,30 @@ export default function Laporan() {
     return acc;
   }, {} as Record<string, { label: string; count: number; total: number }>);
 
-  const categoryItems = Object.values(categoryGroups).filter(c => c.count > 0);
+  // Add "ISI BANK" and "ISI CASH" from saldoHistory to categoryGroups
+  const finalCategoryGroups = { ...categoryGroups };
+  
+  saldoHistory.forEach(s => {
+    const label = s.jenis === "Bank" ? "ISI BANK" : "ISI CASH";
+    if (!finalCategoryGroups[label]) finalCategoryGroups[label] = { label, count: 0, total: 0 };
+    finalCategoryGroups[label].count++;
+    finalCategoryGroups[label].total += s.nominal;
+  });
+
+  const categoryItems = Object.values(finalCategoryGroups).filter(c => c.count > 0);
+
+  // LEDGER SYSTEM: Get Saldo Akhir from the latest record in the period
+  const allHistoryRecords: { createdAt: string; saldoBankSetelahnya?: number; saldoCashSetelahnya?: number }[] = [
+    ...transactions.map(t => ({ createdAt: t.createdAt, saldoBankSetelahnya: t.saldoBankSetelahnya, saldoCashSetelahnya: t.saldoCashSetelahnya })),
+    ...saldoHistory.map(s => ({ createdAt: s.createdAt, saldoBankSetelahnya: s.saldoBankSetelahnya, saldoCashSetelahnya: s.saldoCashSetelahnya }))
+  ];
+
+  // Sort by createdAt descending to find the latest one
+  allHistoryRecords.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+
+  const latestRecord = allHistoryRecords[0];
+  const saldoAkhirBank = latestRecord?.saldoBankSetelahnya ?? 0;
+  const saldoAkhirCash = latestRecord?.saldoCashSetelahnya ?? 0;
 
   const handleResetSaldo = async () => {
     if (!confirm("Reset saldo kasir ini ke Rp 0? Tindakan tidak bisa dibatalkan.")) return;
@@ -498,14 +521,38 @@ export default function Laporan() {
         </button>
       </div>
 
+      {/* SALDO AKHIR PERIODE (LEDGER) */}
+      <div className="rounded-2xl border border-gray-200 overflow-hidden mb-3 bg-[#0f172a]">
+        <div className="px-4 py-3 flex justify-between items-center border-b border-white/10">
+          <h3 className="text-white font-bold text-sm flex items-center gap-2">
+            <span className="text-lg">🏛️</span> SALDO AKHIR PERIODE
+          </h3>
+          <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-full animate-pulse">LEDGER AKTIF</span>
+        </div>
+        <div className="bg-white px-4 py-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-gray-700">Saldo Bank</span>
+            <span className="text-base font-black text-blue-700">{formatRupiah(saldoAkhirBank)}</span>
+          </div>
+          <div className="h-[1px] bg-gray-100 w-full" />
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-bold text-gray-700">Saldo Cash</span>
+            <span className="text-base font-black text-orange-600">{formatRupiah(saldoAkhirCash)}</span>
+          </div>
+          <p className="text-[10px] text-gray-400 italic font-medium mt-1">
+            * Saldo otomatis terkunci dari riwayat transaksi terakhir di periode ini.
+          </p>
+        </div>
+      </div>
+
       {/* GRUP 1: Rincian + Total Penjualan + Total Uang Cash */}
-      <div ref={reportRef} className="rounded-2xl border-2 border-gray-900 overflow-hidden mb-3">
+      <div ref={reportRef} className="rounded-2xl border border-gray-200 overflow-hidden mb-3">
         {categoryItems.length > 0 && (
           <>
             <div className="bg-gradient-to-r from-blue-700 to-blue-500 px-4 py-2.5">
               <h3 className="text-white font-bold text-sm flex items-center gap-1.5">📊 Rincian Kategori</h3>
             </div>
-            <div className="px-4 py-3 bg-white space-y-2 border-b-2 border-gray-900">
+            <div className="px-4 py-3 bg-white space-y-2 border-b border-gray-100">
               {categoryItems.map(c => (
                 <div key={c.label} className="flex justify-between items-center">
                   <span className="text-sm font-bold text-gray-800">{c.label} <span className="text-gray-400 font-normal">({c.count}x)</span></span>
@@ -520,34 +567,34 @@ export default function Laporan() {
           <h3 className="text-white font-bold text-sm flex items-center gap-1.5">📈 TOTAL PENJUALAN</h3>
           <span className="text-white font-extrabold text-base">{formatRupiah(totalPenjualan)}</span>
         </div>
-        <div className="bg-white px-4 space-y-0 border-b-2 border-gray-900">
+        <div className="bg-white px-4 space-y-0 border-b border-gray-100">
           {tarikTx.length > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+            <div className="flex justify-between items-center py-2 border-b border-gray-50">
               <span className="text-sm text-gray-700 flex items-center gap-1">💸 <strong className="text-emerald-700">Tarik Tunai</strong><span className="text-[10px] bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold ml-1">{tarikTx.length}x</span></span>
               <span className="text-sm font-bold text-red-500">-{formatRupiah(totalTarik)}</span>
             </div>
           )}
-          <div className="flex justify-between items-center py-2 border-b border-gray-200">
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
             <span className="text-sm text-gray-700 flex items-center gap-1">💰 <strong className="text-emerald-700">Sisa Cash Penjualan</strong></span>
             <span className="text-sm font-bold text-emerald-700">{formatRupiah(sisaCashPenjualan)}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-200">
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
             <span className="text-sm text-gray-700 flex items-center gap-1"><RefreshCcw className="w-4 h-4 text-black" /> <strong className="text-gray-800">ADMIN</strong></span>
             <span className="text-sm font-bold text-gray-800">{formatRupiah(totalAdmin)}</span>
           </div>
           {aksTx.length > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+            <div className="flex justify-between items-center py-2 border-b border-gray-50">
               <span className="text-sm text-gray-700 flex items-center gap-1">🎧 <strong className="text-rose-500">Aksesoris</strong><span className="text-[10px] bg-rose-100 text-rose-500 px-1.5 py-0.5 rounded-full font-bold ml-1">{aksTx.length}x</span></span>
               <span className="text-sm font-bold text-rose-500">{formatRupiah(totalAks)}</span>
             </div>
           )}
           {totalVoucherTunaiQty > 0 && (
-            <div className="flex justify-between items-center py-2 border-b border-gray-200">
+            <div className="flex justify-between items-center py-2 border-b border-gray-50">
               <span className="text-sm text-gray-700 flex items-center gap-1">🎟️ <strong className="text-blue-600">TOTAL VOUCHER</strong><span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-bold ml-1">{totalVoucherTunaiQty}x</span></span>
               <span className="text-sm font-bold text-blue-600">{formatRupiah(totalVoucherTunaiUang)}</span>
             </div>
           )}
-          <div className="flex justify-between items-center py-2 border-b border-gray-200">
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
             <span className="text-sm text-gray-700 flex items-center gap-1">🏷️ <strong className="text-purple-600">Non Tunai</strong></span>
             <span className="text-sm font-bold text-purple-600">{formatRupiah(totalNonTunai)}</span>
           </div>
@@ -571,24 +618,24 @@ export default function Laporan() {
 
 
       {/* GRUP 2: Jurnal Penyesuaian + Saldo & Selisih */}
-      <div className="rounded-2xl border-2 border-gray-900 overflow-hidden mb-4">
+      <div className="rounded-2xl border border-gray-200 overflow-hidden mb-4">
         <div className="bg-gradient-to-r from-purple-700 to-purple-500 px-4 py-2.5">
           <h3 className="text-white font-bold text-sm flex items-center gap-1.5">📒 Jurnal Penyesuaian</h3>
         </div>
-        <div className="bg-white px-4 space-y-0 border-b-2 border-gray-900">
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-900">
+        <div className="bg-white px-4 space-y-0 border-b border-gray-100">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-sm text-gray-700">💳 <strong>Total Tambah/Isi Saldo Bank</strong></span>
             <span className="text-sm font-extrabold text-blue-700">{formatRupiah(totalIsiSaldoBank)}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-300">
+          <div className="flex justify-between items-center py-2 border-b border-gray-50">
             <span className="text-sm text-gray-700">Sisa Saldo Bank (Catatan)</span>
             <span className="text-sm font-bold text-gray-800">{formatRupiah(sisaSaldoBank)}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-900">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-sm text-gray-700">Total Penjualan</span>
             <span className="text-sm font-bold text-gray-800">{formatRupiah(totalPenjualan)}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-900">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-sm font-bold text-gray-900">Total</span>
             <span className="text-sm font-extrabold text-gray-900">{formatRupiah(sisaSaldoBank + totalPenjualan)}</span>
           </div>
@@ -602,11 +649,11 @@ export default function Laporan() {
           <h3 className="text-white font-bold text-sm flex items-center gap-1.5">🏦 Saldo & Selisih</h3>
         </div>
         <div className="bg-white px-4 space-y-0">
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-900">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-sm text-gray-700 flex items-center gap-1">🏛️ <strong>Sisa Saldo Bank (Catatan)</strong></span>
             <span className="text-sm font-extrabold text-blue-700">{formatRupiah(sisaSaldoBank)}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b-2 border-gray-900">
+          <div className="flex justify-between items-center py-2 border-b border-gray-100">
             <span className="text-sm text-gray-700 flex items-center gap-1">📱 <strong>Saldo Real App</strong></span>
             <span className="text-sm font-extrabold text-red-600">{formatRupiah(saldoRealApp)}</span>
           </div>
@@ -619,17 +666,17 @@ export default function Laporan() {
 
       {/* Tombol aksi */}
       <div className="space-y-2.5 mt-2">
-        <div className="grid grid-cols-2 gap-2.5">
-          <button onClick={handleExportPDF} className="flex items-center justify-center gap-1.5 bg-red-500 text-white py-3 rounded-2xl font-bold text-xs shadow active:scale-95 transition">
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={handleExportPDF} className="flex flex-col items-center justify-center gap-1 bg-red-500 text-white py-2.5 rounded-xl font-bold text-[10px] shadow active:scale-95 transition">
             <Download className="w-4 h-4" /> PDF
           </button>
-          <button onClick={handleExportExcel} className="flex items-center justify-center gap-1.5 bg-green-600 text-white py-3 rounded-2xl font-bold text-xs shadow active:scale-95 transition">
+          <button onClick={handleExportExcel} className="flex flex-col items-center justify-center gap-1 bg-green-600 text-white py-2.5 rounded-xl font-bold text-[10px] shadow active:scale-95 transition">
             <Download className="w-4 h-4" /> Excel
           </button>
+          <button onClick={handleBagikan} className="flex flex-col items-center justify-center gap-1 bg-blue-600 text-white py-2.5 rounded-xl font-bold text-[10px] shadow active:scale-95 transition">
+            <Share2 className="w-4 h-4" /> BAGIKAN
+          </button>
         </div>
-        <button onClick={handleBagikan} className="w-full flex items-center justify-center gap-1.5 bg-blue-600 text-white py-3 rounded-2xl font-bold text-sm shadow active:scale-95 transition">
-          <Share2 className="w-4 h-4" /> BAGIKAN (PDF)
-        </button>
         <button onClick={handleResetSaldo} disabled={resetting} className="w-full flex items-center justify-center gap-1.5 bg-gray-900 text-white py-3.5 rounded-2xl font-bold text-sm shadow active:scale-95 transition disabled:opacity-50">
           {resetting ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />} RESET SALDO (MANUAL)
         </button>

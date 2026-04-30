@@ -132,6 +132,8 @@ export interface TransactionRecord {
   nominalNonTunai?: number;
   adminNonTunai?: number;
   createdAt: string;
+  saldoBankSetelahnya?: number;
+  saldoCashSetelahnya?: number;
 }
 
 export interface SaldoHistoryRecord {
@@ -144,6 +146,8 @@ export interface SaldoHistoryRecord {
   saldoDate: string;
   saldoTime: string;
   createdAt: any;
+  saldoBankSetelahnya?: number;
+  saldoCashSetelahnya?: number;
 }
 
 export interface BalanceRecord {
@@ -371,13 +375,17 @@ export async function getTransactions(params: {
 
 export async function createTransaction(data: Omit<TransactionRecord, "id" | "createdAt" | "uid">): Promise<string> {
   const uid = requireUid();
+  
+  // Update balance first to get the latest state
+  const updatedBalance = await updateBalance(data.kasirName, data);
+
   const ref = await addDoc(getTenantCollection(db, "transactions"), {
     ...data,
     uid,
     createdAt: new Date().toISOString(),
+    saldoBankSetelahnya: updatedBalance.bank,
+    saldoCashSetelahnya: updatedBalance.cash,
   });
-
-  await updateBalance(data.kasirName, data);
 
   return ref.id;
 }
@@ -440,6 +448,8 @@ export async function updateBalance(kasirName: string, tx: Omit<TransactionRecor
   } else {
     await setDoc(ref, bal);
   }
+
+  return bal;
 }
 
 async function reverseBalance(kasirName: string, tx: TransactionRecord) {
@@ -520,16 +530,6 @@ export async function addSaldo(kasirName: string, data: {
   const saldoDate = getWibDate();
   const saldoTime = now.toTimeString().substring(0, 5);
 
-  const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
-    kasirName,
-    jenis: data.jenis,
-    nominal: data.nominal,
-    keterangan: data.keterangan || `Tambah Saldo ${data.jenis}`,
-    saldoDate,
-    saldoTime,
-    createdAt: new Date().toISOString(),
-  });
-
   const balRef = doc(db, "balances", kasirName);
   const balSnap = await getDoc(balRef);
   const bal: BalanceRecord = balSnap.exists()
@@ -547,6 +547,18 @@ export async function addSaldo(kasirName: string, data: {
   } else {
     await setDoc(balRef, bal);
   }
+
+  const ref = await addDoc(getTenantCollection(db, "saldo_history"), {
+    kasirName,
+    jenis: data.jenis,
+    nominal: data.nominal,
+    keterangan: data.keterangan || `Tambah Saldo ${data.jenis}`,
+    saldoDate,
+    saldoTime,
+    createdAt: new Date().toISOString(),
+    saldoBankSetelahnya: bal.bank,
+    saldoCashSetelahnya: bal.cash,
+  });
 
   return ref.id;
 }
