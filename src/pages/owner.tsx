@@ -10,7 +10,7 @@ import {
   type UserRecord, type SettingsRecord, type TransactionRecord, type AttendanceRecord, type IzinRecord, type SaldoHistoryRecord, type CategoryLabels,
 } from "@/lib/firestore";
 import { db, auth } from "@/lib/firebase";
-import { getDocs, query, where, collection } from "firebase/firestore/lite";
+import { getDocs, query, where, collection } from "firebase/firestore";
 import { formatRupiah, formatThousands, parseThousands, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import {

@@ -8,7 +8,7 @@ import {
 } from "@/lib/firestore";
 import { formatRupiah, getWibDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Download, Share2, Loader2, RotateCcw, RefreshCcw } from "lucide-react";
+import { Lock, Download, Share2, Loader2, RotateCcw, RefreshCcw, ChevronDown, ChevronRight } from "lucide-react";
 
 export default function Laporan() {
   const { user, shift } = useAuth();
@@ -33,6 +33,7 @@ export default function Laporan() {
   const [locking, setLocking] = useState(false);
   const [dailyNotes, setDailyNotes] = useState<DailyNoteRecord>({ sisaSaldoBank: 0, saldoRealApp: 0 });
   const [shopSettings, setShopSettings] = useState<SettingsRecord | null>(null);
+  const [showAdjustments, setShowAdjustments] = useState(false);
 
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -617,51 +618,76 @@ export default function Laporan() {
       </div>
 
 
-      {/* GRUP 2: Jurnal Penyesuaian + Saldo & Selisih */}
-      <div className="rounded-2xl border border-gray-200 overflow-hidden mb-4">
-        <div className="bg-gradient-to-r from-purple-700 to-purple-500 px-4 py-2.5">
-          <h3 className="text-white font-bold text-sm flex items-center gap-1.5">📒 Jurnal Penyesuaian</h3>
-        </div>
-        <div className="bg-white px-4 space-y-0 border-b border-gray-100">
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-700">💳 <strong>Total Tambah/Isi Saldo Bank</strong></span>
-            <span className="text-sm font-extrabold text-blue-700">{formatRupiah(totalIsiSaldoBank)}</span>
+      {/* GRUP 2: Jurnal Penyesuaian + Saldo & Selisih (Collapsible) */}
+      <div className="rounded-2xl border border-gray-200 overflow-hidden mb-4 bg-white">
+        <button 
+          onClick={() => setShowAdjustments(!showAdjustments)}
+          className={`w-full px-4 py-3 flex justify-between items-center transition-all ${
+            showAdjustments 
+              ? "bg-gradient-to-r from-purple-700 to-purple-500" 
+              : "bg-white hover:bg-gray-50"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span className={`${showAdjustments ? "text-white" : "text-purple-700"}`}>📒</span>
+            <h3 className={`font-bold text-sm ${showAdjustments ? "text-white" : "text-gray-800"}`}>
+              {showAdjustments ? "JURNAL PENYESUAIAN DAN SALDO/SELISIH" : "JURNAL PENYESUAIAN"}
+            </h3>
+            {totalIsiSaldoBank > 0 && !showAdjustments && (
+              <span className="bg-purple-100 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-bold animate-pulse">ADA DATA</span>
+            )}
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-50">
-            <span className="text-sm text-gray-700">Sisa Saldo Bank (Catatan)</span>
-            <span className="text-sm font-bold text-gray-800">{formatRupiah(sisaSaldoBank)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-700">Total Penjualan</span>
-            <span className="text-sm font-bold text-gray-800">{formatRupiah(totalPenjualan)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm font-bold text-gray-900">Total</span>
-            <span className="text-sm font-extrabold text-gray-900">{formatRupiah(sisaSaldoBank + totalPenjualan)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2">
-            <span className="text-sm font-bold text-gray-700">Selisih</span>
-            <span className={`text-sm font-extrabold ${(totalIsiSaldoBank - (sisaSaldoBank + totalPenjualan)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatRupiah(totalIsiSaldoBank - (sisaSaldoBank + totalPenjualan))}</span>
-          </div>
-        </div>
+          {showAdjustments ? (
+            <ChevronDown className="w-4 h-4 text-white" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-purple-700" />
+          )}
+        </button>
 
-        <div className="bg-gradient-to-r from-green-700 to-green-500 px-4 py-2.5">
-          <h3 className="text-white font-bold text-sm flex items-center gap-1.5">🏦 Saldo & Selisih</h3>
-        </div>
-        <div className="bg-white px-4 space-y-0">
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-700 flex items-center gap-1">🏛️ <strong>Sisa Saldo Bank (Catatan)</strong></span>
-            <span className="text-sm font-extrabold text-blue-700">{formatRupiah(sisaSaldoBank)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2 border-b border-gray-100">
-            <span className="text-sm text-gray-700 flex items-center gap-1">📱 <strong>Saldo Real App</strong></span>
-            <span className="text-sm font-extrabold text-red-600">{formatRupiah(saldoRealApp)}</span>
-          </div>
-          <div className="flex justify-between items-center py-2">
-            <span className="text-sm text-gray-700 flex items-center gap-1">🔄 <strong>Selisih</strong></span>
-            <span className={`text-sm font-extrabold ${selisih >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatRupiah(selisih)}</span>
-          </div>
-        </div>
+        {showAdjustments && (
+          <>
+            <div className="bg-white px-4 space-y-0 border-t border-gray-100">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-700">💳 <strong>Total Tambah/Isi Saldo Bank</strong></span>
+                <span className="text-sm font-extrabold text-blue-700">{formatRupiah(totalIsiSaldoBank)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-50">
+                <span className="text-sm text-gray-700">Sisa Saldo Bank (Catatan)</span>
+                <span className="text-sm font-bold text-gray-800">{formatRupiah(sisaSaldoBank)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-700">Total Penjualan</span>
+                <span className="text-sm font-bold text-gray-800">{formatRupiah(totalPenjualan)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm font-bold text-gray-900">Total</span>
+                <span className="text-sm font-extrabold text-gray-900">{formatRupiah(sisaSaldoBank + totalPenjualan)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm font-bold text-gray-700">Selisih</span>
+                <span className={`text-sm font-extrabold ${(totalIsiSaldoBank - (sisaSaldoBank + totalPenjualan)) >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatRupiah(totalIsiSaldoBank - (sisaSaldoBank + totalPenjualan))}</span>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-700 to-green-500 px-4 py-2.5 border-t border-white/10">
+              <h3 className="text-white font-bold text-sm flex items-center gap-1.5">🏦 Saldo & Selisih</h3>
+            </div>
+            <div className="bg-white px-4 space-y-0">
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-700 flex items-center gap-1">🏛️ <strong>Sisa Saldo Bank (Catatan)</strong></span>
+                <span className="text-sm font-extrabold text-blue-700">{formatRupiah(sisaSaldoBank)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                <span className="text-sm text-gray-700 flex items-center gap-1">📱 <strong>Saldo Real App</strong></span>
+                <span className="text-sm font-extrabold text-red-600">{formatRupiah(saldoRealApp)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-sm text-gray-700 flex items-center gap-1">🔄 <strong>Selisih</strong></span>
+                <span className={`text-sm font-extrabold ${selisih >= 0 ? 'text-green-600' : 'text-red-600'}`}>{formatRupiah(selisih)}</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Tombol aksi */}

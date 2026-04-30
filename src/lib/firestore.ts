@@ -1,7 +1,7 @@
 import {
   collection as fbCollection, doc as fbDoc, getDocs, getDoc, addDoc, updateDoc, deleteDoc,
   setDoc, query, where
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { getWibDate } from "./utils";
 
